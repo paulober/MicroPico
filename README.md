@@ -9,7 +9,7 @@ This software is a derivative product of [Pymakr](https://marketplace.visualstud
 
 ![Terminal](https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/screenshot1.png)
 
-We recommend that you use Pico-Go with [Pico-Stub](https://github.com/cpwood/Pico-Stub), giving you code completion and linting.
+> We recommend that you use Pico-Go with [Pico-Stub](https://github.com/cpwood/Pico-Stub), giving you code completion and linting.
 
 ## Dependencies
 
