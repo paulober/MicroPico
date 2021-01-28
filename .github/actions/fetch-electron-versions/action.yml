@@ -1,0 +1,17 @@
+name: "Fetch Electron Versions"
+description: "Fetch and Parse Electron Versions to Test for VSCode"
+author: BradenM
+inputs:
+  max-count:
+    default: 2
+    description: "Max Number of versions to return"
+    required: false
+  git-token:
+    description: "Github Authentication Token"
+    required: true
+outputs:
+  versions:
+    description: "Electron Versions to Test"
+runs:
+  using: "node12"
+  main: "dist/index.js"

@@ -1,0 +1,22 @@
+# no  node_modules
+node_modules
+# no transpiled
+/lib
+# no packages
+*.vsix
+
+# ignore the vscode instance used in testing
+.vscode-test/**
+.vscode-test
+
+# ignore the test package lock ( but not the package file)
+test-electron/package-lock.json
+
+.env
+
+node_modules/**/config.gypi
+node_modules/**/**/config.gypi
+native_modules/**/config.gypi
+native_modules/**/**/config.gypi
+
+.DS_Store

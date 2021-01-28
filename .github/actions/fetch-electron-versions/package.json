@@ -1,0 +1,19 @@
+{
+  "name": "compile-modules-action",
+  "version": "1.0.0",
+  "description": "Compiles Native Modules for XPlatform Support",
+  "main": "index.js",
+  "author": "BradenM",
+  "license": "MIT",
+  "scripts": {
+    "build": "ncc build index.js"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.0",
+    "@actions/github": "^1.1.0",
+    "atob": "^2.1.2"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.20.5"
+  }
+}

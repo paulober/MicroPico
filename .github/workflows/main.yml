@@ -1,0 +1,92 @@
+name: Build Pico-Go
+
+on:
+  pull_request: ~
+  push:
+    branches-ignore:
+      - "dependabot/**"
+    paths-ignore:
+      - "doc/**"
+  schedule:
+    # Run everyday at 1am
+    - cron: "0 1 * * *"
+
+jobs:
+  build:
+    name: "Build ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Setup node
+        uses: actions/setup-node@v1.2.0
+        with:
+          node-version: "12"
+
+      - name: Fetch Electron Versions
+        id: electron
+        uses: ./.github/actions/fetch-electron-versions
+        with:
+          max-count: 3
+          git-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          npm install npx
+          npm add prebuild-install --save-dev
+          npm install --no-audit
+
+      #      todo: fix errors in running prebuild-install in Action runners
+      #      - name: Update Native Modules
+      #        run: npm run download-native
+
+      # TODO
+      # - name: Test Bindings
+
+      # generic all up electron test
+      - name: Test Bindings (macOS/Windows)
+        if: matrix.os != 'ubuntu-latest'
+        run: npm run test-electron -- ${{ steps.electron.outputs.versions }}
+
+      # electron tests with virtual x server
+      - name: Test Bindings (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: xvfb-run -e /dev/stdout -a npm run test-electron -- ${{ steps.electron.outputs.versions }}
+
+      # No tests written :(
+      # - name: Run Tests
+      #   run: npm run test
+
+      - name: Package Extension
+        run: npx vsce package -o pymakr-${{ github.sha }}.vsix
+
+      - name: Upload VSIX
+        if: github.event_name == 'schedule'
+        uses: actions/upload-artifact@master
+        with:
+          name: pymakr-nightly.vsix
+          path: ./pymakr-${{ github.sha }}.vsix
+
+#   deploy:
+#    name: Publish
+#    needs: build
+#    # if current branch name contains release and is not a PR
+#    if: contains(github.ref, 'release') && github.event_name == 'push'
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#
+#      - name: Install Production Dependencies
+#        run: |
+#          npm ci
+#          npm prune --production
+#
+#      - name: Package Extension
+#        run: npx vsce package
+#
+#      - name: Publish Extension
+#        run: npx vsce publish --pat ${{ secrets.VSCE_TOKEN }}

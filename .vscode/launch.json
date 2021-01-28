@@ -1,0 +1,61 @@
+// A launch configuration that launches the extension inside a new window
+{
+    "version": "0.1.0",
+    "configurations": [
+    {
+        "type": "node",
+        "request": "launch",
+        "name": "Electron-Test Index",
+        "runtimeExecutable": "/Users/chris/source/repos/Pico-Go/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+        
+        "program": "/Users/chris/source/repos/Pico-Go/test-electron/index.js"
+    },
+        {
+            "name": "PowerShell Launch Current File w/Args Prompt",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "${file}",
+            "args": [
+                "${command:SpecifyScriptArgs}"
+            ],
+            "cwd": "${workspacefolder}"
+        },
+        {
+            "name": "PowerShell Launch Current File",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "${file}",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch current",
+            "program": "${file}"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug current script",
+            "program": "${file}"
+        },
+
+        {
+            "name": "Launch Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
+            "stopOnEntry": false
+        },
+        {
+            "name": "Launch Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionTestsPath=${workspaceRoot}/test" ],
+            "stopOnEntry": false
+        }
+    ]
+}
