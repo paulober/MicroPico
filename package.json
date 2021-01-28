@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "publisher": "ChrisWood",
   "repository": "https://github.com/cpwood/Pico-Go",
-  "icon": "https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/logo.png",
+  "icon": "images/logo.png",
   "license": "SEE LICENSE IN <LICENSE.md>",
   "galleryBanner": {
     "color": "#ffffff",
