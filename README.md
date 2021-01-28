@@ -1,4 +1,4 @@
-#  Pico-Go VS Code Extension <img src="images/logo.png" style="width: 100px" />
+#  Pico-Go VS Code Extension <img src="https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/logo.png" style="width: 100px" />
 
 Pico-Go enables you to communicate to your Raspberry Pi Pico board using the build in command line REPL. Run a single file to your board, sync your entire project or directly type and execute commands.
 
@@ -7,7 +7,7 @@ This software is a derivative product of [Pymakr](https://marketplace.visualstud
 - Works with macOS, Linux, and Windows.
 - Connects to the Raspberry Pi Pico board.
 
-![Terminal](images/screenshot1.png)
+![Terminal](https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/screenshot1.png)
 
 We recommend that you use Pico-Go with [Pico-Stub](https://github.com/cpwood/Pico-Stub), giving you code completion and linting.
 
@@ -23,7 +23,7 @@ At any time, use the `Pico Disconnected / Pico Connected` button on the bottom-l
 
 ## Command Palette
 
-![Command Palette](images/screenshot2.png)
+![Command Palette](https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/screenshot2.png)
 
 | Action           | Windows / Linux    | macOS                 |
 | ---------------- | ------------------ | --------------------- |
@@ -117,7 +117,7 @@ Note: make sure you have the 'code' terminal command installed. See [code setup 
 
 ## Why Pico-Go? Why not contribute to the Pymakr project?
 
-Pretty much 99.9% of the code in this repo is from the fantastic [Pymakr]([pycom/pymakr-vsc (github.com)](https://github.com/pycom/pymakr-vsc)) project. 
+Pretty much 99.9% of the code in this repo is from the fantastic [Pymakr](https://github.com/pycom/pymakr-vsc) project. 
 
 Whilst the out-of-the-box version of Pymakr can talk to a Pico board after a little initial configuration, it makes certain assumptions about the capabilities of the board. For example, when transferring files, it attempts to calculate file hashes to check the file has copied correctly. The Python module that it attempts to use for this isn't available on the Pico, so uploading or downloading fails.
 
