@@ -1,8 +1,8 @@
-#  Pico-Go VS Code Extension ![](images/logo.png)
+#  Pico-Go VS Code Extension <img src="images/logo.png" style="width: 100px" />
 
 Pico-Go enables you to communicate to your Raspberry Pi Pico board using the build in command line REPL. Run a single file to your board, sync your entire project or directly type and execute commands.
 
-This software is a derivative product of [Pymakr]([Pymakr - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr)) by Pycom Ltd under the terms of its [GNU 3+ license](LICENSE.md).
+This software is a derivative product of [Pymakr](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr) by Pycom Ltd under the terms of its [GNU GPL Version 3+ license](LICENSE.md).
 
 - Works with macOS, Linux, and Windows.
 - Connects to the Raspberry Pi Pico board.
@@ -38,7 +38,7 @@ At any time, use the `Pico Disconnected / Pico Connected` button on the bottom-l
 
 To connect to your board, use the `Global settings` command to go to the extensions settings. 
 
-If you want to synchronize a subfolder of your project instead of the entire project, enter the name of the subfolder in the 'sync folder' field.
+If you want to synchronize a subfolder of your project instead of the entire project, enter the name of the subfolder in the `sync_folder` field.
 
 Please refer to [Settings](settings.md) for a list of all the settings.
 
