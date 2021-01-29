@@ -282,7 +282,7 @@ export default class Pymakr extends EventEmitter {
     this.getAutoconnectAddress(function(address){
       _this.logger.silly("Found address: "+address)
       if(_this.autoconnect_address === undefined && !address){ // undefined means first time use
-        _this.terminal.writeln("No PyCom boards found on USB")
+        _this.terminal.writeln("No boards found on USB")
         failed = true
         // emitted_addr = _this.settings.address
       }else if(address && address != _this.autoconnect_address){

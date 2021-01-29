@@ -6,7 +6,7 @@ function activate(context) {
 
     prepareSerialPort(function(error){
         if(error){
-            var err_mess = "There was an error with your serialport module, Pymakr will likely not work properly. Please try to install again or report an issue on our github (see developer console for details)"
+            var err_mess = "There was an error with your serialport module, Pico-Go will likely not work properly. Please try to install again or report an issue on GitHub."
             vscode.window.showErrorMessage(err_mess)
             console.log(err_mess)
             console.log(error)
@@ -18,7 +18,7 @@ function activate(context) {
             
             checkNodeVersion(function(nodejs_installed){
                 if(!nodejs_installed){
-                    vscode.window.showErrorMessage("NodeJS not detected on this machine, which is required for Pymakr to work. See the Pymakr readme for dependancies.")
+                    vscode.window.showErrorMessage("NodeJS not detected on this machine, which is required for Pico-Go to work. See the Pymakr readme for dependancies.")
                 }else{
                 
 
