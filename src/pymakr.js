@@ -286,7 +286,7 @@ export default class Pymakr extends EventEmitter {
         failed = true
         // emitted_addr = _this.settings.address
       }else if(address && address != _this.autoconnect_address){
-        _this.logger.silly("Found a PyCom board on USB: "+address)
+        _this.logger.silly("Found a board on USB: "+address)
         emitted_addr = address
         _this.emit('auto_connect',address)
       }else if(_this.autoconnect_address && !address){
@@ -339,7 +339,7 @@ export default class Pymakr extends EventEmitter {
           }
         }else{
           cb(null)
-          _this.logger.silly("No Pycom boards found")
+          _this.logger.silly("No boards found")
         }
       })
     }else{

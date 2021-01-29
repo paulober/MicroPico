@@ -1,6 +1,6 @@
 #  Pico-Go VS Code Extension <img src="https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/logo.png" style="width: 100px" />
 
-Pico-Go enables you to communicate to your Raspberry Pi Pico board using the build in command line REPL. Run a single file to your board, sync your entire project or directly type and execute commands.
+Pico-Go enables you to communicate with your Raspberry Pi Pico board using the built-in command line REPL. Run a single file to your board, sync your entire project or directly type and execute commands.
 
 This software is a derivative product of [Pymakr](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr) by Pycom Ltd under the terms of its [GNU GPL Version 3+ license](LICENSE.md).
 

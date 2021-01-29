@@ -6,7 +6,7 @@ These settings can be specified in both the Global config file as well as the Pr
 | `open_on_start`  | yes     | yes    | `true`                | Whether to open the terminal and connect to the board when starting Code |
 | `ctrl_c_on_connect` | yes     | yes    | `false`               | If true, executes a ctrl-c on connect to stop running programs |
 | `auto_connect`   | no       | yes    | `true` | Autoconnect on USB. |
-| `autoconnect_comport_manufacturers` | no | yes | `"MicroPython"` | USB COM port manufacturers for Pico boards. |
+| `autoconnect_comport_manufacturers` | no | yes | `"MicroPython", "Microsoft"` | USB COM port manufacturers for Pico boards. |
 | `sync_folder`    | yes     | yes    | `""`                  | Folder to synchronize. Empty to sync project's main folder. |
 | `sync_file_types` | yes     | yes    | `"py,txt,log,json,xml,html,js, css,mpy"` | Types of files to be synchronized |
 | `sync_all_file_types` | yes  | yes    | `false` | If enabled, all files will be uploaded no matter the file type (`sync_file_types` will be ignored). |

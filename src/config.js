@@ -45,7 +45,6 @@ export default class Config {
             +  "- auto_connect            : true                : *Global settings only* If enabled, connects to USB automatically. Disable to use the 'address' field for connecting over WiFi\r\n"
             +  "Any of these can be used inside the Project config to override the global config\r\n"
             +  "\r\n"
-            +  "For more information, check github.com/pycom/pymakr-atom or docs.pycom.io\r\n"
       ,
 
       start_text: "Welcome to the Pico-Go plugin! Use the buttons on the left bottom to access all features and commands.\r\n"
@@ -114,7 +113,7 @@ export default class Config {
             type: 'boolean',
             default: true,
             title: 'Reboot after upload',
-            description: 'Reboots your pycom board after any upload or download action',
+            description: 'Reboots your board after any upload or download action',
             order: 11
         },
         py_ignore: {
@@ -134,7 +133,7 @@ export default class Config {
             items: {
               type: 'string'
             },
-            default: ['MicroPython'],
+            default: ['MicroPython', 'Microsoft'],
             order: 13
         },
     }
