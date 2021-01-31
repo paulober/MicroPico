@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-
+labels: 'bug'
 ---
 
 (Hi! 👋  Thanks for reporting an issue! Please make sure you click the link above to view the issue guidelines, then fill out the blanks below.)
@@ -24,10 +24,15 @@ about: Create a report to help us improve
 ## Any other comments?
 
 
-## What versions of software are you using?
+## Which versions of software are you using?
 
 **Operating system:**
 
 **VSCode version:**
 
 **Pico-Go version:**
+
+
+## Which hardware are you using?
+
+E.g. Raspberry Pi Pico or the name of another RP2040 board.
