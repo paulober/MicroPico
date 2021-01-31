@@ -42,6 +42,12 @@ Do this in the usual way. The commit message should be `vX.Y.Z changelog`.
 
 [Create a new Release](https://github.com/cpwood/Pico-Go/releases/new) named vX.Y.Z.
 
+Make the description of the release:
+
+```
+See the [changelog](/CHANGELOG.md).
+```
+
 ## Upload the New Version of the Extension
 
 - Go to the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/chriswood) and log in.
