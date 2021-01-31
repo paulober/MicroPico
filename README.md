@@ -1,4 +1,4 @@
-#  Pico-Go VS Code Extension <img src="https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/logo.png" style="width: 100px" />
+#  Pico-Go VS Code Extension 
 
 Pico-Go enables you to communicate with your Raspberry Pi Pico board using the built-in command line REPL. Run a single file to your board, sync your entire project or directly type and execute commands.
 
@@ -10,6 +10,13 @@ This software is a derivative product of [Pymakr](https://marketplace.visualstud
 ![Terminal](https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/screenshot1.png)
 
 > We recommend that you use Pico-Go with [Pico-Stub](https://github.com/cpwood/Pico-Stub), giving you code completion and linting.
+
+## Getting Started
+
+This two-part series will get you going with development for the Pico in MicroPython using VS Code:
+
+* [Part One - Setting up your environment](https://medium.com/all-geek-to-me/developing-for-the-raspberry-pi-pico-in-vs-code-getting-started-6dbb3da5ba97)
+* [Part Two - Start coding!](https://medium.com/all-geek-to-me/developing-for-the-raspberry-pi-pico-in-vs-code-start-coding-bb3834233eff)
 
 ## Dependencies
 
