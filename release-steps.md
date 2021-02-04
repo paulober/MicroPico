@@ -23,6 +23,7 @@ Ensure that:
 
 * all commits that fix issues are pushed;
 * all issues that *should* be closed *are* closed;
+* any issues which aren't software changes are marked with `question` or `wontfix`;
 * all issues are associated with a milestone named `vX.Y.Z`.
 
 Create a new issue using a new template with a title of `vX.Y.Z Release` and write some preamble notes in the description. Ensure that the issue has a label of `release-summary` and is also associated with milestone `vX.Y.Z`. **Close the issue**.
