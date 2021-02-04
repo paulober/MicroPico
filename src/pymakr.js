@@ -527,13 +527,13 @@ export default class Pymakr extends EventEmitter {
               _this.syncObj.stop()
             }
           }else{
-            _this.terminal.writeln("> Failed to connect ("+message+"). Click here to try again.")
+            _this.terminal.writeln("> Failed to connect ("+message+"). Click the \"Pico Disconnected\" button to try again.")
             _this.setButtonState()
           }
         }
 
         var ontimeout = function(err){
-          _this.terminal.writeln("> Connection timed out. Click here to try again.")
+          _this.terminal.writeln("> Connection timed out. Click the \"Pico Disconnected\" button to try again.")
           _this.setButtonState()
         }
 
@@ -554,9 +554,7 @@ export default class Pymakr extends EventEmitter {
     if(this.pyboard.isConnecting()){
         this.terminal.writeln("Connection attempt canceled")
     }
-    // else{
-    //   this.terminal.writeln("Disconnected. Click here to reconnect.")
-    // }
+
     clearInterval(this.connection_timer)
     this.api.setConnectionState(this.pyboard.address,false)
     this.pyboard.disconnect(function(){
