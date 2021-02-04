@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.0.5](https://github.com/cpwood/Pico-Go/tree/v1.0.5) (2021-02-04)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.0.4...v1.0.5)
+
+This fixes the extension so it works with VS Code version 1.53.0. It also improves the wording of several error messages.
+
+**Fixed bugs:**
+
+- command 'pymakr.connect' not found [\#9](https://github.com/cpwood/Pico-Go/issues/9)
+- Clarify "click here to try again" message [\#8](https://github.com/cpwood/Pico-Go/issues/8)
+- 'micropy' is not recognized as an internal or external command, operable program or batch file. [\#7](https://github.com/cpwood/Pico-Go/issues/7)
+
 ## [v1.0.4](https://github.com/cpwood/Pico-Go/tree/v1.0.4) (2021-01-31)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.0.2...v1.0.4)
