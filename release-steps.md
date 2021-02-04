@@ -21,6 +21,7 @@ gem install github_changelog_generator
 
 Ensure that:
 
+* all commits that fix issues are pushed;
 * all issues that *should* be closed *are* closed;
 * all issues are associated with a milestone named `vX.Y.Z`.
 
