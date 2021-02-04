@@ -18,7 +18,7 @@ function activate(context) {
             
             checkNodeVersion(function(nodejs_installed){
                 if(!nodejs_installed){
-                    vscode.window.showErrorMessage("NodeJS not detected on this machine, which is required for Pico-Go to work. See the Pymakr readme for dependancies.")
+                    vscode.window.showErrorMessage("NodeJS not detected on this machine, which is required for Pico-Go to work.")
                 }else{
                 
 
@@ -156,27 +156,11 @@ function prepareSerialPort(cb){
     }catch(e){
         console.log("Error while loading serialport library")
         console.log(e)
-        // FIXME: install.js has been removed, the below just treid to re-copy 
-        // var exec = require('child_process').exec
-        // var cmd = 'npx electron-rebuild --force --version '+ process.versions['electron'];
-        // exec(cmd,function(error, stdout, stderr){
-        //         try {
-        //             require("serialport");
-        //             cb()
-        //         }catch(e){
-        //             cb(e)
-        //         }
-        //     });
 
-        // FIXME: install.js has been removed, the below just tried to re-copy 
-        // exec('node '+ __dirname+'/scripts/install.js no_rebuild',function(error, stdout, stderr){
-        //         try {
-        //             require("serialport");
-        //             cb()
-        //         }catch(e){
-        //             cb(e)
-        //         }
-        //     });
+        if (e.message.includes("NODE_MODULE_VERSION") || e.message.includes("Could not locate the bindings file")) {
+            vscode.window.showErrorMessage("This version of Pico-Go is incompatible with VSCode " + vscode.version
+                + ". Check for an update to the extension. If one isn't available, raise a bug at https://github.com/cpwood/Pico-Go to get this fixed!")
+        }
     }
 }
 
