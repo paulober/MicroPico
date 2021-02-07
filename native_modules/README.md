@@ -1,0 +1,1 @@
+Files in this folder are created automatically by [Bindings-Builder](https://github.com/cpwood/Bindings-Builder).
