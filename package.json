@@ -164,22 +164,13 @@
     }
   },
   "scripts": {
-    "postinstall": "pwsh -nop -f ./scripts/mp-download.ps1 -copyonly",
-    "download-native": "pwsh -nop -f ./scripts/mp-download.ps1 -ElectronVersions 9.2.1 -IgnoreNodeVersion",
+    "changelog": "github_changelog_generator -u cpwood -p Pico-Go --future-release v$npm_package_version",
+    "copy-native": "node native_modules/copy-native.js",
     "build": "babel src --out-dir lib --source-maps",
     "build-dev": "babel src --out-dir lib --source-maps --watch",
-    "test-electron": "pwsh -nop -f ./test-electron/runtest.ps1",
-    "package-prep": "npm install vsce -g",
+    "postinstall": "node native_modules/copy-native.js",
     "package": "vsce package",
     "vscode:prepublish": "npm ci && npm prune"
-  },
-  "backup-required-to-include-binaries": {
-    "postinstall": "pwsh -nop -f ./scripts/mp-download.ps1 -copyonly",
-    "vscode:prepublish": "npm ci && npm prune"
-  },
-  "old-scripts": {
-    "test": "mocha test/*-test.js",
-    "test-ci": "mocha test/*-test.js -R xunit 2>&1 | tee test/TEST-report.xml"
   },
   "dependencies": {
     "binascii": "0.0.2",
@@ -217,6 +208,7 @@
     "babel-preset-es2015": "6.24.1",
     "chai": "^4.3.0",
     "eslint": "^6.8.0",
+    "fs-extra": "^9.1.0",
     "mocha": "^6.2.3",
     "prebuild-install": "^5.3.6",
     "vscode": "^1.1.37"
