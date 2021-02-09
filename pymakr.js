@@ -1,6 +1,9 @@
 var vscode = require('vscode');
 var exec = require('child_process').exec
 var PanelView, Pymakr, Pyboard,SettingsWrapper, pb,v,sw,pymakr
+var os = require("os");
+var pkg = require("./package.json");
+var _ = require("lodash");
 
 function activate(context) {
 
@@ -148,9 +151,40 @@ function deactivate() {
     v.destroy()
 }
 
+function getOsName() {
+    switch (os.platform()) {
+        case "win32":
+            return "Windows";
+        case "linux":
+            return "Linux";
+        case "darwin":
+            return "macOS";
+        case "aix":
+            return "IBM AIX";
+        case "freebsd":
+            return "FreeBSD";
+        case "openbsd":
+            return "OpenBSD";
+        case "sunos":
+            return "SunOS";
+    }
+} 
+
 function prepareSerialPort(cb){
     
     try {
+        var isCompatible = false;
+        var item = _.find(pkg.compatibility, x => x.platform == os.platform());
+
+        if (item != null) {
+            isCompatible = _.includes(item.arch, os.arch());
+        }
+
+        if (!isCompatible) {
+            vscode.window.showErrorMessage(`Sorry, Pico-Go isn't compatible with ${getOsName()} (${os.arch()}).`);
+            return;
+        }
+
         require("serialport");
         cb()
     }catch(e){
@@ -159,7 +193,7 @@ function prepareSerialPort(cb){
 
         if (e.message.includes("NODE_MODULE_VERSION") || e.message.includes("Could not locate the bindings file")) {
             vscode.window.showErrorMessage("This version of Pico-Go is incompatible with VSCode " + vscode.version
-                + ". Check for an update to the extension. If one isn't available, raise a bug at https://github.com/cpwood/Pico-Go to get this fixed!")
+                + ". Check for an update to the extension. If one isn't available, raise a bug at https://github.com/cpwood/Pico-Go to get this fixed!");
         }
     }
 }

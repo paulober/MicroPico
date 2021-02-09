@@ -26,6 +26,28 @@
     "*"
   ],
   "main": "./pymakr",
+  "compatibility": [
+    {
+      "platform": "win32",
+      "arch": [
+        "x64"
+      ]
+    },
+    {
+      "platform": "darwin",
+      "arch": [
+        "x64",
+        "arm64"
+      ]
+    },
+    {
+      "platform": "linux",
+      "arch": [
+        "x64",
+        "arm64"
+      ]
+    }
+  ],
   "contributes": {
     "commands": [
       {
@@ -183,6 +205,7 @@
     "electron-rebuild": "^1.11.0",
     "element-resize-detector": "1.1.15",
     "lie": "^3.3.0",
+    "lodash": "^4.17.20",
     "nan": "2.14.0",
     "ncp": "^2.0.0",
     "node-abi": "^2.19.3",
