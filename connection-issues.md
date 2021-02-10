@@ -28,7 +28,11 @@ Follow [these instructions](https://knowledge.ni.com/KnowledgeArticleDetails?id=
 To establish which process is holding on to your serial port, you can try this command:
 
 ```
+# macOS
 lsof | grep usbmodem
+
+# Linux
+lsof | grep tty
 ```
 
 This should return something like this:
