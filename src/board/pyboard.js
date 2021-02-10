@@ -59,9 +59,9 @@ export default class Pyboard {
         timeout: _this.settings.timeout,
         ctrl_c_on_connect: _this.settings.ctrl_c_on_connect
       }
-      if(!_this.settings.auto_connect){
-        _this.address = _this.settings.address
-      }
+      // if(!_this.settings.auto_connect){
+      //   _this.address = _this.settings.address
+      // }
       if(cb) cb()
     })
 

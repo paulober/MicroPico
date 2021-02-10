@@ -42,7 +42,8 @@ export default class Config {
             +  "- open_on_start           : true                : Weather to open the terminal and connect to the board when starting vsc\r\n"
             +  "- safe_boot_before_upload : true                : Safe-boots the board before uploading code, to prevent running out of RAM while uploading.\r\n"
             +  "- reboot_after_upload     : true                : Reboots the board after each upload.\r\n"
-            +  "- auto_connect            : true                : *Global settings only* If enabled, connects to USB automatically. Disable to use the 'address' field for connecting over WiFi\r\n"
+            +  "- auto_connect            : true                : *Global settings only* If enabled, connects to USB automatically.\r\n"
+            +  "- manual_com_device       : <empty>             : *Global settings only* Always connect to this COM port or device.\r\n"
             +  "Any of these can be used inside the Project config to override the global config\r\n"
             +  "\r\n"
       ,
@@ -99,7 +100,7 @@ export default class Config {
             type: 'boolean',
             default: true,
             title: 'Open on start',
-            description: 'Automatically open the pymakr console and connect to the board after starting Atom',
+            description: 'Automatically open the pymakr console and connect to the board after starting VS Code',
             order: 9
         },
         safe_boot_on_upload: {

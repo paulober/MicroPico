@@ -176,6 +176,7 @@ export default class SettingsWrapper extends EventEmitter {
     this.reboot_after_upload = this.api.config('reboot_after_upload')
     
     this.auto_connect = this.api.config('auto_connect')
+    this.manual_com_device = this.api.config('manual_com_device')
     this.py_ignore = this.api.config('py_ignore')
     this.fast_upload = this.api.config('fast_upload')
     this.autoconnect_comport_manufacturers = this.api.config('autoconnect_comport_manufacturers')
@@ -201,17 +202,6 @@ export default class SettingsWrapper extends EventEmitter {
 
       if(is_serial || _this.utils.isIP(_this.address)){
         if(cbg) cbg()
-      }else if(!_this.auto_connect){
-
-        // If content is no IP or com, it might be a domain name
-        // Try to look up the IP and overwrite self.address
-        dns.lookup(_this.api.config('address'), (err, address, family) => {
-          _this.logger.info("Found dns lookup address: "+address)
-          if(address && address.indexOf(".") > -1){
-            _this.address = address
-          }
-          if(cbg) cbg()
-        })
       }else{
         if(cbg) cbg()
       }
@@ -407,6 +397,7 @@ export default class SettingsWrapper extends EventEmitter {
       config.ctrl_c_on_connect = this.api.config('ctrl_c_on_connect')
       config.sync_all_file_types = this.api.config('sync_all_file_types')
       config.auto_connect = this.api.config('auto_connect')
+      config.manual_com_device = this.api.config('manual_com_device')
       config.autoconnect_comport_manufacturers = this.api.config('autoconnect_comport_manufacturers')
     }
     return config

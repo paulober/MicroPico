@@ -68,12 +68,7 @@ export default class Pymakr extends EventEmitter {
       if(!_this.settings.open_on_start || close_terminal){
         _this.hidePanel()
       }else{
-        if(_this.settings.auto_connect){
-          _this.startAutoConnect(null,true)
-        }else{
-          _this.logger.verbose("No auto connect enabled, connecting normally:")
-          _this.connect()
-        }
+        _this.startAutoConnect(null,true)
       }
     })
 
@@ -232,14 +227,9 @@ export default class Pymakr extends EventEmitter {
 
 
     this.settings.onChange('auto_connect',function(old_value,new_value){
-      var v = new_value
-      _this.logger.info("auto_connect setting changed to "+v)
-      if(v && _this.view.visible){
-        _this.startAutoConnect()
-      }else{
-        _this.stopAutoConnect()
-        _this.connect()
-      }
+      _this.logger.info("auto_connect setting changed to "+ new_value)
+      _this.stopAutoConnect()
+      _this.startAutoConnect()
     })
   }
 
@@ -315,8 +305,12 @@ export default class Pymakr extends EventEmitter {
 
   getAutoconnectAddress(cb){
     var _this = this
-    _this.logger.silly("Autoconnect interval")
-    if(this.settings.auto_connect){
+
+    if (!this.settings.auto_connect && (this.settings.manual_com_device && this.settings.manual_com_device.length > 0)) {
+      _this.logger.silly("Manual COM port or device configured.")
+      cb(this.settings.manual_com_device);
+    }
+    else if(this.settings.auto_connect){
       _this.logger.silly("Autoconnect enabled")
       this.getPycomBoard(function(name,manu,list){
         var current_address = _this.pyboard.address
