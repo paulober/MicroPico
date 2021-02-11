@@ -35,6 +35,13 @@ export default class SettingsWrapper extends EventEmitter {
     
     if (!fs.existsSync(this.global_config_file)) {
       var gc = this.getDefaultGlobalConfig();
+
+      // Create the Code "User" folder if it doesn't already exist.
+      let configFolder = Utils.getConfigPath();
+
+      if (!fs.existsSync(configFolder))
+        fs.mkdirSync(configFolder, { recursive: true });
+
       fs.writeFileSync(this.global_config_file, JSON.stringify(gc));
     }
 
