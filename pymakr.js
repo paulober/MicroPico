@@ -191,9 +191,15 @@ function prepareSerialPort(cb){
         console.log("Error while loading serialport library")
         console.log(e)
 
-        if (e.message.includes("NODE_MODULE_VERSION") || e.message.includes("Could not locate the bindings file")) {
+        if (e.message.includes("NODE_MODULE_VERSION")) {
             vscode.window.showErrorMessage("This version of Pico-Go is incompatible with VSCode " + vscode.version
                 + ". Check for an update to the extension. If one isn't available, raise a bug at https://github.com/cpwood/Pico-Go to get this fixed!");
+        }
+        else if (e.message.includes(".vscode-server")) {
+            vscode.window.showErrorMessage("Pico-Go is not currently compatible with the 'VSCode Remote - SSH' extension.");
+        }
+        else {
+            vscode.window.showErrorMessage("There was a problem loading the serialport bindings. Pico-Go will not work.");
         }
     }
 }
