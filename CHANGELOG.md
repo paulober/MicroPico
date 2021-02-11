@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.0.8](https://github.com/cpwood/Pico-Go/tree/v1.0.8) (2021-02-11)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.0.7...v1.0.8)
+
+This release focuses on Mac (Silicon) and Linux ARM64 support, as well as allowing a COM port or device path to be specified manually.
+
+**Implemented enhancements:**
+
+- Provide better guidance on incompatible platform/arch combinations [\#18](https://github.com/cpwood/Pico-Go/issues/18)
+- Support Apple M1 \(ARM64\) [\#16](https://github.com/cpwood/Pico-Go/issues/16)
+- Support Linux arm64 [\#15](https://github.com/cpwood/Pico-Go/issues/15)
+- How to Select COM port [\#12](https://github.com/cpwood/Pico-Go/issues/12)
+
 ## [v1.0.7](https://github.com/cpwood/Pico-Go/tree/v1.0.7) (2021-02-06)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.0.5...v1.0.7)
