@@ -15,7 +15,7 @@ There are two things you can restart: your computer and the Pico.
 
 Try the Pico first: disconnect the USB cable so it loses all power and then plug it in again.
 
-If that fails, try a reboot of your computer.
+If that fails, try a reboot of your computer. (No, really, try it.)
 
 ## More Detailed Investigation
 
@@ -28,10 +28,6 @@ Follow [these instructions](https://knowledge.ni.com/KnowledgeArticleDetails?id=
 To establish which process is holding on to your serial port, you can try this command:
 
 ```
-# macOS
-lsof | grep usbmodem
-
-# Linux
 lsof | grep tty
 ```
 
@@ -54,3 +50,9 @@ This returns output as follows:
 ```
 
 We can see from this output from a Mac that `Visual Studio Code - Insiders.app` is using the serial port. We can then try and establish whether this is another zombie instance of VS Code that's holding on to the serial port and kill the process off, if necessary.
+
+If you're a Linux user and can't connect to your board, there might also be a permission issue to access the serial port. To fix this, run:
+
+```
+sudo usermod -a -G dialout $USER
+```

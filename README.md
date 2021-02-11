@@ -43,9 +43,11 @@ At any time, use the `Pico Disconnected / Pico Connected` button on the bottom-l
 
 ## Settings
 
-To connect to your board, use the `Global settings` command to go to the extensions settings. 
+To configure the extension, use the `Global settings` command to go to the extensions settings. 
 
 If you want to synchronize a subfolder of your project instead of the entire project, enter the name of the subfolder in the `sync_folder` field.
+
+If you want to specify the device or COM port manually (instead of using the default auto-connect mode), set `auto_connect` to be `false` and then specify a `manual_com_device` value. This might be `COM3` on Windows, for example, or `/dev/tty.usbmodem0000000000001` on a Mac.
 
 Please refer to [Settings](settings.md) for a list of all the settings.
 
@@ -91,35 +93,29 @@ Synchronizing takes a bit of memory, so this error can occur when code running o
 ### Terminal not opening
 If the Pico-Go terminal is not opening or giving an error, this might be because NodeJS is not installed on your system. This is because the terminal process is running separate from VSCode and depends on your systems NodeJS install.
 
-**Solution:** Install NodeJS. For windows 64 machines, install a 32 bit version of nodejs (for example `nvm install 7.8.0 32` when using nvm).
 
+### Cannot connect to board
 
-### Cannot connect to board on Linux
-
-If you're a linux user and can't connect to your board, there might be a permission issue to access the serial port.
-
-**Solution:** Run the following command `sudo usermod -a -G dialout $USER`
+Take a look at the [connection-related guidance](connection-issues.md).
 
 ## Developing
 If you want to contribute to this project you can test the app the following way:
 
 - Download the code or clone the repo
-- Install Babel by running `npm install --save-dev babel-core`
-- On non-Windows machines, ensure PowerShell is installed, e.g. on a Mac `brew install --cask powershell`
-- Rebuild using `npm rebuild`
+- Install packages using `npm install`
 - Open the folder in VSC
 - Ensure `.vscode/launch.json` has a `runtimeExecutable` value suitable for your machine, e.g. on a Mac `/Users/chris/source/repos/Pico-Go/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron`
 - Ensure `.vscode/launch.json` has a `program` value suitable for your machine.
 - From the command palette,  `Tasks: Run build task` to run the babel builder
 - From the debug panel, start `Launch Extension`.
 
-> If you receive a warning from MacOS about not being able to access bindings.node because it hasn't been signed by a developer, cancel the notification and then go to *System Preferences > Security & Privacy > General* and click the *Allow* button. Then try again. 
+> If you receive a warning from MacOS about not being able to access `bindings.node` because it hasn't been signed by a developer, cancel the notification and then go to *System Preferences > Security & Privacy > General* and click the *Allow* button. Then try again. 
 
 Note: make sure you have the 'code' terminal command installed. See [code setup for Mac](https://code.visualstudio.com/docs/setup/mac)
 
 ## Create a local package
 - Install the vscode publishing tool by running `npm install -g vsce`
-- Create a .vsix package by running `vsce package`
+- Create a .vsix package by running `vsce package` or running the `package` NPM script.
 - you can then install the .vsix package by running `code --install-extension Pico-Go-1.x.y.vsix`
 
 ## Why Pico-Go? Why not contribute to the Pymakr project?
