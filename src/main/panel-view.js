@@ -80,6 +80,7 @@ export default class PanelView extends EventEmitter {
       'pymakr.extra.getVersion',
       'Get firmware version'
     );
+    
     // this.statusItems['getssid'] = this.createStatusItem(
     //   'getssid',
     //   '$(rss) Get WiFi SSID',
@@ -177,6 +178,11 @@ export default class PanelView extends EventEmitter {
       label: 'Pico-Go > Extra > List serial ports',
       description: '',
       cmd: 'get_serial'
+    });
+    items.push({
+      label: 'Pico-Go > Extra > Get support info',
+      description: '',
+      cmd: 'get_full_version'
     });
     items.push({ label: 'Pico-Go > Help', description: '', cmd: 'help' });
 

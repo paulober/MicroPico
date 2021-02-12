@@ -2,7 +2,7 @@
   "name": "pico-go",
   "displayName": "Pico-Go",
   "description": "Adds a REPL console to the terminal that connects to your Raspberry Pi Pico board. Run single files or synchronize your project files to your board.",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "publisher": "ChrisWood",
   "repository": "https://github.com/cpwood/Pico-Go",
   "icon": "images/logo.png",
@@ -101,6 +101,10 @@
       {
         "command": "pymakr.extra.getSerial",
         "title": "Pico-Go > Extras > List serial ports"
+      },
+      {
+        "command": "pymakr.extra.getFullVersion",
+        "title": "Pico-Go > Extra > Get support info"
       },
       {
         "command": "pymakr.help",

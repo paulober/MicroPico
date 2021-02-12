@@ -132,6 +132,12 @@ function activate(context) {
                         pymakr.getVersion()
                     });
                     context.subscriptions.push(disposable);
+
+                    var disposable = vscode.commands.registerCommand('pymakr.extra.getFullVersion', function () {
+                        terminal.show()
+                        pymakr.getFullVersion()
+                    });
+                    context.subscriptions.push(disposable);
                 
                     // var disposable = vscode.commands.registerCommand('pymakr.extra.getWifiMac', function () {
                     //     terminal.show()

@@ -10,6 +10,8 @@ import Config from './config.js'
 import StubsManager from './stubs/stubs-manager'
 
 var EventEmitter = require('events');
+var vscode = require('vscode');
+var os = require('os');
 
 export default class Pymakr extends EventEmitter {
 
@@ -177,6 +179,10 @@ export default class Pymakr extends EventEmitter {
 
     this.view.on('get_version',function(){
       _this.getVersion()
+    })
+
+    this.view.on('get_full_version',function(){
+      _this.getFullVersion()
     })
 
     this.view.on('get_serial',function(){
@@ -426,6 +432,34 @@ export default class Pymakr extends EventEmitter {
         _this.logger.error("Failed to send command: "+command)
       }
     })
+  }
+
+  getFullVersion() {
+    let command = 
+      `import os; ` +
+      `print("\\r\\n"); ` +
+      `print("Pico-Go:      ${vscode.extensions.getExtension('chriswood.pico-go').packageJSON.version}"); ` +
+      `print("VS Code:      ${vscode.version}"); ` +
+      `print("Electron:     ${process.versions.electron}"); ` +
+      `print("Modules:      ${process.versions.modules}"); ` +
+      `print("Node:         ${process.versions.node}"); ` +
+      `print("Platform:     ${os.platform()}"); ` + 
+      `print("Architecture: ${os.arch()}"); ` +
+      `print("Board:        " + os.uname().machine); ` +
+      `print("Firmware:     " + os.uname().version); ` +
+      `print("\\r\\n")\r\n`;
+
+      var _this = this
+      if(!this.pyboard.connected){
+        this.terminal.writeln("Please connect to your device")
+        return
+      }
+
+      this.pyboard.send_wait_for_blocking(command,command,function(err){
+        if(err){
+          _this.logger.error("Failed to send command: "+command)
+        }
+      })
   }
 
   // refresh button display based on current status
