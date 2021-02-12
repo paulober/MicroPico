@@ -60,7 +60,7 @@
       },
       {
         "command": "pymakr.initialise",
-        "title": "Pico-Go > Configure Project"
+        "title": "Pico-Go > Configure project"
       },
       {
         "command": "pymakr.upload",

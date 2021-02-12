@@ -14,7 +14,7 @@ To find out what's new, take a look at the [changelog](CHANGELOG.md).
 ## Getting Started
 
 1. Create a new folder and open it in VS Code.
-2. From the Command Palette (`ctrl-shift-p` or `command-shift-p`), choose `Pico-Go > Configure Project`.
+2. From the Command Palette (`ctrl-shift-p` or `command-shift-p`), choose `Pico-Go > Configure project`.
 3. Create a `.py` file and start coding!
 
 ## Dependencies
@@ -34,7 +34,7 @@ At any time, use the `Pico Disconnected / Pico Connected` button on the bottom-l
 | Action           | Windows / Linux    | macOS                 |
 | ---------------- | ------------------ | --------------------- |
 | (Re)connect      | `ctrl-shift-c`     | `command-shift-c`     |
-|  Configure Project         | `ctrl-shift-i` | `command-shift-i` |
+|  Configure project         | `ctrl-shift-i` | `command-shift-i` |
 | Global settings  | `ctrl-shift-g`     | `command-shift-g`     |
 | Upload project   | `ctrl-shift-u`     | `command-shift-u`     |
 | Upload current file only | `ctrl-shift-f`     | `command-shift-f`     |
