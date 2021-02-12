@@ -4,8 +4,10 @@ const fs = require("fs");
 const path = require("path");
 const fse = require("fs-extra");
 const _ = require("lodash");
+const vscode = require("vscode");
+
 import Utils from "../helpers/utils.js";
-import ApiWrapper from '../main/api-wrapper.js';
+import ApiWrapper from "../main/api-wrapper.js";
 
 export default class StubsManager {
     updateStubs() {
@@ -44,6 +46,8 @@ export default class StubsManager {
         this._addPylintRc(workspace);
         this._addExtensions(vsc);
         this._addSettings(vsc);
+
+        vscode.window.showInformationMessage("Project configuration complete!");
     }
 
     _addStubs(vsc) {
