@@ -13,10 +13,9 @@ To find out what's new, take a look at the [changelog](CHANGELOG.md).
 
 ## Getting Started
 
-This two-part series will get you going with development for the Pico in MicroPython using VS Code:
-
-* [Part One - Setting up your environment](https://medium.com/all-geek-to-me/developing-for-the-raspberry-pi-pico-in-vs-code-getting-started-6dbb3da5ba97)
-* [Part Two - Start coding!](https://medium.com/all-geek-to-me/developing-for-the-raspberry-pi-pico-in-vs-code-start-coding-bb3834233eff)
+1. Create a new folder and open it in VS Code.
+2. From the Command Palette (`ctrl-shift-p` or `command-shift-p`), choose `Pico-Go > Configure Project`.
+3. Create a `.py` file and start coding!
 
 ## Dependencies
 
@@ -35,6 +34,7 @@ At any time, use the `Pico Disconnected / Pico Connected` button on the bottom-l
 | Action           | Windows / Linux    | macOS                 |
 | ---------------- | ------------------ | --------------------- |
 | (Re)connect      | `ctrl-shift-c`     | `command-shift-c`     |
+|  Configure Project         | `ctrl-shift-i` | `command-shift-i` |
 | Global settings  | `ctrl-shift-g`     | `command-shift-g`     |
 | Upload project   | `ctrl-shift-u`     | `command-shift-u`     |
 | Upload current file only | `ctrl-shift-f`     | `command-shift-f`     |

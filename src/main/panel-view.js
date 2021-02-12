@@ -122,6 +122,7 @@ export default class PanelView extends EventEmitter {
       description: '',
       cmd: 'disconnect'
     });
+    items.push({ label: 'Pico-Go > Configure Project', description: '', cmd: 'initialise' });
     items.push({
       label: 'Pico-Go > Run current file',
       description: '',

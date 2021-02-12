@@ -23,12 +23,13 @@ function activate(context) {
                 if(!nodejs_installed){
                     vscode.window.showErrorMessage("NodeJS not detected on this machine, which is required for Pico-Go to work.")
                 }else{
-                
-
                     PanelView = require('./lib/main/panel-view').default;
                     Pymakr = require('./lib/pymakr').default;
                     Pyboard = require('./lib/board/pyboard').default;
+                    StubsManager = require("./lib/stubs/stubs-manager").default;
 
+                    let sm = new StubsManager();
+                    sm.updateStubs();
                     
                     pb = new Pyboard(sw)
                     v = new PanelView(pb,sw)
@@ -48,10 +49,16 @@ function activate(context) {
                     })
                     context.subscriptions.push(disposable);
                 
+                    var disposable = vscode.commands.registerCommand('pymakr.initialise', function () {
+                        sm.addToWorkspace();
+                    })
+                    context.subscriptions.push(disposable);
+                    
                     var disposable = vscode.commands.registerCommand('pymakr.connect', function () {
                         terminal.show()
                         pymakr.connect()
                     })
+                    context.subscriptions.push(disposable);
                 
                     var disposable = vscode.commands.registerCommand('pymakr.run', function () {
                         terminal.show()

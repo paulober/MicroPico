@@ -7,6 +7,8 @@ import Utils from './helpers/utils';
 import ApiWrapper from './main/api-wrapper.js';
 import Logger from './helpers/logger.js'
 import Config from './config.js'
+import StubsManager from './stubs/stubs-manager'
+
 var EventEmitter = require('events');
 
 export default class Pymakr extends EventEmitter {
@@ -82,6 +84,11 @@ export default class Pymakr extends EventEmitter {
       this.logger.verbose("Disconnect emitted")
       _this.disconnect()
       _this.setButtonState()
+    })
+
+    this.view.on('initialise',function(){
+      let sm = new StubsManager();
+      sm.addToWorkspace();
     })
 
     this.view.on('close',function(){

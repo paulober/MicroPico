@@ -59,6 +59,10 @@
         "title": "Pico-Go > Disconnect"
       },
       {
+        "command": "pymakr.initialise",
+        "title": "Pico-Go > Configure Project"
+      },
+      {
         "command": "pymakr.upload",
         "title": "Pico-Go > Upload project"
       },
@@ -112,6 +116,11 @@
         "command": "",
         "key": "ctrl+e",
         "when": "terminalFocus"
+      },
+      {
+        "command": "pymakr.initialise",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i"
       },
       {
         "command": "pymakr.connect",
