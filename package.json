@@ -4,6 +4,7 @@
   "description": "Adds a REPL console to the terminal that connects to your Raspberry Pi Pico board. Run single files or synchronize your project files to your board.",
   "version": "1.1.0",
   "publisher": "ChrisWood",
+  "homepage": "http://pico-go.net/",
   "repository": "https://github.com/cpwood/Pico-Go",
   "icon": "images/logo.png",
   "license": "SEE LICENSE IN <LICENSE.md>",
