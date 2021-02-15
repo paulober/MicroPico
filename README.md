@@ -136,3 +136,4 @@ At the time of writing, the main changes from the original Pymakr project are:
 * File hash checks have been removed;
 * A new command has been added to the Command Palette allowing a user to delete all files and directories from their Pico board;
 * Documentation has been comprehensively updated, corrected and pruned.
+*  The setting 'autoconnect_comport_manufacturers' can also contain the VendorId if boards have no manufacturer string (e.g. 1a86 when using the CH34X USB->Serial chip).
