@@ -153,7 +153,8 @@ export default class PySerial {
         var name = port.path;
         if (!!name) {
           if (name.indexOf('Bluetooth') == -1) {
-            var manu = port.manufacturer ? port.manufacturer : 'Unknown manufacturer';
+          	// use vendorId if manufacturer string is null
+            var manu = port.manufacturer ? port.manufacturer : port.vendorId ? port.vendorId : 'Unknown manufacturer';
             var pycom_manu_index = comport_manufacturers.indexOf(manu);
             if (pycom_manu_index > -1) {
               var j;
