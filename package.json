@@ -218,6 +218,7 @@
     "electron": "^6.1.12",
     "electron-rebuild": "^1.11.0",
     "element-resize-detector": "1.1.15",
+    "fs-extra": "^9.1.0",
     "lie": "^3.3.0",
     "lodash": "^4.17.20",
     "nan": "2.14.0",
@@ -245,7 +246,6 @@
     "babel-preset-es2015": "6.24.1",
     "chai": "^4.3.0",
     "eslint": "^6.8.0",
-    "fs-extra": "^9.1.0",
     "mocha": "^6.2.3",
     "prebuild-install": "^5.3.6",
     "vscode": "^1.1.37"

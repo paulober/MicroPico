@@ -43,7 +43,6 @@ export default class StubsManager {
         }
 
         this._addStubs(vsc);
-        this._addPylintRc(workspace);
         this._addExtensions(vsc);
         this._addSettings(vsc);
 
@@ -53,7 +52,7 @@ export default class StubsManager {
     _addStubs(vsc) {
         if (!fs.existsSync(path.join(vsc, "Pico-Stub"))) {
             let configFolder = Utils.getConfigPath();
-            fs.symlinkSync(path.resolve(path.join(configFolder, "Pico-Stub")), path.resolve(path.join(vsc, "Pico-Stub")), "dir");
+            fs.symlinkSync(path.resolve(path.join(configFolder, "Pico-Stub")), path.resolve(path.join(vsc, "Pico-Stub")), "junction");
         }
     }
 
@@ -71,8 +70,11 @@ export default class StubsManager {
         if (!_.includes(extensions.recommendations, "ms-python.python"))
             extensions.recommendations.push("ms-python.python");
 
-        if (!_.includes(extensions.recommendations, "VisualStudioExptTeam.vscodeintellicode"))
-            extensions.recommendations.push("VisualStudioExptTeam.vscodeintellicode");
+        if (!_.includes(extensions.recommendations, "visualstudioexptteam.vscodeintellicode"))
+            extensions.recommendations.push("visualstudioexptteam.vscodeintellicode");
+
+        if (!_.includes(extensions.recommendations, "ms-python.vscode-pylance"))
+            extensions.recommendations.push("ms-python.vscode-pylance");
 
         fs.writeFileSync(path.join(vsc, "extensions.json"), JSON.stringify(extensions, null, 4));
     }
@@ -86,43 +88,23 @@ export default class StubsManager {
 
         settings["python.linting.enabled"] = true;
 
-        if (settings["python.autoComplete.extraPaths"] === undefined) {
-            settings["python.autoComplete.extraPaths"] = [];
+        if (settings["python.analysis.typeshedPaths"] === undefined) {
+            settings["python.analysis.typeshedPaths"] = [];
         }
 
-        if (!_.includes(settings["python.autoComplete.extraPaths"], path.join(".vscode", "Pico-Stub", "frozen")))
-            settings["python.autoComplete.extraPaths"].push(path.join(".vscode", "Pico-Stub", "frozen"));
+        if (!_.includes(settings["python.analysis.typeshedPaths"], path.join(".vscode", "Pico-Stub")))
+            settings["python.analysis.typeshedPaths"].push(path.join(".vscode", "Pico-Stub"));
 
-        if (!_.includes(settings["python.autoComplete.extraPaths"], path.join(".vscode", "Pico-Stub", "stubs")))
-            settings["python.autoComplete.extraPaths"].push(path.join(".vscode", "Pico-Stub", "stubs"));
+        settings["python.languageServer"] = "Pylance";
+        settings["python.analysis.typeCheckingMode"] = "basic";
 
-        settings["python.autoComplete.typeshedPaths"] = settings["python.autoComplete.extraPaths"];
-        settings["python.analysis.typeshedPaths"] = settings["python.autoComplete.extraPaths"];
-        settings["python.linting.pylintEnabled"] = true;
-        settings["python.languageServer"] = "Microsoft";
-
-        if (settings["python.linting.ignorePatterns"] === undefined) {
-            settings["python.linting.ignorePatterns"] = [];
+        if (settings["python.analysis.extraPaths"] === undefined) {
+            settings["python.analysis.extraPaths"] = [];
         }
 
-        if (!_.includes(settings["python.linting.ignorePatterns"], path.join(".vscode", "*.py")))
-            settings["python.linting.ignorePatterns"].push(path.join(".vscode", "*.py"));
-
-        if (!_.includes(settings["python.linting.ignorePatterns"], path.join("**", "*_asm.py")))
-            settings["python.linting.ignorePatterns"].push(path.join("**", "*_asm.py"));
+        if (!_.includes(settings["python.analysis.extraPaths"], path.join(".vscode", "Pico-Stub", "stubs")))
+            settings["python.analysis.extraPaths"].push(path.join(".vscode", "Pico-Stub", "stubs"));
 
         fs.writeFileSync(path.join(vsc, "settings.json"), JSON.stringify(settings, null, 4));
-    }
-
-    _addPylintRc(workspace) {
-        let file = path.join(workspace, ".pylintrc");
-
-        if (fs.existsSync(file))
-            return;
-        
-        let content = fs.readFileSync(path.join(__dirname, "..", "..", "src", "stubs", ".pylintrc"), "utf8");
-        content = content.replace("{{STUBS}}", "\".vscode/Pico-Stub/frozen\", \".vscode/Pico-Stub/stubs\"");
-
-        fs.writeFileSync(file, content);
     }
 }
