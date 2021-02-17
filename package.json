@@ -2,8 +2,9 @@
   "name": "pico-go",
   "displayName": "Pico-Go",
   "description": "Adds a REPL console to the terminal that connects to your Raspberry Pi Pico board. Run single files or synchronize your project files to your board.",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "publisher": "ChrisWood",
+  "homepage": "http://pico-go.net/",
   "repository": "https://github.com/cpwood/Pico-Go",
   "icon": "images/logo.png",
   "license": "SEE LICENSE IN <LICENSE.md>",
@@ -59,6 +60,10 @@
         "title": "Pico-Go > Disconnect"
       },
       {
+        "command": "pymakr.initialise",
+        "title": "Pico-Go > Configure project"
+      },
+      {
         "command": "pymakr.upload",
         "title": "Pico-Go > Upload project"
       },
@@ -99,6 +104,10 @@
         "title": "Pico-Go > Extras > List serial ports"
       },
       {
+        "command": "pymakr.extra.getFullVersion",
+        "title": "Pico-Go > Extra > Get support info"
+      },
+      {
         "command": "pymakr.help",
         "title": "Pico-Go > Help"
       },
@@ -112,6 +121,11 @@
         "command": "",
         "key": "ctrl+e",
         "when": "terminalFocus"
+      },
+      {
+        "command": "pymakr.initialise",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i"
       },
       {
         "command": "pymakr.connect",
@@ -204,6 +218,7 @@
     "electron": "^6.1.12",
     "electron-rebuild": "^1.11.0",
     "element-resize-detector": "1.1.15",
+    "fs-extra": "^9.1.0",
     "lie": "^3.3.0",
     "lodash": "^4.17.20",
     "nan": "2.14.0",
@@ -231,7 +246,6 @@
     "babel-preset-es2015": "6.24.1",
     "chai": "^4.3.0",
     "eslint": "^6.8.0",
-    "fs-extra": "^9.1.0",
     "mocha": "^6.2.3",
     "prebuild-install": "^5.3.6",
     "vscode": "^1.1.37"

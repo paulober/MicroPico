@@ -23,12 +23,13 @@ function activate(context) {
                 if(!nodejs_installed){
                     vscode.window.showErrorMessage("NodeJS not detected on this machine, which is required for Pico-Go to work.")
                 }else{
-                
-
                     PanelView = require('./lib/main/panel-view').default;
                     Pymakr = require('./lib/pymakr').default;
                     Pyboard = require('./lib/board/pyboard').default;
+                    StubsManager = require("./lib/stubs/stubs-manager").default;
 
+                    let sm = new StubsManager();
+                    sm.updateStubs();
                     
                     pb = new Pyboard(sw)
                     v = new PanelView(pb,sw)
@@ -48,10 +49,16 @@ function activate(context) {
                     })
                     context.subscriptions.push(disposable);
                 
+                    var disposable = vscode.commands.registerCommand('pymakr.initialise', function () {
+                        sm.addToWorkspace();
+                    })
+                    context.subscriptions.push(disposable);
+                    
                     var disposable = vscode.commands.registerCommand('pymakr.connect', function () {
                         terminal.show()
                         pymakr.connect()
                     })
+                    context.subscriptions.push(disposable);
                 
                     var disposable = vscode.commands.registerCommand('pymakr.run', function () {
                         terminal.show()
@@ -125,6 +132,12 @@ function activate(context) {
                         pymakr.getVersion()
                     });
                     context.subscriptions.push(disposable);
+
+                    var disposable = vscode.commands.registerCommand('pymakr.extra.getFullVersion', function () {
+                        terminal.show()
+                        pymakr.getFullVersion()
+                    });
+                    context.subscriptions.push(disposable);
                 
                     // var disposable = vscode.commands.registerCommand('pymakr.extra.getWifiMac', function () {
                     //     terminal.show()
@@ -191,9 +204,21 @@ function prepareSerialPort(cb){
         console.log("Error while loading serialport library")
         console.log(e)
 
-        if (e.message.includes("NODE_MODULE_VERSION") || e.message.includes("Could not locate the bindings file")) {
-            vscode.window.showErrorMessage("This version of Pico-Go is incompatible with VSCode " + vscode.version
+        if (e.message.includes("NODE_MODULE_VERSION")) {
+            if (vscode.env.appName.includes("Insider")) {
+                vscode.window.showErrorMessage("This version of Pico-Go is incompatible with VSCode Insiders " + vscode.version
+                + ". Check for an update to the extension. If one isn't available, don't worry, it will be available soon. There's no need to raise a GitHub issue.");
+            }
+            else {
+                vscode.window.showErrorMessage("This version of Pico-Go is incompatible with VSCode " + vscode.version
                 + ". Check for an update to the extension. If one isn't available, raise a bug at https://github.com/cpwood/Pico-Go to get this fixed!");
+            }
+        }
+        else if (e.message.includes(".vscode-server")) {
+            vscode.window.showErrorMessage("Pico-Go is not currently compatible with the 'VSCode Remote - SSH' extension.");
+        }
+        else {
+            vscode.window.showErrorMessage("There was a problem loading the serialport bindings. Pico-Go will not work.");
         }
     }
 }

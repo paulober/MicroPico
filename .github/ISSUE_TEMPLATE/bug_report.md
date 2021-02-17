@@ -4,8 +4,6 @@ about: Create a report to help us improve
 labels: 'bug'
 ---
 
-(Hi! 👋  Thanks for reporting an issue! Please make sure you click the link above to view the issue guidelines, then fill out the blanks below.)
-
 ## What are the steps to reproduce this issue?
 1.
 2.
@@ -24,15 +22,11 @@ labels: 'bug'
 ## Any other comments?
 
 
-## Which versions of software are you using?
+## Support info
 
-**Operating system:**
+Copy this from the `Pico-Go > Extra > Get support info` option in the command palette:
 
-**VSCode version:**
+```
+< Paste Here >
+```
 
-**Pico-Go version:**
-
-
-## Which hardware are you using?
-
-E.g. Raspberry Pi Pico or the name of another RP2040 board.

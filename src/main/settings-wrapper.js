@@ -262,8 +262,10 @@ export default class SettingsWrapper extends EventEmitter {
   readConfigFileSync(path){
     var contents = {}
     try{
-      contents = fs.readFileSync(path,{encoding: 'utf-8'})
-      contents = JSON.parse(contents)
+      if (fs.existsSync(path)) {
+        contents = fs.readFileSync(path,{encoding: 'utf-8'})
+        contents = JSON.parse(contents)
+      }
     }catch(e){
       this.logger.warning("Error processing Config file:" + path )
       if (e instanceof SyntaxError && this.file_changed[path]) {

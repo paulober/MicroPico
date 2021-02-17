@@ -1,9 +1,20 @@
+# documentation
+connection-issues.md
+electron-update.md
+release-steps.md
+setting.md
+
+# instance files
+connection_state.json
+
 # no vscode and tools settings
 .vscode/**
 .gitignore
 .eslintrc.json
+eslintrc.json
 .babelrc
 jsconfig.json
+.github/**
 
 # no transpiler mapping files
 **/*.map
