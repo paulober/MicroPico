@@ -76,126 +76,6 @@ export default class Pymakr extends EventEmitter {
       }
     })
 
-    this.view.on('connect',function(){
-      this.logger.verbose("Connect emitted")
-      _this.connect(null,true)
-      _this.setButtonState()
-    })
-
-    this.view.on('disconnect',function(){
-      this.logger.verbose("Disconnect emitted")
-      _this.disconnect()
-      _this.setButtonState()
-    })
-
-    this.view.on('initialise',function(){
-      let sm = new StubsManager();
-      sm.addToWorkspace();
-    })
-
-    this.view.on('close',function(){
-      this.logger.verbose("Close emitted")
-      _this.disconnect()
-      _this.setButtonState()
-      _this.stopAutoConnect()
-    })
-
-    this.view.on('open',function(){
-      this.logger.verbose("Open emitted")
-      _this.startAutoConnect(function(connected_on_addr){
-        if(!connected_on_addr){
-          _this.logger.verbose("No address from autoconnect, connecting normally")
-          _this.connect()
-          _this.setButtonState()
-        }
-      })
-      _this.setButtonState()
-    })
-
-    this.view.on('run',function(){
-      if(!_this.synchronizing){
-        _this.run()
-      }
-    })
-
-    this.view.on('runselection',function(){
-      if(!_this.synchronizing){
-        _this.runselection()
-      }
-    })
-
-    this.view.on('sync',function(){
-      if(!_this.synchronizing){
-        _this.upload()
-      }else{
-        _this.stopSync(function(){
-          _this.setButtonState()
-        })
-      }
-      _this.setButtonState()
-
-    })
-
-    this.view.on('upload_current_file',function(){
-      if(!_this.synchronizing){
-        _this.uploadFile()
-      }else{
-        _this.stopSync(function(){
-          _this.setButtonState()
-        })
-      }
-      _this.setButtonState()
-    })
-
-    this.view.on('sync_receive',function(){
-      if(!_this.synchronizing){
-        _this.download()
-      }else{
-        _this.stopSync(function(){
-          _this.setButtonState()
-        })
-      }
-      _this.setButtonState()
-    })
-
-    this.view.on('delete_all_files',function(){
-      if(!_this.synchronizing){
-        _this.deleteAllFiles()
-      }else{
-        _this.stopSync(function(){
-          _this.setButtonState()
-        })
-      }
-      _this.setButtonState()
-    })
-
-    this.view.on('global_settings',function(){
-      _this.api.openSettings()
-    })
-
-    this.view.on('project_settings',function(){
-      _this.openProjectSettings()
-    })
-
-    this.view.on('get_version',function(){
-      _this.getVersion()
-    })
-
-    this.view.on('get_full_version',function(){
-      _this.getFullVersion()
-    })
-
-    this.view.on('get_serial',function(){
-      _this.getSerial()
-    })
-
-    this.view.on('get_wifi',function(){
-      _this.getWifiMac()
-    })
-    this.view.on('help',function(){
-      _this.writeHelpText()
-    })
-
     this.view.on('terminal_click',function(){
       _this.logger.verbose("Terminal click emitted")
       if(!_this.pyboard.connected && !_this.pyboard.connecting) {
@@ -619,11 +499,12 @@ export default class Pymakr extends EventEmitter {
       if(code){
         this.runselection(code)
       }else{
-        this.runner.toggle(function(){
-          _this.setButtonState()
-        })
-      }
-      
+        this.pyboard.soft_reset(function() {
+          _this.runner.toggle(function(){
+            _this.setButtonState()
+          });
+        }, 1000);
+      }     
     }
   }
 
@@ -756,6 +637,32 @@ export default class Pymakr extends EventEmitter {
         }
       }
     }
+  }
+
+  resetSoft() {
+    this.pyboard.soft_reset_no_follow(function(err){});
+  }
+
+  resetHard() {
+    let _this = this;
+    let command = "import machine\r\nmachine.reset()\r\n"
+
+    if(!this.pyboard.connected){
+      this.terminal.writeln("Please connect to your device")
+      return
+    }
+
+    this.pyboard.send(command,command,function(err){
+      if(err){
+        _this.logger.error("Failed to send command: "+command)
+      }
+      else {
+        setTimeout(function() {
+          _this.disconnect();
+          _this.connect();
+        }, 1000);
+      }
+    });
   }
 
   stopSync(cb){

@@ -150,7 +150,18 @@ function activate(context) {
                         pymakr.getSerial()
                     });
                     context.subscriptions.push(disposable);
+
+                    var disposable = vscode.commands.registerCommand('pymakr.reset.soft', function () {
+                        terminal.show()
+                        pymakr.resetSoft()
+                    });
+                    context.subscriptions.push(disposable);
                     
+                    var disposable = vscode.commands.registerCommand('pymakr.reset.hard', function () {
+                        terminal.show()
+                        pymakr.resetHard()
+                    });
+                    context.subscriptions.push(disposable);
                 }
             })
         })

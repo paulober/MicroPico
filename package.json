@@ -96,6 +96,14 @@
         "title": "Pico-Go > Global settings"
       },
       {
+        "command": "pymakr.reset.soft",
+        "title": "Pico-Go > Reset > Soft"
+      },
+      {
+        "command": "pymakr.reset.hard",
+        "title": "Pico-Go > Reset > Hard"
+      },
+      {
         "command": "pymakr.extra.getVersion",
         "title": "Pico-Go > Extras > Get firmware version"
       },
@@ -156,6 +164,11 @@
         "command": "pymakr.globalSettings",
         "key": "ctrl+shift+g",
         "mac": "cmd+shift+g"
+      },
+      {
+        "command": "pymakr.reset.soft",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d"
       }
     ],
     "menus": {
@@ -199,6 +212,80 @@
       ]
     }
   },
+  "statusBar":[
+    {
+      "key": "status",
+      "name": "",
+      "command": "pymakr.toggleConnect",
+      "tooltip": "Toggle board connection"
+    },
+    {
+      "key": "run",
+      "name": "$(triangle-right) Run",
+      "command": "pymakr.run",
+      "tooltip": "Run current file"
+    },
+    {
+      "key": "runselection",
+      "name": "$(triangle-right) Run Line",
+      "command": "pymakr.runselection",
+      "tooltip": "Run current line"
+    },
+    {
+      "key": "upload",
+      "name": "$(triangle-up) Upload file",
+      "command": "pymakr.uploadFile",
+      "tooltip": "Upload current file to your board"
+    },
+    {
+      "key": "download",
+      "name": "$(triangle-down) Download",
+      "command": "pymakr.download",
+      "tooltip": "Download project from your board"
+    },
+    {
+      "key": "disconnect",
+      "name": "$(chrome-close) Disconnect",
+      "command": "pymakr.disconnect",
+      "tooltip": "Disconnect"
+    },
+    {
+      "key": "softreset",
+      "name": "$(refresh) Reset",
+      "command": "pymakr.reset.soft",
+      "tooltip": "Restart your board"
+    },
+    {
+      "key": "settings",
+      "name": "$(gear) Settings",
+      "command": "pymakr.globalSettings",
+      "tooltip": "Global Pico-Go settings"
+    },
+    {
+      "key": "projectsettings",
+      "name": "$(gear) Project settings",
+      "command": "pymakr.projectSettings",
+      "tooltip": "Project settings for Pico-Go"
+    },
+    {
+      "key": "getversion",
+      "name": "$(tag) Get version",
+      "command": "pymakr.extra.getVersion",
+      "tooltip": "Get firmware version"
+    },
+    {
+      "key": "listserial",
+      "name": "$(list-unordered) List serialports",
+      "command": "pymakr.extra.getSerial",
+      "tooltip": "List available serialports"
+    },
+    {
+      "key": "listcommands",
+      "name": "$(list-unordered) All commands",
+      "command": "pymakr.listCommands",
+      "tooltip": "List all available Pico-Go commands"
+    }
+  ],
   "scripts": {
     "changelog": "github_changelog_generator -u cpwood -p Pico-Go --future-release v$npm_package_version",
     "copy-native": "node native_modules/copy-native.js",

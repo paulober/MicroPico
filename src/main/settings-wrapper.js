@@ -192,7 +192,7 @@ export default class SettingsWrapper extends EventEmitter {
     this.setProjectConfig()
 
     if(this.statusbar_buttons == undefined || this.statusbar_buttons == ""){
-      this.statusbar_buttons = ['status',"connect","upload","download","run"]
+      this.statusbar_buttons = ['status',"connect","upload","download","run", "softreset"]
     }
     this.statusbar_buttons.push('global_settings')
     this.statusbar_buttons.push('project_settings')
@@ -365,7 +365,6 @@ export default class SettingsWrapper extends EventEmitter {
     if('fast_upload' in this.project_config){
       this.fast_upload = this.project_config.fast_upload
     }
-  
   }
 
   isConfigComplete(settings_object){

@@ -6,6 +6,7 @@ import { StatusBarAlignment, window } from 'vscode';
 import Term from './terminal';
 import ApiWrapper from '../main/api-wrapper.js';
 import Logger from '../helpers/logger.js';
+const pkg = require("../../package.json");
 
 var EventEmitter = require('events');
 
@@ -20,91 +21,22 @@ export default class PanelView extends EventEmitter {
     this.logger = new Logger('PanelView');
 
     this.statusItems = {};
-    this.statusItems['status'] = this.createStatusItem(
-      'status',
-      '',
-      'pymakr.toggleConnect',
-      'Toggle board connection'
-    ); // name is set using setTitle function
-    this.statusItems['run'] = this.createStatusItem(
-      'run',
-      '$(triangle-right) Run',
-      'pymakr.run',
-      'Run current file'
-    );
-    this.statusItems['runselection'] = this.createStatusItem(
-      'runselection',
-      '$(triangle-right) Run Line',
-      'pymakr.runselection',
-      'Run current line'
-    );
-    this.statusItems['upload'] = this.createStatusItem(
-      'upload',
-      '$(triangle-up) Upload',
-      'pymakr.upload',
-      'Upload project to your board'
-    );
-    this.statusItems['upload_file'] = this.createStatusItem(
-      'upload_file',
-      '$(triangle-up) Upload file',
-      'pymakr.uploadFile',
-      'Upload current file to your board'
-    );
-    this.statusItems['download'] = this.createStatusItem(
-      'download',
-      '$(triangle-down) Download',
-      'pymakr.download',
-      'Download project from your board'
-    );
-    this.statusItems['disconnect'] = this.createStatusItem(
-      'disconnect',
-      '$(chrome-close) Disconnect',
-      'pymakr.disconnect',
-      'Disconnect'
-    );
-    this.statusItems['settings'] = this.createStatusItem(
-      'settings',
-      '$(gear) Settings',
-      'pymakr.globalSettings',
-      'Global Pico-Go settings'
-    );
-    this.statusItems['projectsettings'] = this.createStatusItem(
-      'projectsettings',
-      '$(gear) Project settings',
-      'pymakr.projectSettings',
-      'Project settings for Pico-Go'
-    );
-    this.statusItems['getversion'] = this.createStatusItem(
-      'getversion',
-      '$(tag) Get version',
-      'pymakr.extra.getVersion',
-      'Get firmware version'
-    );
-    
-    // this.statusItems['getssid'] = this.createStatusItem(
-    //   'getssid',
-    //   '$(rss) Get WiFi SSID',
-    //   'pymakr.extra.getWifiMac',
-    //   'Get WiFi AP SSID'
-    // );
-    this.statusItems['listserial'] = this.createStatusItem(
-      'listserial',
-      '$(list-unordered) List serialports',
-      'pymakr.extra.getSerial',
-      'List available serialports'
-    );
-    this.statusItems['listcommands'] = this.createStatusItem(
-      'listcommands',
-      '$(list-unordered) All commands',
-      'pymakr.listCommands',
-      'List all available Pico-Go commands'
-    );
+
+    for (let barItem of pkg.statusBar) {
+      this.statusItems[barItem.key] = this.createStatusItem(
+        barItem.key,
+        barItem.name,
+        barItem.command,
+        barItem.tooltip
+      );
+    }
+
     this.setTitle('not connected');
     // terminal logic
     var onTermConnect = function(err) {
       _this.emit('term-connected', err);
     };
-
+    
     _this.setProjectName(_this.api.getProjectPath());
 
     // create terminal
@@ -115,76 +47,19 @@ export default class PanelView extends EventEmitter {
   }
 
   showQuickPick() {
-    var _this = this;
     var items = [];
-    items.push({ label: 'Pico-Go > Connect', description: '', cmd: 'connect' });
-    items.push({
-      label: 'Pico-Go > Disconnect',
-      description: '',
-      cmd: 'disconnect'
-    });
-    items.push({ label: 'Pico-Go > Configure project', description: '', cmd: 'initialise' });
-    items.push({
-      label: 'Pico-Go > Run current file',
-      description: '',
-      cmd: 'run'
-    });
-    items.push({
-      label: 'Pico-Go > Run current line or selection',
-      description: '',
-      cmd: 'runselection'
-    });
-    items.push({
-      label: 'Pico-Go > Upload project',
-      description: '',
-      cmd: 'upload'
-    });
-    items.push({
-      label: 'Pico-Go > Upload current file only',
-      description: '',
-      cmd: 'upload_current_file'
-    });
-    items.push({
-      label: 'Pico-Go > Download project',
-      description: '',
-      cmd: 'download'
-    });
-    items.push({
-      label: 'Pico-Go > Delete all files from board',
-      description: '',
-      cmd: 'delete_all_files'
-    });
-    items.push({
-      label: 'Pico-Go > Project settings',
-      description: '',
-      cmd: 'project_settings'
-    });
-    items.push({
-      label: 'Pico-Go > Global settings',
-      description: '',
-      cmd: 'global_settings'
-    });
-    items.push({
-      label: 'Pico-Go > Extra > Get firmware version',
-      description: '',
-      cmd: 'get_version'
-    });
-    // items.push({
-    //   label: 'Pico-Go > Extra > Get WiFi AP SSID',
-    //   description: '',
-    //   cmd: 'get_wifi'
-    // });
-    items.push({
-      label: 'Pico-Go > Extra > List serial ports',
-      description: '',
-      cmd: 'get_serial'
-    });
-    items.push({
-      label: 'Pico-Go > Extra > Get support info',
-      description: '',
-      cmd: 'get_full_version'
-    });
-    items.push({ label: 'Pico-Go > Help', description: '', cmd: 'help' });
+
+    let quickPickItems = pkg.contributes.commands;
+
+    for(let qpItem of quickPickItems) {
+      if (qpItem.command != "pymakr.listCommands") {
+        items.push({
+          label: qpItem.title,
+          description: "",
+          cmd: qpItem.command
+        });
+      }
+    }
 
     var options = {
       placeHolder: 'Select Action'
@@ -194,7 +69,8 @@ export default class PanelView extends EventEmitter {
       if (typeof selection === 'undefined') {
         return;
       }
-      _this.emit(selection.cmd);
+
+      vscode.commands.executeCommand(selection.cmd);
     });
   }
 
