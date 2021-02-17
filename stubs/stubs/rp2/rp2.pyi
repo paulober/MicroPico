@@ -1,5 +1,5 @@
 from machine import Pin
-from typing import Sequence, Any, Iterable
+from typing import Sequence, Any, Iterable, Union
 
 # make_stub_files: Wed 03 Feb 2021 at 08:12:32
 class Flash:
@@ -214,8 +214,13 @@ def asm_pio(set_init: int = None, out_shiftdir: int = None, autopull: bool = Non
     """
     This decorator lets MicroPython know that the method is written in PIO assembly.
 
-    You should add a comment like ``# pylint: disable=E,W,C,R`` at the beginning of 
-    the method to disable linting since the content isn't written in Python.
+    You should disable linting since the content isn't written in Python.
+
+    In Pylance, move any assembly code into a separate file and ensure the first
+    line of that file reads: ``# type: ignore``.
+
+    In Pylint, add a comment that reads ``# pylint: disable=E,W,C,R`` at the beginning of 
+    the method.
     """
     #   0: return emit.prog
     # ? 0: return emit.prog
