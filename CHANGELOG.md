@@ -1,5 +1,60 @@
 # Changelog
 
+## [v1.1.0](https://github.com/cpwood/Pico-Go/tree/v1.1.0) (2021-02-17)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.0.8...v1.1.0)
+
+### New Web Site
+
+Check out the brand new [Pico-Go web site](http://pico-go.net/)!
+
+### Linting and Autocompletion now even easier!
+
+Linting and autocompletion can now be set up by choosing:
+
+```
+Pico-Go > Configure project
+```
+
+To see this in action, visit the [Quick Start](http://pico-go.net/docs/start/quick/#start-a-new-pico-project) guide.
+
+Stubs for the Pico (firmware 1.14) have been included within the Pico-Go extension. Pylance is used for linting.
+
+### Collecting support info
+Additionally, it's now possible collect version information for support tickets by choosing:
+
+```
+Pico-Go > Extra > Get support info
+```
+
+This will give output similar to the following in the REPL console:
+
+```
+Pico-Go:      1.1.0
+VS Code:      1.53.2
+Electron:     11.2.1
+Modules:      85
+Node:         12.18.3
+Platform:     darwin
+Architecture: x64
+Board:        Raspberry Pi Pico with RP2040
+Firmware:     v1.14 on 2021-02-16 (GNU 10.2.0 MinSizeRel)
+```
+
+### Remote SSH Extension
+
+Finally, I've added an alert to advise that the extension _isn't_ currently compatible with SSH Remoting.
+
+**Implemented enhancements:**
+
+- Provide an easier means of gathering version info for support tickets [\#26](https://github.com/cpwood/Pico-Go/issues/26)
+- Include stubs within Pico-Go [\#24](https://github.com/cpwood/Pico-Go/issues/24)
+- Alert the user if VSCode Remote - SSH extension in use [\#23](https://github.com/cpwood/Pico-Go/issues/23)
+
+**Merged pull requests:**
+
+- Use vendorId if manufacturer string is null to allow auto connect [\#29](https://github.com/cpwood/Pico-Go/pull/29) ([schilken](https://github.com/schilken))
+
 ## [v1.0.8](https://github.com/cpwood/Pico-Go/tree/v1.0.8) (2021-02-11)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.0.7...v1.0.8)
