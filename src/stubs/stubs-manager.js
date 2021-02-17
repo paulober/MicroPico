@@ -47,6 +47,7 @@ export default class StubsManager {
         this._addSettings(vsc);
 
         vscode.window.showInformationMessage("Project configuration complete!");
+        vscode.commands.executeCommand("workbench.extensions.action.showRecommendedExtension");
     }
 
     _addStubs(vsc) {
