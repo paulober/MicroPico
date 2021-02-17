@@ -194,19 +194,19 @@ class StateMachine:
             - *value* should be 1 for active.
         """
 
-    def get(self, buf: bytearray=None, shift: int=0):
+    def get(self, buf: bytes=None, shift: int=0):
         """
         Get data from the ``StateMachine``.
 
-            - *buf* is an optional bytearray
+            - *buf* are optional bytes
             - *shift* is an optional number of places to shift.
         """
     
-    def put(self, value: bytearray, shift: int=0):
+    def put(self, value: Union[bytes, int], shift: int=0):
         """
         Sets data within the ``StateMachine``.
 
-            - *buf* is an optional bytearray
+            - *buf* are optional bytes
             - *shift* is an optional number of places to shift.
         """
 
