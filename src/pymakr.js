@@ -596,7 +596,7 @@ export default class Pymakr extends EventEmitter {
       },
     }
 
-    _this.api.confirm("Delete all files and directories from board","Are you sure you want to delete all files and directories from the board?",options)
+    _this.api.confirm("Delete all files and directories from board","Are you sure you want to delete all files and directories from the board?",options) 
   }
 
   download(){

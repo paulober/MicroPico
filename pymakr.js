@@ -92,7 +92,10 @@ function activate(context) {
 
                     var disposable = vscode.commands.registerCommand('pymakr.deleteAllFiles', function () {
                         terminal.show()
+
+                    setTimeout(function() {
                         pymakr.deleteAllFiles()
+                        }, 500)  
                     })
                     context.subscriptions.push(disposable);
                 

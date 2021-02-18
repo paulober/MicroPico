@@ -429,7 +429,7 @@ export default class Sync {
       if(files){
 
         if(!Array.isArray(files)){
-          files = _this.project_status.prepare_file(files)
+          files = _this.project_status.prepare_file(_this.py_folder, files)
           files = [files]
 
           _this.progress("Uploading single file")

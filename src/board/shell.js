@@ -7,8 +7,7 @@ import Utils from '../helpers/utils.js';
 import Config from '../config.js';
 var crypto = require('crypto');
 var exec = require('child_process').exec
-var fs = require('fs')
-
+var path = require("path");
 
 export default class Shell {
 
@@ -202,17 +201,19 @@ export default class Shell {
     }
 
     var start = function(){
-      // contents = utf8.encode(contents)
-      _this.setSyncRoot(function(){
+      _this.ensureDirectory(name, function() {
+        // contents = utf8.encode(contents)
+        _this.setSyncRoot(function(){
 
-        var get_file_command =
-          "import ubinascii\r\n"+
-          "f = open('"+name+"', 'wb')\r\n"
+          var get_file_command =
+            "import ubinascii\r\n"+
+            "f = open('"+name+"', 'wb')\r\n"
 
-        _this.pyboard.exec_raw_no_reset(get_file_command,function(){
-          _this.utils.doRecursively([contents,0],worker,end)
+          _this.pyboard.exec_raw_no_reset(get_file_command,function(){
+            _this.utils.doRecursively([contents,0],worker,end)
+          })
         })
-      })
+      });
     }
 
     if(compress){
@@ -225,6 +226,43 @@ export default class Shell {
       start()
     }
 
+  }
+
+  ensureDirectory(fullPath, cb) {
+    if (fullPath == undefined || fullPath == null) {
+      return;
+    }
+
+    let parts = fullPath.split(path.sep);
+    let _this = this;
+
+    // Remove filename
+    parts.pop();
+
+    if (parts.length == 0) {
+      cb();
+      return;
+    }
+
+    let command =   "import os\r\n" +
+                    "def ensureFolder(folder):\r\n" +
+                    "   try:\r\n" +
+                    "     os.mkdir(folder)\r\n" +
+                    "   except OSError:\r\n" +
+                    "     ...\r\n" +
+                    "\r\n";
+
+    for(var i=1; i <= parts.length; i++) {
+      command += `ensureFolder("${parts.slice(0, i).join("/")}")\r\n`;
+    }
+
+    this.setSyncRoot(function(){
+      _this.eval(command,function(err,content){
+        _this.resetSyncRoot(function(err, content){
+          cb()
+        })
+      })
+    })
   }
 
   readFile(name,callback){
@@ -331,6 +369,20 @@ export default class Shell {
     var command =
         "import os\r\n" +
         "os.mkdir('"+name+"')\r\n"
+    this.setSyncRoot(function(){
+      _this.eval(command,function(err,content){
+        _this.resetSyncRoot(function(){
+          cb(err,content)
+        })
+      })
+    })
+  }
+
+  changeDir(name,cb){
+    var _this = this
+    var command =
+        "import os\r\n" +
+        "os.chdir('"+name+"')\r\n"
     this.setSyncRoot(function(){
       _this.eval(command,function(err,content){
         _this.resetSyncRoot(function(){

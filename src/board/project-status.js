@@ -138,11 +138,12 @@ export default class ProjectStatus {
     return file_hashes
   }
 
-  prepare_file(file_path){
+  prepare_file(py_folder, file_path){
     var contents = fs.readFileSync(file_path)
     var stats = fs.lstatSync(file_path)
     var hash = crypto.createHash('sha256').update(contents).digest('hex')
-    return [file_path.split('/').slice(-1)[0],"f",hash,stats.size]
+    var filename = file_path.replace(py_folder, "");
+    return [filename,"f",hash,stats.size]
   }
 
   get_changes(){

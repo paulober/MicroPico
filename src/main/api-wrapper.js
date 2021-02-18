@@ -187,6 +187,7 @@ export default class ApiWrapper {
     var option_item = {
         placeHolder: text
     }
+    
     // title is ignored, there's no logical place for it in a quickpick
     window.showQuickPick(items,option_item).then(function(item){
       if(item){
