@@ -175,7 +175,7 @@ export default class Pymakr extends EventEmitter {
       }else if(_this.autoconnect_address && !address){
         _this.autoconnect_address = null
         _this.disconnect()
-        _this.terminal.writeln("Previous board is not available anymore")
+        _this.terminal.writeln("\r\nPrevious board is not available anymore")
         _this.logger.silly("Previous board is not available anymore")
         failed = true
       }else if(!address){
@@ -448,6 +448,8 @@ export default class Pymakr extends EventEmitter {
         }
 
         var ontimeout = function(err){
+          _this.pyboard.connected = false;
+          _this.terminal.enter();
           _this.terminal.writeln("> Connection timed out. Click the \"Pico Disconnected\" button to try again.")
           _this.setButtonState()
         }
@@ -652,12 +654,13 @@ export default class Pymakr extends EventEmitter {
       return
     }
 
-    this.pyboard.send(command,command,function(err){
+    this.pyboard.send(command,function(err){
       if(err){
         _this.logger.error("Failed to send command: "+command)
       }
       else {
         setTimeout(function() {
+          _this.terminal.enter();
           _this.disconnect();
           _this.connect();
         }, 1000);

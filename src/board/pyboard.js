@@ -226,6 +226,16 @@ export default class Pyboard {
     this.connect(cb,onerror,ontimeout,onmessage,true)
   }
 
+  reconnect() {
+    var _this = this;
+
+    _this.disconnect_silent(function() {
+      setTimeout(function() {
+        _this.connect(_this.address, _this.onconnect, _this.onerror, _this.onmessage, _this.type == "socket");
+      }, 1000)
+    });
+  }
+
   connect(address,callback,onerror,ontimeout,onmessage,raw){
     this.connecting = true
     this.onconnect = callback
@@ -312,7 +322,7 @@ export default class Pyboard {
 
   receive(mssg,raw){
     this.logger.silly('Received message: '+mssg)
-    if(!this.wait_for_block && typeof mssg != 'object'){
+    if(!this.wait_for_block && typeof mssg != 'object' && this.onmessage != undefined){
       this.onmessage(mssg)
     }
     var err_in_output = this.getErrorMessage(mssg)

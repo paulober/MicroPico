@@ -1,5 +1,6 @@
 'use babel';
 
+const util = require('util');
 import Logger from '../helpers/logger.js';
 var fs = require('fs');
 
@@ -8,7 +9,6 @@ console.log('Serialport included without issues');
 
 export default class PySerial {
   // 'Microsoft' and 'Microchip Technology, Inc.' manufacturers show on boards with a PIC on windows
-
   constructor(address, params, settings) {
     this.type = 'serial';
     this.params = params;
@@ -16,7 +16,8 @@ export default class PySerial {
     this.ayt_pending = false;
     this.logger = new Logger('PySerial');
     var _this = this;
-    this.stream = new SerialPort(
+    
+    var stream = new SerialPort(
       address,
       {
         baudRate: 115200,
@@ -29,6 +30,15 @@ export default class PySerial {
       }
     );
 
+    this.stream = stream;
+
+    this._stream_open = util.promisify(stream.open).bind(stream);
+    this._stream_set = util.promisify(stream.set).bind(stream);
+    this._stream_write = util.promisify(stream.write).bind(stream);
+    this._stream_drain = util.promisify(stream.drain).bind(stream);
+    this._stream_close = util.promisify(stream.close).bind(stream);
+    this._stream_flush = util.promisify(stream.flush).bind(stream);
+
     this.comport_manufacturers = settings.autoconnect_comport_manufacturers;
 
     var dtr_support = ['darwin'];
@@ -37,8 +47,24 @@ export default class PySerial {
   }
 
   connect(onconnect, onerror, ontimeout) {
+    this.connectAsync(onconnect, onerror, ontimeout)
+      .catch(err => 
+        console.log(err));
+  }
+
+  async connectAsync(onconnect, onerror, ontimeout) {
     var _this = this;
     var error_thrown = false;
+
+    var timeout = setTimeout(function() {
+      if (!error_thrown) {
+        error_thrown = true;
+        ontimeout(new Error('Timeout while connecting'));
+        _this.disconnect();
+      }
+    }, _this.params.timeout);
+
+    console.log('Trying to open stream');
 
     // open errors will be emitted as an error event
     this.stream.on('error', function(err) {
@@ -48,31 +74,28 @@ export default class PySerial {
       }
     });
 
-    var timeout = null;
-    console.log('Trying to open stream');
-    this.stream.open(function() {
-      _this.sendPing(function(err) {
-        if (!err) {
-          clearTimeout(timeout);
-          _this.send('\r\n', function() {
-            onconnect();
-          });
-        }
-      });
-    });
+    await this._stream_open();
+    await this.sendPingAsync();
 
-    timeout = setTimeout(function() {
-      if (!error_thrown) {
-        error_thrown = true;
-        ontimeout(new Error('Timeout while connecting'));
-        _this.disconnect(function() {});
-      }
-    }, _this.params.timeout);
+    // Got this far, so clear the timeout
+    clearTimeout(timeout);
+
+    await this.sendAsync("\r\n");
+    onconnect();
   }
 
-  disconnect(cb) {
-    this.stream.close();
-    cb();
+  disconnect(cb = null) {
+    this.disconnectAsync()
+      .then(() => {
+        if (cb) cb();
+      })
+      .catch(err => {
+        if (cb) cb(err);
+      });
+  }
+
+  async disconnectAsync() {
+    await this._stream_close();
   }
 
   registerListener(cb) {
@@ -86,125 +109,194 @@ export default class PySerial {
   }
 
   send(mssg, cb) {
+    this.sendAsync(mssg, cb != undefined)
+      .then(() => {
+        if (cb) cb();
+      })
+      .catch(err => {
+        if (cb) cb(err);
+      });
+  }
+
+  async sendAsync(mssg, drain = true) {
     var data = Buffer.from(mssg, 'binary');
-    this.send_raw(data, cb);
+    await this.sendRawAsync(data, drain);
   }
 
   send_raw(data, cb) {
-    var _this = this;
-    var r = false;
-    this.stream.write(data, function() {
-      if (cb) {
-        r = true;
-        _this.stream.drain(cb);
-      }
-    });
+    this.sendRawAsync(data, cb != undefined)
+      .then(() => {
+        if (cb) cb();
+      })
+      .catch(err => {
+        if (cb) cb(err);
+      });
+  }
+
+  async sendRawAsync(data, drain = true) {
+    await this._stream_write(data);
+
+    if (drain)
+      await this._stream_drain();
   }
 
   send_cmd(cmd, cb) {
+    this.sendCmdAsync(cmd)
+      .then(() => {
+        if (cb) cb();
+      })
+      .catch(err => {
+        if (cb) cb(err);
+      });
+  }
+
+  async sendCmdAsync(cmd) {
     var mssg = '\x1b\x1b' + cmd;
     var data = Buffer.from(mssg, 'binary');
-    this.send_raw(data, function() {
-      // setTimeout(cb,400)
-      cb();
-    });
+    await this.sendRawAsync(data);
   }
 
   static isSerialPort(name, cb) {
-    if (name && (name.substr(0, 3) == 'COM' || name.indexOf('tty') > -1 || name.indexOf('/dev') > -1)) {
-      cb(true);
-    } else {
-      fs.access(name, fs.constants.F_OK, function(err) {
-        if (err == true) {
-          cb(true);
-        } else {
-          cb(false);
-        }
+    this.isSerialPortAsync(name)
+      .then(result => {
+        cb(result);
       });
+  }
+
+  static async isSerialPortAsync(name) {
+    if (name && (name.substr(0, 3) == 'COM' || name.indexOf('tty') > -1 || name.indexOf('/dev') > -1)) {
+      return true;
+    } 
+    else {
+      try {
+        await PySerial._fs_access(name, fs.constants.F_OK);
+        return true;
+      }
+      catch(err) {
+        return false;
+      }
+
     }
   }
 
   static listPycom(settings, cb) {
+    PySerial.listPycomAsync(settings)
+      .then(r => {
+        cb(r.names, r.manus);
+      });
+  }
+
+  static async listPycomAsync(settings) {
+    // returns { names: [], manus: [] }
     var pycom_list = [];
     var pycom_manus = [];
+
     settings.refresh();
+
     var comport_manufacturers = settings.autoconnect_comport_manufacturers;
-    PySerial.list(settings, function(names, manus) {
-      for (var i = 0; i < names.length; i++) {
-        var name = names[i];
-        var manu = manus[i];
-        if (comport_manufacturers.indexOf(manu) > -1) {
-          pycom_list.push(name);
-          pycom_manus.push(manu);
-        }
+    var listResult = await PySerial.listAsync(settings);
+
+    for (var i = 0; i < listResult.names.length; i++) {
+      var name = listResult.names[i];
+      var manu = listResult.manus[i];
+      if (comport_manufacturers.indexOf(manu) > -1) {
+        pycom_list.push(name);
+        pycom_manus.push(manu);
       }
-      cb(pycom_list, pycom_manus);
-    });
+    }
+
+    return {
+      names: pycom_list,
+      manus: pycom_manus
+    };
   }
 
   static list(settings, cb) {
-    var comport_manufacturers = settings.autoconnect_comport_manufacturers;
-    SerialPort.list().then(ports => {
-      var portnames = [];
-      var other_portnames = [];
-      var manufacturers = [];
-      var other_manufacturers = [];
-      ports.forEach((port, index, array) => {
-        var name = port.path;
-        if (!!name) {
-          if (name.indexOf('Bluetooth') == -1) {
-          	// use vendorId if manufacturer string is null
-            var manu = port.manufacturer ? port.manufacturer : port.vendorId ? port.vendorId : 'Unknown manufacturer';
-            var pycom_manu_index = comport_manufacturers.indexOf(manu);
-            if (pycom_manu_index > -1) {
-              var j;
-              for (j = 0; j < manufacturers.length; j++) {
-                if (pycom_manu_index < comport_manufacturers.indexOf(manufacturers[j])) {
-                  break;
-                }
-              }
-              portnames.splice(j, 0, name);
-              manufacturers.splice(j, 0, manu);
-              // if(PySerial.COMPORT_MANUFACTURERS[0] == manu){
-              //   portnames.unshift(name) // push to top of array
-              //   manufacurers.unshift(manu) // push to top of array
-              // }else{
-              //   portnames.push(name)
-              //   manufacurers.push(manu) // push to top of array
-              // }
-            }
-          } else {
-            other_portnames.push(name);
-            other_manufacturers.push(manu); // push to top of array
-          }
-        }
+    PySerial.listAsync(settings)
+      .then(r => {
+        cb(r.names, r.manus);
       });
-      var result = portnames.concat(other_portnames);
-      var manus = manufacturers.concat(other_manufacturers);
-      cb(result, manus);
+  }
+
+  static async listAsync(settings, cb) {
+    // returns { names: [], manus: [] }
+    var comport_manufacturers = settings.autoconnect_comport_manufacturers;
+    var ports = await SerialPort.list();
+
+    var portnames = [];
+    var other_portnames = [];
+    var manufacturers = [];
+    var other_manufacturers = [];
+
+    ports.forEach((port, index, array) => {
+      var name = port.path;
+      if (!!name) {
+        if (name.indexOf('Bluetooth') == -1) {
+          // use vendorId if manufacturer string is null
+          var manu = port.manufacturer ? port.manufacturer : port.vendorId ? port.vendorId : 'Unknown manufacturer';
+          var pycom_manu_index = comport_manufacturers.indexOf(manu);
+          if (pycom_manu_index > -1) {
+            var j;
+            for (j = 0; j < manufacturers.length; j++) {
+              if (pycom_manu_index < comport_manufacturers.indexOf(manufacturers[j])) {
+                break;
+              }
+            }
+            portnames.splice(j, 0, name);
+            manufacturers.splice(j, 0, manu);
+          }
+        } else {
+          other_portnames.push(name);
+          other_manufacturers.push(manu); // push to top of array
+        }
+      }
     });
+    var names = portnames.concat(other_portnames);
+    var manus = manufacturers.concat(other_manufacturers);
+    
+    return {
+      names: names,
+      manus: manus
+    };
   }
 
   sendPing(cb) {
+    this.sendPingAsync()
+      .then(() => {
+        cb();
+        return true;
+      })
+      .catch(err => {
+        cb(err);
+        return false;
+      });
+  }
+
+  async sendPingAsync() {
+    // void
     if (process.platform == 'win32') {
       // avoid MCU waiting in bootloader on hardware restart by setting both dtr and rts high
-      this.stream.set({ rts: true });
+      await this._stream_set({ rts: true });
     }
     // not implemented
     if (this.dtr_supported) {
-      this.stream.set({ dtr: true }, function(err) {
-        if (cb) {
-          cb(err);
-          return err ? false : true;
-        }
-      });
-    } else {
-      cb();
-      return true;
+      let err = await this._stream_set({ dtr: true});
+      
+      if (err)
+        throw err;
     }
   }
 
   flush(cb) {
-    this.stream.flush(cb);
+    this.flushAsync()
+      .then(r => {
+        cb(r);
+      });
+  }
+
+  async flushAsync() {
+    return await this._stream_flush();
   }
 }
+
+PySerial._fs_access = util.promisify(fs.access);

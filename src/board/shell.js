@@ -413,9 +413,8 @@ export default class Shell {
         "machine.reset()\r\n"
     
     this.pyboard.exec_raw_no_reset(command,function(err){
-      // don't wait for soft reset to be done, because device will be resetting
-      _this.pyboard.soft_reset_no_follow(cb)
-    })
+      _this.pyboard.soft_reset_no_follow(cb);
+    });
   }
 
   safeboot_restart(cb){
