@@ -6,7 +6,7 @@ import Socket from 'net';
 export default class PySocket {
 
   constructor(address, params) {
-    this.type = "socket";
+    this.type = 'socket';
 
     let stream = new Socket();
     this.stream = stream;
@@ -15,7 +15,7 @@ export default class PySocket {
     this.connected = false;
     this.params = params;
     this.address = address;
-    this.receiveBuffer = "";
+    this.receiveBuffer = '';
     this.onErrorCalled = false;
 
     this._stream_destroy = util.promisify(stream.destroy).bind(stream);
@@ -90,7 +90,7 @@ export default class PySocket {
 
   async sendAsync(msg) {
     msg = msg.replace('\x1b', '\x1b\x1b');
-    let data = Buffer.from(msg, "binary");
+    let data = Buffer.from(msg, 'binary');
     await this.sendRawAsync(data);
   }
 
@@ -109,7 +109,7 @@ export default class PySocket {
       await this._stream_write(data);
     }
     else {
-      throw new Error("Not connected");
+      throw new Error('Not connected');
     }
   }
 
@@ -125,7 +125,7 @@ export default class PySocket {
 
   async sendCmdAsync(cmd) {
     let msg = '\x1b\x1b' + cmd;
-    let data = Buffer.from(msg, "binary");
+    let data = Buffer.from(msg, 'binary');
     await this.sendRawAsync(data);
   }
 

@@ -20,6 +20,9 @@
         "no-unused-vars": "warn",
         "constructor-super": "warn",
         "valid-typeof": "warn",
-        "semi":"error"
+        "semi":"error",
+        "no-var":"error",
+        "no-mixed-requires":"error",
+        "quotes": [2, "single", { "avoidEscape": true }]
     }
 }
