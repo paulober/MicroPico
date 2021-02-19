@@ -1,9 +1,9 @@
 'use babel';
 
-import * as util from 'util'
+import * as util from 'util';
 import Logger from '../helpers/logger.js';
 import { promises as fs, constants as fsConstants } from 'fs';
-import SerialPort from 'serialport'
+import SerialPort from 'serialport';
 
 export default class PySerial {
   constructor(address, params, settings) {
@@ -73,7 +73,7 @@ export default class PySerial {
     // Got this far, so clear the timeout
     clearTimeout(timeout);
 
-    await this.sendAsync("\r\n");
+    await this.sendAsync('\r\n');
     onconnect();
   }
 
