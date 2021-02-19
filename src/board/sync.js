@@ -260,7 +260,7 @@ export default class Sync {
       _this.files = _this._getFilesRecursive("") // files on PC
       var new_files = []
       var existing_files = []
-      file_list = _this.utils.ignore_filter(file_list)
+      file_list = _this.utils.ignoreFilter(file_list)
       for(var i=0;i<file_list.length;i++){
         var file = file_list[i]
         if(_this.files.indexOf(file) > -1){

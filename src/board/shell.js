@@ -431,7 +431,7 @@ export default class Shell {
 
     this.eval(command,function(err,content){
       var version = content.replace(command,'').replace(/>>>/g,'').replace(/'/g,"").replace(/\r\n/g,"").trim()
-      var version_int = _this.utils.calculate_int_version(version)
+      var version_int = _this.utils.calculateIntVersion(version)
       if(version_int == 0 || isNaN(version_int)){
         err = new Error("Error retrieving version number")
       }else{

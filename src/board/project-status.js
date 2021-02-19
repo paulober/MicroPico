@@ -102,7 +102,7 @@ export default class ProjectStatus {
     }
     var file_hashes = {}
 
-    files = this.utils.ignore_filter(files)
+    files = this.utils.ignoreFilter(files)
 
     for(var i=0;i<files.length;i++){
       var filename = path + files[i]
