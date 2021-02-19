@@ -172,7 +172,7 @@ export default class PySerial {
     }
   }
 
-  static listPycom(settings, cb) {
+  static listTargetBoards(settings, cb) {
     PySerial.listTargetBoardsAsync(settings)
       .then(r => {
         cb(r.names, r.manus);
@@ -204,7 +204,7 @@ export default class PySerial {
     };
   }
 
-  static list(settings, cb) {
+  static listBoards(settings, cb) {
     PySerial.listBoardsAsync(settings)
       .then(r => {
         cb(r.names, r.manus);

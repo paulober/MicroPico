@@ -236,7 +236,7 @@ export default class Pymakr extends EventEmitter {
 
   getPycomBoard(cb){
     var _this = this
-    PySerial.listPycom(this.settings,function(list,manufacturers){
+    PySerial.listTargetBoards(this.settings,function(list,manufacturers){
       if(list.length > 0){
         var name = list[0]
         var manu = manufacturers[0]
@@ -285,7 +285,7 @@ export default class Pymakr extends EventEmitter {
   getSerial(){
     var _this = this
     this.terminal.enter()
-    PySerial.list(this.settings,function(list,manufacturers){
+    PySerial.listBoards(this.settings,function(list,manufacturers){
       _this.terminal.writeln("Found "+list.length+" serialport"+(list.length == 1 ? "" : "s"))
       for(var i=0;i<list.length;i++){
         var name = list[i]
