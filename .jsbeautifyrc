@@ -1,0 +1,9 @@
+{
+    "js": {
+        "brace_style": "end-expand,preserve-inline",
+        "allowed_file_extensions": ["js", "json", "jshintrc", "jsbeautifyrc"],
+        "indent_size": 2,
+        "preserve_newlines": true,
+        "wrap_line_length": 80
+    }
+}
