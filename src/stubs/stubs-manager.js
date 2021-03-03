@@ -58,7 +58,9 @@ export default class StubsManager {
         await this._addPicoGoSettings(settings);
 
         vscode.window.showInformationMessage('Project configuration complete!');
-        vscode.commands.executeCommand('workbench.extensions.action.showRecommendedExtensions');
+
+        if (this.showRecommendedExtensions())
+            vscode.commands.executeCommand('workbench.extensions.action.showRecommendedExtensions');
     }
 
     async _addStubs(vsc) {
@@ -122,5 +124,17 @@ export default class StubsManager {
 
     async _addPicoGoSettings(settings) {
         await settings.createProjectSettings();
+    }
+
+    showRecommendedExtensions() {
+        if (
+            vscode.extensions.getExtension('ms-python.python') == undefined ||
+            vscode.extensions.getExtension('visualstudioexptteam.vscodeintellicode') == undefined ||
+            vscode.extensions.getExtension('ms-python.vscode-pylance') == undefined
+        ){
+            return true;
+        }
+
+        return false;
     }
 }
