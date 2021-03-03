@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Not for auto-complete or linting problems (see below for these)! Also please consult the Connection Issues link below  before creating a new bug.
+about: Auto-complete, linting or connection problem? See below first!
 labels: 'bug'
 ---
 
