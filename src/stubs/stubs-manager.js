@@ -40,6 +40,12 @@ export default class StubsManager {
         let settings = new SettingsWrapper();
         let api = new ApiWrapper(settings);
         let workspace = api.getProjectPath();
+
+        if (!workspace) {
+            vscode.window.showErrorMessage('You need to open your project folder in VS Code before you can configure it!');
+            return;
+        }
+
         let vsc = path.join(workspace, '.vscode');
 
         if (!await Utils.exists(vsc)) {
