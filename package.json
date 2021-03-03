@@ -130,7 +130,8 @@
       {
         "command": "pymakr.initialise",
         "key": "ctrl+shift+i",
-        "mac": "cmd+shift+i"
+        "mac": "cmd+shift+i",
+        "linux": "ctrl+shift+alt+i"
       },
       {
         "command": "pymakr.connect",
