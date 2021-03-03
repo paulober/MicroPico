@@ -2,12 +2,13 @@
   "name": "pico-go",
   "displayName": "Pico-Go",
   "description": "Adds a REPL console to the terminal that connects to your Raspberry Pi Pico board. Run single files or synchronize your project files to your board.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "ChrisWood",
   "homepage": "http://pico-go.net/",
   "repository": "https://github.com/cpwood/Pico-Go",
   "icon": "images/logo.png",
   "license": "SEE LICENSE IN <LICENSE.md>",
+  "xtype": "module",
   "galleryBanner": {
     "color": "#ffffff",
     "theme": "light"
@@ -88,10 +89,6 @@
         "title": "Pico-Go > Delete all files from board"
       },
       {
-        "command": "pymakr.projectSettings",
-        "title": "Pico-Go > Project settings"
-      },
-      {
         "command": "pymakr.globalSettings",
         "title": "Pico-Go > Global settings"
       },
@@ -104,8 +101,8 @@
         "title": "Pico-Go > Reset > Hard"
       },
       {
-        "command": "pymakr.extra.getVersion",
-        "title": "Pico-Go > Extras > Get firmware version"
+        "command": "pymakr.extra.pins",
+        "title": "Pico-Go > Extras > Show Pico Pin Map"
       },
       {
         "command": "pymakr.extra.getSerial",
@@ -212,7 +209,7 @@
       ]
     }
   },
-  "statusBar":[
+  "statusBar": [
     {
       "key": "status",
       "name": "",
@@ -262,12 +259,6 @@
       "tooltip": "Global Pico-Go settings"
     },
     {
-      "key": "projectsettings",
-      "name": "$(gear) Project settings",
-      "command": "pymakr.projectSettings",
-      "tooltip": "Project settings for Pico-Go"
-    },
-    {
       "key": "getversion",
       "name": "$(tag) Get version",
       "command": "pymakr.extra.getVersion",
@@ -298,6 +289,7 @@
   "dependencies": {
     "binascii": "0.0.2",
     "bindings": "^1.5.0",
+    "child-process-promise": "^2.2.1",
     "commander": "4.0.1",
     "copy-paste": "^1.3.0",
     "crypto-js": "^3.3.0",

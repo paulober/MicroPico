@@ -1,6 +1,7 @@
 'use babel';
 
 import * as util from 'util';
+import { Utils as utils } from '../helpers/utils';
 import TelnetClient from './telnet/telnetcli.js';
 
 let AYT = '\xff\xf6';
@@ -26,25 +27,13 @@ export default class PyTelnet {
     this._stream_write = util.promisify(stream.write).bind(stream);
   }
 
-  sendPing(cb) {
-    this.sendPingAsync()
-    .then(() => {
-      if (cb) cb();
-      return true;
-    })
-    .catch(err => {
-      if (cb) cb(err);
-      return false;
-    });
-  }
-
-  async sendPingAsync() {
+  async sendPing() {
     if (this.aytPending) {
       this.aytPending = false;
       throw new Error('Ping failed');
     }
     this.aytPending = true;
-    await this.sendAsync(AYT);
+    await this.send(AYT);
     return true;
   }
 
@@ -85,14 +74,16 @@ export default class PyTelnet {
   }
 
   disconnect(cb) {
-    this.disconnectAsync()
+    this.disconnect()
       .then(cb);
   }
 
-  async disconnectAsync() {
+  async disconnect() {
     this.stream.close();
     // give the connection time to close.
     // there is no proper callback for this in the telnet lib.
+    
+    await utils.sleep(200);
     await new Promise(resolve => setTimeout(resolve, 200));
   }
 
@@ -108,54 +99,20 @@ export default class PyTelnet {
     });
   }
 
-  send(msg, cb) {
-    this.sendAsync(msg)
-      .then(() => {
-        if (cb) cb();
-      })
-      .catch(err => {
-        if (cb) cb(err);
-      });
-  }
-
-  async sendAsync(msg) {
+  async send(msg) {
     let data = Buffer.from(msg, 'binary');
-    await this.sendRawAsync(data);
+    await this._sendRaw(data);
   }
 
-  send_raw(data, cb) {
-    this.sendRawAsync(data)
-      .then(() => {
-        if (cb) cb();
-      })
-      .catch(err => {
-        if (cb) cb(err);
-      });
-  }
-
-  async sendRawAsync(data) {
+  async _sendRaw(data) {
     await this._stream_write(data);
   }
 
-  send_cmd(cmd, cb) {
-    this.sendCmdAsync(cmd)
-      .then(() => {
-        if (cb) cb();
-      })
-      .catch(err => {
-        if (cb) cb(err);
-      });
-  }
-
-  async sendCmdAsync(cmd) {
+  async sendCmd(cmd) {
     let mssg = '\x1b\x1b' + cmd;
     let data = Buffer.from(mssg, 'binary');
-    await this.sendRawAsync(data);
+    await this._sendRaw(data);
   }
 
-  flush(cb) {
-    cb();
-  }
-
-  async flushAsync() {}
+  async flush() {}
 }

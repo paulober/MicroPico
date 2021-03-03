@@ -39,21 +39,15 @@ export default class PySerial {
     this.dtrSupported = ['darwin'].indexOf(process.platform) > -1;
   }
 
-  connect(onconnect, onerror, ontimeout) {
-    this.connectAsync(onconnect, onerror, ontimeout)
-      .catch(err =>
-        console.log(err));
-  }
-
-  async connectAsync(onconnect, onerror, ontimeout) {
+  async connect(onconnect, onerror, ontimeout) {
     let _this = this;
     let isErrorThrown = false;
 
-    let timeout = setTimeout(function() {
+    let timeout = setTimeout(async function() {
       if (!isErrorThrown) {
         isErrorThrown = true;
         ontimeout(new Error('Timeout while connecting'));
-        _this.disconnect();
+        await _this.disconnect();
       }
     }, _this.params.timeout);
 
@@ -68,27 +62,19 @@ export default class PySerial {
     });
 
     await this._stream_open();
-    await this.sendPingAsync();
+    await this.sendPing();
 
     // Got this far, so clear the timeout
     clearTimeout(timeout);
 
-    await this.sendAsync('\r\n');
+    await this.send('\r\n');
     onconnect();
   }
 
-  disconnect(cb = null) {
-    this.disconnectAsync()
-      .then(() => {
-        if (cb) cb();
-      })
-      .catch(err => {
-        if (cb) cb(err);
-      });
-  }
-
-  async disconnectAsync() {
-    await this._stream_close();
+  async disconnect() {
+    if (this.stream.isOpen) {
+      await this._stream_close();
+    }
   }
 
   registerListener(cb) {
@@ -101,62 +87,16 @@ export default class PySerial {
     });
   }
 
-  send(mssg, cb) {
-    this.sendAsync(mssg, cb != undefined)
-      .then(() => {
-        if (cb) cb();
-      })
-      .catch(err => {
-        if (cb) cb(err);
-      });
-  }
-
-  async sendAsync(mssg, drain = true) {
+  async send(mssg, drain = true) {
     let data = Buffer.from(mssg, 'binary');
-    await this.sendRawAsync(data, drain);
-  }
 
-  send_raw(data, cb) {
-    this.sendRawAsync(data, cb != undefined)
-      .then(() => {
-        if (cb) cb();
-      })
-      .catch(err => {
-        if (cb) cb(err);
-      });
-  }
-
-  async sendRawAsync(data, drain = true) {
     await this._stream_write(data);
 
     if (drain)
       await this._stream_drain();
   }
 
-  send_cmd(cmd, cb) {
-    this.sendCmdAsync(cmd)
-      .then(() => {
-        if (cb) cb();
-      })
-      .catch(err => {
-        if (cb) cb(err);
-      });
-  }
-
-  async sendCmdAsync(cmd) {
-    let msg = '\x1b\x1b' + cmd;
-    let data = Buffer.from(msg, 'binary');
-    await this.sendRawAsync(data);
-  }
-
-  static isSerialPort(name, cb) {
-    this.isSerialPortAsync(name)
-      .then(result => {
-        cb(result);
-      });
-  }
-
-  static async isSerialPortAsync(name) {
+  static async isSerialPort(name) {
     if (name && (name.substr(0, 3) == 'COM' || name.indexOf('tty') > -1 ||
         name.indexOf('/dev') > -1)) {
       return true;
@@ -172,22 +112,15 @@ export default class PySerial {
     }
   }
 
-  static listTargetBoards(settings, cb) {
-    PySerial.listTargetBoardsAsync(settings)
-      .then(r => {
-        cb(r.names, r.manus);
-      });
-  }
-
-  static async listTargetBoardsAsync(settings) {
+  static async listTargetBoards(settings) {
     // returns { names: [], manus: [] }
     let names = [];
     let manus = [];
 
-    settings.refresh();
+    await settings.refresh();
 
     let manufacturers = settings.autoconnect_comport_manufacturers;
-    let listResult = await PySerial.listBoardsAsync(settings);
+    let listResult = await PySerial.listBoards(settings);
 
     for (let i = 0; i < listResult.names.length; i++) {
       let name = listResult.names[i];
@@ -204,14 +137,7 @@ export default class PySerial {
     };
   }
 
-  static listBoards(settings, cb) {
-    PySerial.listBoardsAsync(settings)
-      .then(r => {
-        cb(r.names, r.manus);
-      });
-  }
-
-  static async listBoardsAsync(settings) {
+  static async listBoards(settings) {
     // returns { names: [], manus: [] }
     let targetManufacturers = settings.autoconnect_comport_manufacturers;
     let ports = await SerialPort.list();
@@ -258,19 +184,7 @@ export default class PySerial {
     };
   }
 
-  sendPing(cb) {
-    this.sendPingAsync()
-      .then(() => {
-        cb();
-        return true;
-      })
-      .catch(err => {
-        cb(err);
-        return false;
-      });
-  }
-
-  async sendPingAsync() {
+  async sendPing() {
     if (process.platform == 'win32') {
       // avoid MCU waiting in bootloader on hardware restart by setting both dtr and rts high
       await this._stream_set({
@@ -286,14 +200,7 @@ export default class PySerial {
     }
   }
 
-  flush(cb) {
-    this.flushAsync()
-      .then(r => {
-        cb(r);
-      });
-  }
-
-  async flushAsync() {
+  async flush() {
     return await this._stream_flush();
   }
 }

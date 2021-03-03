@@ -1,61 +1,50 @@
 'use babel';
 
+import utils from '../helpers/utils.js';
+
 export default class Authorize {
 
-  constructor(pyboard){
-    this.pyboard = pyboard
-    this.running = false
-    this.received_login_as = false
+  constructor(board) {
+    this.board = board;
+    this.running = false;
+    this.receivedLoginAs = false;
   }
 
-  run(cb){
-    var pyboard = this.pyboard
-    var _this = this
-    this.running = true
+  async run() {
+    let pyboard = this.board;
+    this.running = true;
 
-    if(pyboard.connection.type == 'telnet') {
-      pyboard.wait_for_blocking("Login as:",function(err){
-        _this.received_login_as = true
-        if(err){
-          _this._stoppedRunning()
-          if(err.message == "timeout"){
-            cb(new Error("Login timed out"))
-          }else{
-            cb(new Error(err.message))
-          }
-        }else{
-          pyboard.send_wait_for_blocking(pyboard.params.username,"Password:",function(err,mssg){
-            if(err && err.message == "timeout"){
-              _this._stoppedRunning()
-              cb(new Error("Username timed out"))
-            }else{
-              // timeout of 50 ms to be sure the board is ready to receive the password
-              // Without this, sometimes connecting via the boards access point fails
-              setTimeout(function(){
-                pyboard.send_wait_for_blocking(pyboard.params.password,'Login succeeded!\r\nType "help()" for more information.\r\n',function(err,mssg){
-                  _this._stoppedRunning()
-                  if(err && err.message == "timeout"){
-                    cb("Password timed out")
-                  }else{
-                    cb(null)
-                  }
+    try {
+      if (pyboard.connection.type == 'telnet') {
+        await new Promise((resolve, reject) => {
+          pyboard.waitForBlocking('Login as:', { resolve: resolve,
+            reject: reject }, 7000);
+        });
 
-                },7000)
-              },50)
-            }
-          },7000)
+        this.receivedLoginAs = true;
 
-        }
-      },7000)
-    }else{
-      cb('Telnet connection, no login needed')
-      this.running = false
+        await pyboard.sendWait(pyboard.params.username, 'Password:', 7000);
+
+        // timeout of 50 ms to be sure the board is ready to receive the password
+        // Without this, sometimes connecting via the boards access point fails
+        await utils.sleep(50);
+
+        await pyboard.sendWait(pyboard.params.password,
+          'Login succeeded!\r\nType "help()" for more information.\r\n',
+          7000);
+      }
+      else {
+        throw 'Not a telnet connection, no login needed';
+      }
+    }
+    catch (err) {
+      this._stoppedRunning();
+      throw err;
     }
   }
 
-  _stoppedRunning(){
-    this.running = false
-    this.received_login_as = false
+  _stoppedRunning() {
+    this.running = false;
+    this.receivedLoginAs = false;
   }
-
 }

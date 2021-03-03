@@ -1,4 +1,5 @@
 'use babel';
+
 import Config from '../config.js';
 
 let LOG_LEVEL = Config.constants().logging_level;

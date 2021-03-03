@@ -10,9 +10,9 @@ If the goal is to evolve Pico-Go and keep it first class, we can't be hampered w
 
 ## Approach
 
-A three-phase approach will be used: the first is all about laying async-await groundwork and the second is about to switching to it.
+A three-phase approach will be used: the first is all about laying async-await groundwork and the second is about switching to it.
 
-It is anticipated that the changes will take up to three months, starting in mid-February 2021.
+> Work is now complete!
 
 ### Phase 1
 
@@ -62,38 +62,37 @@ Additionally, and throughout both phases, the opportunity will be taken to norma
 
 ## Progress
 
+> Work is now complete!
 
 ```
 .
 ├── board
-│   ├── authorize.js
-│   ├── project-status.js
-│   ├── pyboard-error.js
-│   ├── pyboard.js
-│   ├── runner.js
-│   ├── shell-workers.js
-│   ├── shell.js
-│   ├── snippets.js
-│   └── sync.js
+│   ├── authorize.js              [Phase 3 Complete]
+│   ├── project-status.js         [Phase 3 Complete]
+│   ├── pyboard.js                [Phase 3 Complete]
+│   ├── runner.js                 [Phase 3 Complete]
+│   ├── shell.js                  [Phase 3 Complete]
+│   └── sync.js                   [Phase 3 Complete]
 ├── connections
 │   ├── telnet
-│   │   ├── format.js							[No work required]
-│   │   ├── telnetcli.js					[No work required]
-│   │   └── util-telnet.js				[No work required]
-│   ├── pyserial.js								[Phase 1 Complete]
-│   ├── pysocket.js								[Phase 1 Complete]
-│   └── pytelnet.js								[Phase 1 Complete]
+│   │   ├── format.js             [No work required]
+│   │   ├── telnetcli.js          [No work required]
+│   │   └── util-telnet.js        [No work required]
+│   ├── pyserial.js               [Phase 3 Complete]
+│   ├── pysocket.js               [Phase 3 Complete]
+│   └── pytelnet.js               [Phase 3 Complete]
 ├── helpers
-│   ├── logger.js									[Phase 1 Complete]
-│   └── utils.js									[Phase 1 Complete]
+│   ├── logger.js                 [Phase 3 Complete]
+│   └── utils.js                  [Phase 3 Complete]
 ├── main
-│   ├── api-wrapper.js
-│   ├── panel-view.js
-│   ├── settings-wrapper.js
-│   └── terminal.js
+│   ├── api-wrapper.js            [Phase 3 Complete]
+│   ├── panel-view.js             [Phase 3 Complete]
+│   ├── settings-wrapper.js       [Phase 3 Complete]
+│   └── terminal.js               [Phase 3 Complete]
 ├── stubs
-│   └── stubs-manager.js					[Awaiting Phase 3]
-├── config.js
-└── pymakr.js
+│   └── stubs-manager.js          [Phase 3 Complete]
+├── activator.js                  [Phase 3 Complete]
+├── config.js                     [Phase 3 Complete]
+└── pymakr.js                     [Phase 3 Complete]
 
 ```

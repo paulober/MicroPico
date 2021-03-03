@@ -19,51 +19,8 @@ export default class Utils {
 
   constructor(settings) {
     this.settings = settings;
-    this.allowedFileTypes = this.settings.get_allowed_file_types();
+    this.allowedFileTypes = this.settings.getAllowedFileTypes();
     this._rimraf = util.promisify(rimraf).bind(rimraf);
-  }
-
-  // runs a worker recursively until a task is Done
-  // worker should take 2 params: value and a continuation callback
-  // continuation callback takes 2 params: error and the processed value
-  // calls 'end' whenever the processed_value comes back empty/null or when an error is thrown
-  doRecursively(value, worker, end) {
-    let _this = this;
-    try {
-      worker(value, function(err, value_processed, done) {
-        if (err) {
-          end(err);
-        }
-        else if (done) {
-          end(null, value_processed);
-        }
-        else {
-          setTimeout(function() {
-            _this.doRecursively(value_processed, worker, end);
-          }, 20);
-        }
-      });
-    }
-    catch (e) {
-      console.error('Failed to execute worker:');
-      console.error(e);
-      end(e);
-    }
-  }
-
-  doRecursivelyAsync(value, worker) {
-    const promise = new Promise((resolve, reject) => {
-      this.doRecursively(value, worker, (err, val) => {
-        if (err) {
-          reject(err);
-        }
-        else {
-          resolve(val);
-        }
-      });
-    });
-
-    return promise;
   }
 
   // vscode
@@ -106,61 +63,32 @@ export default class Utils {
     return text + (number == 1 ? '' : 's');
   }
 
-  parse_error(content) {
-    let errIndex = content.indexOf('OSError:');
-    if (errIndex > -1) {
-      return Error(content.slice(errIndex, content.length - 2));
-    }
-    else {
-      return null;
-    }
-  }
-
-  ensureFileDirectoryExistence(filePath) {
+  async ensureFileDirectoryExistence(filePath) {
     let dirname = path.dirname(filePath);
-    return this.ensureDirectoryExistence(dirname);
+    return await this.ensureDirectoryExistence(dirname);
   }
 
-  async ensureFileDirectoryExistenceAsync(filePath) {
-    let dirname = path.dirname(filePath);
-    return await this.ensureDirectoryExistenceAsync(dirname);
-  }
-
-  ensureDirectoryExistence(dirname) {
-    if (!fs.existsSync(dirname)) {
-      this.mkDirRecursive(dirname);
+  async ensureDirectoryExistence(dirname) {
+    if (!await Utils.exists(dirname)) {
+      await this.mkDirRecursive(dirname);
     }
     return true;
   }
 
-  async ensureDirectoryExistenceAsync(dirname) {
-    if (!await this.exists(dirname)) {
-      await this.mkDirRecursiveAsync(dirname);
-    }
-    return true;
-  }
-
-  mkDirRecursive(directory) {
-    let parent = path.join(directory, '..');
-    if (parent !== path.join(path.sep) && !fs.existsSync(parent)) this
-      .mkDirRecursive(parent);
-    if (!fs.existsSync(directory)) fs.mkdirSync(directory);
-  }
-
-  async mkDirRecursiveAsync(directory) {
+  async mkDirRecursive(directory) {
     if (!path.isAbsolute(directory)) 
       return;
 
     let parent = path.join(directory, '..');
 
-    if (parent !== path.join(path.sep) && !await this.exists(parent)) 
-      await this.mkDirRecursiveAsync(parent);
+    if (parent !== path.join(path.sep) && !await Utils.exists(parent)) 
+      await this.mkDirRecursive(parent);
 
-    if (!await this.exists(directory)) 
+    if (!await Utils.exists(directory)) 
       await fsp.mkdir(directory);
   }
 
-  async exists(path) {
+  static async exists(path) {
     try {
       await fsp.access(path, fs.constants.F_OK);
       return true;
@@ -189,48 +117,8 @@ export default class Utils {
     return newList;
   }
 
-  rmdir(path, cb) {
-    this.rmdirAsync(path)
-    .then(() => {
-      if (cb) cb();
-    })
-    .catch(err => {
-      if (cb) cb(err);
-    });
-  }
-
-  async rmdirAsync(path) {
+  async rmdir(path) {
     await this._rimraf(path);
-  }
-
-  calculateIntVersion(version) {
-    let knownTypes = ['a', 'b', 'rc', 'r'];
-    if (!version) {
-      return 0;
-    }
-    let versionParts = version.split('.');
-    let dots = versionParts.length - 1;
-    if (dots == 2) {
-      versionParts.push('0');
-    }
-
-    for (let i = 0; i < knownTypes.length; i++) {
-      let t = knownTypes[i];
-      if (versionParts[3] && versionParts[3].indexOf(t) > -1) {
-        versionParts[3] = versionParts[3].replace(t, '');
-      }
-    }
-
-    let versionString = '';
-
-    for (let i = 0; i < versionParts.length; i++) {
-      let val = versionParts[i];
-      if (parseInt(val) < 10) {
-        versionParts[i] = '0' + val;
-      }
-      versionString += versionParts[i];
-    }
-    return parseInt(versionString);
   }
 
   // vscode
@@ -256,40 +144,7 @@ export default class Utils {
     return path.normalize(p).replace(/\\/g, '/');
   }
 
-  _wasFileNotExisting(exception) {
-    let error_list = ['ENOENT', 'ENODEV', 'EINVAL', 'OSError:'];
-    let stre = exception.message;
-    for (let i = 0; i < error_list.length; i++) {
-      if (stre.indexOf(error_list[i]) > -1) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  int16(int) {
-    let b = Buffer.alloc(2);
-    b.writeUInt16BE(int);
-    return b;
-  }
-
-  int32(int) {
-    let b = Buffer.aloc(4);
-    b.writeUInt32BE(int);
-    return b;
-  }
-
-  isIP(address) {
-    let r = RegExp(
-      '^http[s]?:\/\/((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])'
-    );
-    return r.test(address);
-  }
-
-  isIP(address) {
-    let r = RegExp(
-      '^http[s]?:\/\/((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])'
-    );
-    return r.test(address);
+  static async sleep(timeout) {
+    await new Promise(resolve => setTimeout(resolve, timeout));
   }
 }
