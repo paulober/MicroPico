@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Not for auto-complete or linting problems (see below for these)! Also please consult the Connection Issues link below  before creating a new bug.
 labels: 'bug'
 ---
 
