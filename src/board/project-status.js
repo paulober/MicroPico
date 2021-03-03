@@ -137,11 +137,11 @@ export default class ProjectStatus {
     return fileHashes;
   }
 
-  async prepareFile(py_folder, file_path) {
-    let contents = await fsp.readFile(file_path);
-    let stats = await fsp.lstat(file_path);
+  async prepareFile(pyFolder, filePath) {
+    let contents = await fsp.readFile(filePath);
+    let stats = await fsp.lstat(filePath);
     let hash = crypto.createHash('sha256').update(contents).digest('hex');
-    let filename = file_path.replace(py_folder, '');
+    let filename = filePath.replace(pyFolder, '').replace('\\', '/');
     return [filename, 'f', hash, stats.size];
   }
 

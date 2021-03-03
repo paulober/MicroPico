@@ -445,6 +445,7 @@ export default class Pymakr extends EventEmitter {
       showMessage = true;
 
     if (this.board.isConnecting()) {
+      this.terminal.enter();
       this.terminal.writeln('Connection attempt cancelled');
     }
 

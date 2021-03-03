@@ -163,10 +163,10 @@ export default class FileWriter {
   _getSyncRootPath() {
     // Remove first and last slash
     let dir = this.settings.sync_folder.replace(/^\/|\/$/g, '');
-    let root = `${this.api.getProjectPath()}/`;
+    let root = `${this.api.getProjectPath()}${path.sep}`;
 
     if (dir) {
-      root = `${root}/`;
+      root = `${root}${path.sep}`;
     }
 
     return root;

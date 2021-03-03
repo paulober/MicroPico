@@ -9,6 +9,7 @@ import Utils from '../helpers/utils.js';
 import FileWriter from './file-writer.js';
 import { promises as fsp } from 'fs';
 import _ from 'lodash';
+import path from 'path';
 
 export default class Sync {
 
@@ -76,8 +77,9 @@ export default class Sync {
     this.isRunning = false;
     let mssg = this.methodName + ' done';
     if (err) {
+      let errMsg = err.message ? err.message : err;
       mssg = this.methodName + ' failed.';
-      mssg += err.message && err.message != '' ? ': ' + err.message : '';
+      mssg += errMsg;
       if (this.inRawMode) {
         mssg += ' Please reboot your device manually.';
       }
@@ -127,9 +129,9 @@ export default class Sync {
 
       let dir = this.settings.sync_folder.replace(/^\/|\/$/g,
         ''); // remove first and last slash
-      this.pyFolder = this.projectPath + '/';
+      this.pyFolder = this.projectPath + path.sep;
       if (dir) {
-        this.pyFolder += dir + '/';
+        this.pyFolder += dir + path.sep;
       }
 
       let syncFolder = this.settings.sync_folder;
@@ -173,7 +175,7 @@ export default class Sync {
     this.terminal.enter();
 
     if (files) {
-      let filename = files.split('/').pop();
+      let filename = files.split(path.sep).pop();
       this.terminal.write(
         `${this.methodAction} current file (${filename})...\r\n`);
     }
@@ -568,7 +570,7 @@ export default class Sync {
 
     this.logger.warning('Error thrown during sync procedure');
 
-    await this.syncDone(mssg);
+    await this._syncDone(mssg);
 
     let promise = this.board.stopWaitingForSilent();
 
