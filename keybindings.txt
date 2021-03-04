@@ -1,0 +1,3 @@
+Mac:        https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf
+Linux:      https://code.visualstudio.com/shortcuts/keyboard-shortcuts-linux.pdf
+Windows:    https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf

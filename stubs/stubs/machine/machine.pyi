@@ -1337,6 +1337,19 @@ class UART:
    bits wide.
    """
 
+   def __init__(self, id: int, baudrate: int=9600, bits: int=8, parity: int=None, stop: int=1, tx: Pin=None, rx: Pin=None):
+    """
+    Construct a UART object of the given id and initialise the UART 
+    bus with the given parameters:
+
+    - *baudrate* is the clock rate.
+    - *bits* is the number of bits per character, 7, 8 or 9.
+    - *parity* is the parity, ``None``, 0 (even) or 1 (odd).
+    - *stop* is the number of stop bits, 1 or 2.
+    - *tx* specifies the TX pin to use.
+    - *rx* specifies the RX pin to use.
+   """
+
    def any(self) -> int:
       """
       Returns the number of bytes waiting (may be 0).

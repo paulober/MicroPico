@@ -3,112 +3,113 @@
 import ApiWrapper from '../main/api-wrapper.js';
 
 export default class Runner {
-  constructor(pyboard,terminal,pymakr) {
-    this.pyboard = pyboard
-    this.terminal = terminal
-    this.pymakr = pymakr
-    this.api = new ApiWrapper()
-    this.busy = false
+  constructor(pyboard, terminal, pymakr) {
+    this.pyboard = pyboard;
+    this.terminal = terminal;
+    this.pymakr = pymakr;
+    this.api = new ApiWrapper();
+    this.busy = false;
   }
 
-  toggle(cb){
-    if(this.busy){
-      this.stop(cb)
-    }else{
-      this.start(cb)
+  async toggle() {
+    if (this.busy) {
+      await this.stop();
+    }
+    else {
+      await this.start();
     }
   }
 
-  start(cb){
-    var _this = this
-    this._getCurrentFile(function(file,filename){
-      _this.terminal.writeln("Running "+filename)
-      _this.busy = true
-      _this.pymakr.view.setButtonState()
-      _this.pyboard.run(file,function(){
-        _this.busy = false
-        if(cb) cb()
-      })
-    },function onerror(err){
-      _this.terminal.writeln_and_prompt(err)
-    })
+  async start() {
+    let currentFile = this._getCurrentFile();
+
+    if (currentFile == undefined)
+      return;
+
+    this.terminal.writeln('Running ' + currentFile.filename);
+    this.busy = true;
+    this.pymakr.view.setButtonState(this.busy);
+
+    await this.pyboard.run(currentFile.content);
+    this.busy = false;
   }
 
-  selection(codeblock,cb,hideMessage=false){
-    var _this = this
-    codeblock = this.__trimcodeblock(codeblock)
+  async selection(codeblock, hideMessage = false) {
+    codeblock = this._trimcodeblock(codeblock);
     if (!hideMessage)
-      _this.terminal.writeln("Running selected lines")
-    _this.busy = true
-    _this.pyboard.run(codeblock,function(){
-      _this.busy = false
-      if(cb) cb()
-    },function onerror(err){
-      _this.terminal.writeln_and_prompt(err)
-    })
-  }
+      this.terminal.writeln('Running selected lines');
+    this.busy = true;
 
-  stop(cb){
-    var _this = this
-    if(this.busy){
-      this.pyboard.stop_running_programs_nofollow(function(){
-        _this.pyboard.flush(function(){
-          _this.pyboard.enter_friendly_repl(function(){
-          })
-          _this.busy = false
-          if(cb) cb()
-        })
-      })
+    try {
+      await this.pyboard.run(codeblock);
+      this.busy = false;
+    }
+    catch(err) {
+      this.terminal.writelnAndPrompt(err);
     }
   }
 
-  _getCurrentFile(cb,onerror){
-    this.api.getOpenFile(function(file,name){
-      if(!file){
-        onerror("No file open to run")
-        return
-      }
+  async stop() {
+    if (this.busy) {
+      await this.pyboard.stopRunningProgramsNoFollow();
+      await this.pyboard.flush();
+      await this.pyboard.enterFriendlyRepl();
+      this.terminal.enter();
+      this.terminal.write('>>> ');
+      this.busy = false;
+    }
+  }
 
-      var filename = "untitled file"
-      if(name){
-        filename = name.split('/').pop(-1)
-        var filetype = filename.split('.').pop(-1)
-        if(filetype.toLowerCase() != 'py'){
-          onerror("Can't run "+filetype+" files, please run only python files")
-          return
-        }
+  _getCurrentFile() {
+    let file = this.api.getOpenFile();
+
+    if (!file.content) {
+      return;
+    }
+
+    let filename = 'untitled file';
+    if (file.path) {
+      filename = file.path.split('/').pop(-1);
+      let filetype = filename.split('.').pop(-1);
+      if (filetype.toLowerCase() != 'py') {
+        return;
       }
-      cb(file,filename)
-    },onerror)
+    }
+
+    return {
+      content: file.content,
+      filename: filename
+    };
   }
 
   //remove excessive identation
-  __trimcodeblock(codeblock){
+  _trimcodeblock(codeblock) {
     // regex to split both win and unix style
-    var lines = codeblock.match(/[^\n]+(?:\r?\n|$)/g);
+    let lines = codeblock.match(/[^\n]+(?:\r?\n|$)/g);
     // count leading spaces in line1 ( Only spaces, not TAB)
-    var count = 0
-    if(lines){
-      while (lines[0].startsWith(' ',count ) ){
-        count ++;
+    let count = 0;
+    if (lines) {
+      while (lines[0].startsWith(' ', count)) {
+        count++;
       }
 
       // remove from all lines
-      if (count > 0){
-        var prefix = " ".repeat(count)
+      if (count > 0) {
+        let prefix = ' '.repeat(count);
         for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith(prefix) ) {
+          if (lines[i].startsWith(prefix)) {
             lines[i] = lines[i].slice(count);
-          } else {
-              // funky identation or selection; just trim spaces and add warning
-              lines[i] = lines[i].trim() + " # <- IndentationError";
+          }
+          else {
+            // funky identation or selection; just trim spaces and add warning
+            lines[i] = lines[i].trim() + ' # <- IndentationError';
           }
         }
       }
       // glue the lines back together
-      return( lines.join(''))
+      return (lines.join(''));
     }
-    return codeblock
+    return codeblock;
   }
 
 }

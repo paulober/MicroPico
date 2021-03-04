@@ -2,12 +2,13 @@
   "name": "pico-go",
   "displayName": "Pico-Go",
   "description": "Adds a REPL console to the terminal that connects to your Raspberry Pi Pico board. Run single files or synchronize your project files to your board.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "ChrisWood",
   "homepage": "http://pico-go.net/",
   "repository": "https://github.com/cpwood/Pico-Go",
   "icon": "images/logo.png",
   "license": "SEE LICENSE IN <LICENSE.md>",
+  "xtype": "module",
   "galleryBanner": {
     "color": "#ffffff",
     "theme": "light"
@@ -88,16 +89,20 @@
         "title": "Pico-Go > Delete all files from board"
       },
       {
-        "command": "pymakr.projectSettings",
-        "title": "Pico-Go > Project settings"
-      },
-      {
         "command": "pymakr.globalSettings",
         "title": "Pico-Go > Global settings"
       },
       {
-        "command": "pymakr.extra.getVersion",
-        "title": "Pico-Go > Extras > Get firmware version"
+        "command": "pymakr.reset.soft",
+        "title": "Pico-Go > Reset > Soft"
+      },
+      {
+        "command": "pymakr.reset.hard",
+        "title": "Pico-Go > Reset > Hard"
+      },
+      {
+        "command": "pymakr.extra.pins",
+        "title": "Pico-Go > Extras > Show Pico Pin Map"
       },
       {
         "command": "pymakr.extra.getSerial",
@@ -125,7 +130,8 @@
       {
         "command": "pymakr.initialise",
         "key": "ctrl+shift+i",
-        "mac": "cmd+shift+i"
+        "mac": "cmd+shift+i",
+        "linux": "ctrl+shift+alt+i"
       },
       {
         "command": "pymakr.connect",
@@ -156,6 +162,11 @@
         "command": "pymakr.globalSettings",
         "key": "ctrl+shift+g",
         "mac": "cmd+shift+g"
+      },
+      {
+        "command": "pymakr.reset.soft",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d"
       }
     ],
     "menus": {
@@ -199,6 +210,74 @@
       ]
     }
   },
+  "statusBar": [
+    {
+      "key": "status",
+      "name": "",
+      "command": "pymakr.toggleConnect",
+      "tooltip": "Toggle board connection"
+    },
+    {
+      "key": "run",
+      "name": "$(triangle-right) Run",
+      "command": "pymakr.run",
+      "tooltip": "Run current file"
+    },
+    {
+      "key": "runselection",
+      "name": "$(triangle-right) Run Line",
+      "command": "pymakr.runselection",
+      "tooltip": "Run current line"
+    },
+    {
+      "key": "upload",
+      "name": "$(triangle-up) Upload file",
+      "command": "pymakr.uploadFile",
+      "tooltip": "Upload current file to your board"
+    },
+    {
+      "key": "download",
+      "name": "$(triangle-down) Download",
+      "command": "pymakr.download",
+      "tooltip": "Download project from your board"
+    },
+    {
+      "key": "disconnect",
+      "name": "$(chrome-close) Disconnect",
+      "command": "pymakr.disconnect",
+      "tooltip": "Disconnect"
+    },
+    {
+      "key": "softreset",
+      "name": "$(refresh) Reset",
+      "command": "pymakr.reset.soft",
+      "tooltip": "Restart your board"
+    },
+    {
+      "key": "settings",
+      "name": "$(gear) Settings",
+      "command": "pymakr.globalSettings",
+      "tooltip": "Global Pico-Go settings"
+    },
+    {
+      "key": "getversion",
+      "name": "$(tag) Get version",
+      "command": "pymakr.extra.getVersion",
+      "tooltip": "Get firmware version"
+    },
+    {
+      "key": "listserial",
+      "name": "$(list-unordered) List serialports",
+      "command": "pymakr.extra.getSerial",
+      "tooltip": "List available serialports"
+    },
+    {
+      "key": "listcommands",
+      "name": "$(list-unordered) All commands",
+      "command": "pymakr.listCommands",
+      "tooltip": "List all available Pico-Go commands"
+    }
+  ],
   "scripts": {
     "changelog": "github_changelog_generator -u cpwood -p Pico-Go --future-release v$npm_package_version",
     "copy-native": "node native_modules/copy-native.js",
@@ -211,6 +290,7 @@
   "dependencies": {
     "binascii": "0.0.2",
     "bindings": "^1.5.0",
+    "child-process-promise": "^2.2.1",
     "commander": "4.0.1",
     "copy-paste": "^1.3.0",
     "crypto-js": "^3.3.0",

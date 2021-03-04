@@ -1,192 +1,194 @@
 'use babel';
-var fs = require('fs');
-var crypto = require('crypto');
-import Logger from '../helpers/logger.js'
+
+import * as fs from 'fs';
+import { promises as fsp } from 'fs';
+import * as crypto from 'crypto';
+import Logger from '../helpers/logger.js';
 import Utils from '../helpers/utils.js';
 
 export default class ProjectStatus {
 
-  constructor(shell,settings,local_folder){
-    this.shell = shell
-    this.logger = new Logger('ProjectStatus')
-    this.utils = new Utils(settings)
-    this.local_folder = local_folder
-    this.settings = settings
-    this.allowed_file_types = this.settings.get_allowed_file_types()
-    this.content = []
-    this.board_file_hashes = {}
-    this.local_file_hashes = this.__get_local_files_hashed()
-    this.changed = false
+  constructor(shell, settings, local_folder) {
+    this.shell = shell;
+    this.logger = new Logger('ProjectStatus');
+    this.utils = new Utils(settings);
+    this.localFolder = local_folder;
+    this.settings = settings;
+    this.allowedFileTypes = this.settings.getAllowedFileTypes();
+    this.content = [];
+    this.boardFileHashes = {};
+    this.changed = false;
+
+    let _this = this;
+    this._getLocalFilesHashed()
+      .then(hashes => _this.localFileHashes = hashes);
   }
 
-  read(cb){
-    var _this = this
-    this.shell.readFile('project.pymakr',function(err,content_buffs,content_str){
-      if(err){
-        cb(err)
-        return
-      }
+  async read() {
+    let result = await this.shell.readFile('project.pico-go');
 
-      var json_content = []
-      if(content_str != ""){
-        try{
-          json_content = JSON.parse(content_str)
-          err = false
-        } catch(e){
-          _this.logger.error(e)
-          err = true
+    let json = [];
+
+    if (result.str != '') {
+      json = JSON.parse(result.str);
+    }
+    this.content = json;
+    this._processFile();
+
+    return json;
+  }
+
+  async write() {
+    try {
+      if (this.changed) {
+        this.logger.info('Writing project status file to board');
+        let boardHashArray = Object.values(this.boardFileHashes);
+        let projectFileContent = Buffer.from(JSON.stringify(
+          boardHashArray));
+        await this.shell.writeFile('project.pico-go', null,
+          projectFileContent);
+      }
+      else {
+        this.logger.info('No changes to file, not writing');
+      }
+    }
+    catch (err) {
+      this.changed = false;
+      throw err;
+    }
+  }
+
+  update(name) {
+    this.changed = true;
+    if (!this.localFileHashes[name]) {
+      delete this.boardFileHashes[name];
+    }
+    else {
+      this.boardFileHashes[name] = this.localFileHashes[name];
+    }
+  }
+
+  _processFile() {
+    for (let i = 0; i < this.content.length; i++) {
+      let h = this.content[i];
+      this.boardFileHashes[h[0]] = h;
+    }
+  }
+
+  _get_local_files(dir) {
+    return fs.readdirSync(dir);
+  }
+
+  async _getLocalFiles(dir) {
+    return await fsp.readdir(dir);
+  }
+
+  async _getLocalFilesHashed(files, path) {
+    if (!files) {
+      try {
+        files = await this._getLocalFiles(this.localFolder);
+      }
+      catch (e) {
+        this.logger.error("Couldn't locate file folder");
+        return false;
+      }
+    }
+    if (!path) {
+      path = '';
+    }
+    let fileHashes = {};
+
+    files = this.utils.ignoreFilter(files);
+
+    for (let i = 0; i < files.length; i++) {
+      let filename = path + files[i];
+      if (filename.length > 0 && filename.substring(0, 1) != '.') {
+        let filePath = this.localFolder + filename;
+        let stats = await fsp.lstat(filePath);
+        let isDir = stats.isDirectory();
+        if (stats.isSymbolicLink()) {
+          isDir = filename.indexOf('.') == -1;
         }
-      }
-      _this.content = json_content
-      _this.__process_file()
-      cb(err,json_content)
-    })
-  }
-
-  write_all(cb){
-    this.board_file_hashes = this.local_file_hashes
-    this.write(cb)
-  }
-
-  write(cb){
-    var _this = this
-    if(this.changed){
-      this.logger.info('Writing project status file to board')
-      var board_hash_array = Object.values(this.board_file_hashes)
-      var project_file_content = Buffer.from(JSON.stringify(board_hash_array))
-      this.shell.writeFile('project.pymakr',null,project_file_content,true,false,function(err){
-        _this.changed = false
-        cb(err)
-      },10) // last param prevents any retries
-    }else{
-      this.logger.info('No changes to file, not writing')
-      cb()
-    }
-  }
-
-  update(name){
-    this.changed = true
-    if(!this.local_file_hashes[name]){
-      delete this.board_file_hashes[name]
-    }else{
-      this.board_file_hashes[name] = this.local_file_hashes[name]
-    }
-  }
-
-  remove(filename){
-    delete this.board_file_hashes[filename]
-  }
-
-  __process_file(){
-    for(var i=0;i<this.content.length;i++){
-      var h = this.content[i]
-      this.board_file_hashes[h[0]] = h
-    }
-  }
-
-  __get_local_files(dir){
-    return fs.readdirSync(dir)
-  }
-
-  __get_local_files_hashed(files,path){
-    if(!files){
-      try{
-        files = this.__get_local_files(this.local_folder)
-      }catch(e){
-        this.logger.error("Couldn't locate file folder")
-        return false
-      }
-    }
-    if(!path){
-      path = ""
-    }
-    var file_hashes = {}
-
-    files = this.utils.ignore_filter(files)
-
-    for(var i=0;i<files.length;i++){
-      var filename = path + files[i]
-      if(filename.length > 0 && filename.substring(0,1) != "."){
-        var file_path = this.local_folder + filename
-        var stats = fs.lstatSync(file_path)
-        var is_dir = stats.isDirectory()
-        if(stats.isSymbolicLink()){
-          is_dir = filename.indexOf('.') == -1
-        }
-        if(is_dir){
+        if (isDir) {
           try {
-            var files_from_folder = this.__get_local_files(file_path)
-            if(files_from_folder.length > 0){
-              var hash = crypto.createHash('sha256').update(filename).digest('hex')
-              file_hashes[filename] = [filename,"d",hash]
-              var hashes_in_folder = this.__get_local_files_hashed(files_from_folder,filename+"/")
-              file_hashes = Object.assign(file_hashes,hashes_in_folder)
+            let filesFromFolder = await this._getLocalFiles(filePath);
+            if (filesFromFolder.length > 0) {
+              let hash = crypto.createHash('sha256').update(filename).digest(
+                'hex');
+              fileHashes[filename] = [filename, 'd', hash];
+              let hashes_in_folder = await this._getLocalFilesHashed(
+                filesFromFolder, filename + '/');
+              fileHashes = Object.assign(fileHashes, hashes_in_folder);
             }
-          }catch(e){
-           this.logger.info("Unable to read from dir "+file_path)
-           console.log(e) 
           }
-        }else{
-          this.total_file_size += stats.size
-          this.total_number_of_files += 1
-          var contents = fs.readFileSync(file_path)
-          var hash = crypto.createHash('sha256').update(contents).digest('hex')
-          file_hashes[filename] = [filename,"f",hash,stats.size]
+          catch (e) {
+            this.logger.info('Unable to read from dir ' + filePath);
+            console.log(e);
+          }
+        }
+        else {
+          let contents = await fsp.readFile(filePath);
+          let hash = crypto.createHash('sha256').update(contents).digest(
+            'hex');
+          fileHashes[filename] = [filename, 'f', hash, stats.size];
         }
       }
     }
-    return file_hashes
+    return fileHashes;
   }
 
-  prepare_file(file_path){
-    var contents = fs.readFileSync(file_path)
-    var stats = fs.lstatSync(file_path)
-    var hash = crypto.createHash('sha256').update(contents).digest('hex')
-    return [file_path.split('/').slice(-1)[0],"f",hash,stats.size]
+  async prepareFile(pyFolder, filePath) {
+    let contents = await fsp.readFile(filePath);
+    let stats = await fsp.lstat(filePath);
+    let hash = crypto.createHash('sha256').update(contents).digest('hex');
+    let filename = filePath.replace(pyFolder, '').replace('\\', '/');
+    return [filename, 'f', hash, stats.size];
   }
 
-  get_changes(){
-    var changed_files = []
-    var changed_folders = []
-    var deletes = []
-    var board_hashes = Object.assign({}, this.board_file_hashes)
-    var local_hashes = Object.assign({}, this.local_file_hashes)
+  getChanges() {
+    let changedFiles = [];
+    let changedFolders = [];
+    let deletes = [];
+    let boardHashes = Object.assign({}, this.boardFileHashes);
+    let localHashes = Object.assign({}, this.localFileHashes);
 
     // all local files
-    for(var name in local_hashes){
-      var local_hash = this.local_file_hashes[name]
-      var board_hash = board_hashes[name]
+    for (let name in localHashes) {
+      let localHash = this.localFileHashes[name];
+      let boardHash = boardHashes[name];
 
-      if(board_hash){
+      if (boardHash) {
         // check if hash is the same
-        if (local_hash[2] != board_hash[2]){
+        if (localHash[2] != boardHash[2]) {
 
-          if(local_hash[1] == "f"){
-            changed_files.push(local_hash)
-          }else{
-            changed_folders.push(local_hash)
+          if (localHash[1] == 'f') {
+            changedFiles.push(localHash);
+          }
+          else {
+            changedFolders.push(localHash);
           }
         }
-        delete board_hashes[name]
+        delete boardHashes[name];
 
-      }else{
-        if(local_hash[1] == "f"){
-          changed_files.push(local_hash)
-        }else{
-          changed_folders.push(local_hash)
+      }
+      else {
+        if (localHash[1] == 'f') {
+          changedFiles.push(localHash);
+        }
+        else {
+          changedFolders.push(localHash);
         }
       }
     }
-    for(var name in board_hashes){
-      if(board_hashes[name][1] == 'f'){
-        deletes.unshift(board_hashes[name])
-      }else{
-        deletes.push(board_hashes[name])
+    for (let name in boardHashes) {
+      if (boardHashes[name][1] == 'f') {
+        deletes.unshift(boardHashes[name]);
+      }
+      else {
+        deletes.push(boardHashes[name]);
       }
 
     }
-    return {'delete': deletes, 'files': changed_files,'folders': changed_folders}
+    return { 'delete': deletes, 'files': changedFiles, 'folders': changedFolders };
   }
-
-
 }

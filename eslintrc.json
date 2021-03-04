@@ -217,7 +217,7 @@
     "quotes": [
       "error",
       "single",
-      { "avoidEscape": true, "allowTemplateLiterals": false }
+      { "avoidEscape": true, "allowTemplateLiterals": true }
     ],
     "rest-spread-spacing": ["error", "never"],
     "semi": ["error", "never"],

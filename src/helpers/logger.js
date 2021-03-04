@@ -1,8 +1,9 @@
 'use babel';
-import Config from '../config.js'
 
-var LOG_LEVEL = Config.constants().logging_level
-var LEVELS = ['silly','verbose','info','warning','error','critical']
+import Config from '../config.js';
+
+let LOG_LEVEL = Config.constants().logging_level;
+let LEVELS = ['silly','verbose','info','warning','error','critical'];
 
 
 // Import this class and create a new logger object in the constructor, providing
@@ -15,36 +16,36 @@ var LEVELS = ['silly','verbose','info','warning','error','critical']
 export default class Logger {
 
   constructor(classname){
-    this.classname = classname
+    this.classname = classname;
   }
 
-  log(level,mssg){
+  log(level,msg){
     if(level >= LOG_LEVEL){
-      console.log("[" + LEVELS[level] + "] "+this.classname+" | "+mssg)
+      console.log('[' + LEVELS[level] + '] '+this.classname+' | '+msg);
     }
   }
 
-  silly(mssg){
-    this.log(0,mssg)
+  silly(msg){
+    this.log(0,msg);
   }
 
-  verbose(mssg){
-    this.log(1,mssg)
+  verbose(msg){
+    this.log(1,msg);
   }
 
-  info(mssg){
-    this.log(2,mssg)
+  info(msg){
+    this.log(2,msg);
   }
 
-  warning(mssg){
-    this.log(3,mssg)
+  warning(msg){
+    this.log(3,msg);
   }
 
-  error(mssg){
-    this.log(4,mssg)
+  error(msg){
+    this.log(4,msg);
   }
 
-  critical(mssg){
-    this.log(5,mssg)
+  critical(msg){
+    this.log(5,msg);
   }
 }
