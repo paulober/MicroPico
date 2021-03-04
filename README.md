@@ -2,12 +2,12 @@
 
 Pico-Go provides code auto-completion and allows  you to communicate with your Raspberry Pi Pico board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
 
-This software is a derivative product of [Pymakr](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr) by Pycom Ltd under the terms of its [GNU GPL Version 3+ license](LICENSE.md).
+This software is originally a derivative product of [Pymakr](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr) by Pycom Ltd under the terms of its [GNU GPL Version 3+ license](LICENSE.md) but it has now received significant rewrites. Non-RP2040 boards are not supported but may still work.
 
 - Works with macOS, Linux, and Windows.
 - Connects to the Raspberry Pi Pico board.
 
-![Terminal](https://raw.githubusercontent.com/cpwood/Pico-Go/main/images/screenshot1.png)
+![Terminal](http://pico-go.net/images/autocomplete.gif)
 
 To find out what's new, take a look at the [changelog](CHANGELOG.md).
 
