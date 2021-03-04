@@ -7,7 +7,7 @@ This software is originally a derivative product of [Pymakr](https://marketplace
 - Works with macOS, Linux, and Windows.
 - Connects to the Raspberry Pi Pico board.
 
-![Terminal](http://pico-go.net/images/autocomplete.gif)
+![Terminal](https://github.com/cpwood/Pico-Go/blob/main/images/autocomplete.gif?raw=true)
 
 To find out what's new, take a look at the [changelog](CHANGELOG.md).
 
