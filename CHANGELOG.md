@@ -1,5 +1,30 @@
 # Changelog
 
+## [v1.2.0](https://github.com/cpwood/Pico-Go/tree/v1.2.0) (2021-03-04)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.1.0...v1.2.0)
+
+A few bits of new functionality including a Pin Map and a few bug fixes, however the majority of the work that went into this release, you won't see! The codebase has been significantly refactored to make it far more maintainable and amenable to whatever fun stuff we want to do in the future!
+
+There is one breaking change: if you have a `pymakr.conf` file in your project, rename it to `pico-go.json`. I've chosen _not_ to automate this just in case you're still using Pymakr for your non-Pico projects.
+
+**Implemented enhancements:**
+
+- Show Pico Pin Map via Command Palette [\#41](https://github.com/cpwood/Pico-Go/issues/41)
+- Remove callback spaghetti [\#35](https://github.com/cpwood/Pico-Go/issues/35)
+- Feature/async await [\#44](https://github.com/cpwood/Pico-Go/pull/44) ([cpwood](https://github.com/cpwood))
+
+**Fixed bugs:**
+
+- pico-go.net domain suspended [\#42](https://github.com/cpwood/Pico-Go/issues/42)
+- code formatting in Visual Studio Code \(keybinding conflict\) [\#40](https://github.com/cpwood/Pico-Go/issues/40)
+- Can't configure new project: "pymakr.initialise failed" [\#38](https://github.com/cpwood/Pico-Go/issues/38)
+- Only show recommended extensions if not already installed [\#37](https://github.com/cpwood/Pico-Go/issues/37)
+- REPL while running [\#34](https://github.com/cpwood/Pico-Go/issues/34)
+- Not resetting code in Pico? [\#32](https://github.com/cpwood/Pico-Go/issues/32)
+- Uploading the current file from a nested folder fails when the equivalent folders don't exist on the Pico [\#30](https://github.com/cpwood/Pico-Go/issues/30)
+- Terminal exits repeatedly with exit code: 1 [\#28](https://github.com/cpwood/Pico-Go/issues/28)
+
 ## [v1.1.0](https://github.com/cpwood/Pico-Go/tree/v1.1.0) (2021-02-17)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.0.8...v1.1.0)
