@@ -13,9 +13,7 @@ To find out what's new, take a look at the [changelog](CHANGELOG.md).
 
 ## Dependencies
 
-- [NodeJS](https://nodejs.org) installed on your system; this is required **in addition** to the version of NodeJS included with Electron.
-
-* [Python](https://www.python.org/downloads/) installed on your system.
+* [Python 3](https://www.python.org/downloads/) installed on your system and in your PATH.
 
 ## Getting Started
 
