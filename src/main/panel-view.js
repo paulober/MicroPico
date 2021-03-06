@@ -115,7 +115,7 @@ export default class PanelView extends EventEmitter {
         this._setButton('run', 'primitive-square', 'Stop');
       }
       else {
-        this._setButton('run', 'triangle-right', 'Run');
+        this._setButton('run', 'play', 'Run');
       }
       if (synchronizing) {
         if (synchronizeType == 'receive') {

@@ -219,13 +219,13 @@
     },
     {
       "key": "run",
-      "name": "$(triangle-right) Run",
+      "name": "$(play) Run",
       "command": "pymakr.run",
       "tooltip": "Run current file"
     },
     {
       "key": "runselection",
-      "name": "$(triangle-right) Run Line",
+      "name": "$(play) Run Line",
       "command": "pymakr.runselection",
       "tooltip": "Run current line"
     },
