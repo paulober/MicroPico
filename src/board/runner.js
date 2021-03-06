@@ -4,7 +4,7 @@ import ApiWrapper from '../main/api-wrapper.js';
 
 export default class Runner {
   constructor(pyboard, terminal, pymakr) {
-    this.pyboard = pyboard;
+    this.board = pyboard;
     this.terminal = terminal;
     this.pymakr = pymakr;
     this.api = new ApiWrapper();
@@ -21,6 +21,8 @@ export default class Runner {
   }
 
   async start() {
+    await this.board.softResetNoFollow();
+
     let currentFile = this._getCurrentFile();
 
     if (currentFile == undefined)
@@ -30,7 +32,7 @@ export default class Runner {
     this.busy = true;
     this.pymakr.view.setButtonState(this.busy);
 
-    await this.pyboard.run(currentFile.content);
+    await this.board.run(currentFile.content);
     this.busy = false;
   }
 
@@ -41,7 +43,7 @@ export default class Runner {
     this.busy = true;
 
     try {
-      await this.pyboard.run(codeblock);
+      await this.board.run(codeblock);
       this.busy = false;
     }
     catch(err) {
@@ -51,9 +53,9 @@ export default class Runner {
 
   async stop() {
     if (this.busy) {
-      await this.pyboard.stopRunningProgramsNoFollow();
-      await this.pyboard.flush();
-      await this.pyboard.enterFriendlyRepl();
+      await this.board.stopRunningProgramsNoFollow();
+      await this.board.flush();
+      await this.board.enterFriendlyRepl();
       this.terminal.enter();
       this.terminal.write('>>> ');
       this.busy = false;
