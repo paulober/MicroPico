@@ -1,5 +1,20 @@
 # Changelog
 
+## [v1.2.1](https://github.com/cpwood/Pico-Go/tree/v1.2.1) (2021-03-06)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.2.0...v1.2.1)
+
+This release removes the dependency on Node JS being installed on the computer (aside from the version included with Electron). It also fixes something that really ought to have been fixed in v1.2.0: when running a file, a soft reset will be performed beforehand.
+
+**Implemented enhancements:**
+
+- Cosmetic: change "run" icon [\#48](https://github.com/cpwood/Pico-Go/issues/48)
+- Remove dependency on Node JS installation \(external to Electron\) [\#46](https://github.com/cpwood/Pico-Go/issues/46)
+
+**Fixed bugs:**
+
+- Pico not resetting before Run [\#49](https://github.com/cpwood/Pico-Go/issues/49)
+
 ## [v1.2.0](https://github.com/cpwood/Pico-Go/tree/v1.2.0) (2021-03-04)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.1.0...v1.2.0)
@@ -17,13 +32,13 @@ There is one breaking change: if you have a `pymakr.conf` file in your project, 
 **Fixed bugs:**
 
 - pico-go.net domain suspended [\#42](https://github.com/cpwood/Pico-Go/issues/42)
+- Terminal exits repeatedly with exit code: 1 [\#28](https://github.com/cpwood/Pico-Go/issues/28)
 - code formatting in Visual Studio Code \(keybinding conflict\) [\#40](https://github.com/cpwood/Pico-Go/issues/40)
 - Can't configure new project: "pymakr.initialise failed" [\#38](https://github.com/cpwood/Pico-Go/issues/38)
 - Only show recommended extensions if not already installed [\#37](https://github.com/cpwood/Pico-Go/issues/37)
 - REPL while running [\#34](https://github.com/cpwood/Pico-Go/issues/34)
 - Not resetting code in Pico? [\#32](https://github.com/cpwood/Pico-Go/issues/32)
 - Uploading the current file from a nested folder fails when the equivalent folders don't exist on the Pico [\#30](https://github.com/cpwood/Pico-Go/issues/30)
-- Terminal exits repeatedly with exit code: 1 [\#28](https://github.com/cpwood/Pico-Go/issues/28)
 
 ## [v1.1.0](https://github.com/cpwood/Pico-Go/tree/v1.1.0) (2021-02-17)
 
