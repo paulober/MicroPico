@@ -15,11 +15,11 @@ export default class Activator {
     let sw = new SettingsWrapper();
     await sw.initialize();
 
-    let nodeInstalled = await this._checkNodeVersion();
+    let pythonInstalled = await this._checkPythonVersion();
 
-    if (!nodeInstalled) {
+    if (!pythonInstalled) {
       vscode.window.showErrorMessage(
-        'NodeJS not detected on this machine, which is required for Pico-Go to work.'
+        'Python3 is not detected on this machine so Pico-Go cannot work. Ensure it is in your PATH.'
       );
       return;
     }
@@ -177,9 +177,16 @@ export default class Activator {
     return v;
   }
 
-  async _checkNodeVersion() {
-    let result = await exec('node -v');
-    return result.stdout.substr(0, 1) == 'v';
+  async _checkPythonVersion() {
+    let executable = process.platform == 'win32' ? 'py' : 'python3';
+    let result = await exec(`${executable} -V`);
+    let match = /(?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result.stdout);
+
+    if (match == null)
+      return false;
+
+    let major = parseInt(match.groups.major);
+    return major >= 3;
   }
 
   _getPinMapHtml(imageUrl) {

@@ -64,8 +64,8 @@ export default class Term {
     this.createFailed = false;
     this.port = parseInt(Math.random() * 1000 + 1337);
     try {
-      let termpath = this.api.getPackagePath() + 'terminalExec.js';
-      let shellpath = this.isWindows ? 'node.exe' : 'node';
+      let termpath = this.api.getPackagePath() + 'terminalExec.py';
+      let shellpath = this.isWindows ? 'py.exe' : 'python3';
       this.terminal = vscode.window.createTerminal({ name: this.terminalName,
           shellPath: shellpath, shellArgs: [termpath, this.port
         .toString()] });

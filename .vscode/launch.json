@@ -7,7 +7,9 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}"
+            ],
             "stopOnEntry": false,
             "smartStep": true,
             "skipFiles": [
@@ -15,7 +17,14 @@
                 "<node_internals>/**/*.js",
                 "**/*async_hook*.js",
                 "**/Unknown Source/**"
-              ]
+            ]
+        },
+        {
+            "name": "Python: Debug Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
         }
     ]
 }
