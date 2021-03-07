@@ -80,9 +80,9 @@ export default class Sync {
       let errMsg = err.message ? err.message : err;
       mssg = this.methodName + ' failed.';
       mssg += errMsg;
-      if (this.inRawMode) {
-        mssg += ' Please reboot your device manually.';
-      }
+      // if (this.inRawMode) {
+      //   mssg += ' Please reboot your device manually.';
+      // }
     }
     else if (this.inRawMode && this.settings.reboot_after_upload) {
       mssg += ', resetting board...';

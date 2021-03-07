@@ -11,7 +11,7 @@ acknowledging with `OK`, giving any output and then returning a Raw REPL
 `>` prompt.
 
 It's also possible to run a block of code in Raw REPL by using the
-`pyboard.run()` method. This switches to Raw REPL, runs the code by sending 
+`board.run()` method. This switches to Raw REPL, runs the code by sending 
 `Ctrl+D`, grabs the response and puts the console back into Friendly REPL.
 
 Friendly REPL is the default mode so the user can type things via the UI.
@@ -32,13 +32,13 @@ const pipe = promisify(pipeline);
 
 export default class Shell {
 
-  constructor(pyboard, method, settings) {
+  constructor(board, method, settings) {
     this.config = Config.constants();
     this.settings = settings;
     this.BIN_CHUNK_SIZE = this.settings.upload_chunk_size;
     this.EOF = '\x04'; // reset (ctrl-d)
     this.RETRIES = 2;
-    this.pyboard = pyboard;
+    this.board = board;
     this.api = new ApiWrapper();
     this.logger = new Logger('Shell');
     this.utils = new Utils(settings);
@@ -52,8 +52,8 @@ export default class Shell {
     this.logger.silly('Try to enter raw mode');
 
     // 3 = RAW_REPL
-    if (this.pyboard.status != 3) {
-      await this.pyboard.enterRawReplNoReset();
+    if (this.board.status != 3) {
+      await this.board.enterRawReplNoReset();
     }
   }
 
@@ -64,7 +64,7 @@ export default class Shell {
       'sys.stdout.write(str(s[0]*s[3])\r\n' +
       'del(_s)\r\n';
 
-    return await this.pyboard.sendWait(command);
+    return await this.board.sendWait(command);
   }
 
   async decompress(name) {
@@ -78,7 +78,7 @@ export default class Shell {
       '  del(c)\r\n' +
       "decompress('" + name + "')\r\n";
 
-    return await this.pyboard.sendWait(command, null, 40000);
+    return await this.board.sendWait(command, null, 40000);
   }
 
   async compress(filepath, name) {
@@ -91,7 +91,7 @@ export default class Shell {
   }
 
   async writeFile(name, file_path, contents) {
-    let fw = new FileWriter(this, this.pyboard, this.settings, this.api);
+    let fw = new FileWriter(this, this.board, this.settings, this.api);
     await fw.writeFileContent(name, file_path, contents, 0);
   }
 
@@ -121,7 +121,7 @@ export default class Shell {
       command += `ensureFolder("${parts.slice(0, i).join('/')}")\r\n`;
     }
 
-    await this.pyboard.sendWait(command, null, 30000);
+    await this.board.sendWait(command, null, 30000);
   }
 
   async readFile(name) {
@@ -137,7 +137,7 @@ export default class Shell {
       "    if not len(c) or c == b'\\n':" + '\r\n' +
       '        break\r\n';
 
-    let content = await this.pyboard.sendWait(command, null, 60000);
+    let content = await this.board.sendWait(command, null, 60000);
 
     // Workaround for the "OK" return of soft reset, which is sometimes returned with the content
     if (content.indexOf('OK') == 0) {
@@ -151,8 +151,8 @@ export default class Shell {
       throw content;
     }
 
-    let decodeResult = this.utils.base64decode(content);
-    let contentBuffer = decodeResult[1];
+    let decodeResult = this.utils.base64decode(content.replace(/[\r\n]/g, ''));
+    let contentBuffer = Buffer.concat(decodeResult[1]);
     let contentStr = decodeResult[0].toString();
 
     this.working = false;
@@ -219,7 +219,7 @@ export default class Shell {
       '\r\n' +
       `print(listdir("${root}", ${toPythonBoolean(recursive)}, True, ${toPythonBoolean(hash)}))`;
 
-    let raw = await this.pyboard.sendWait(command, null, 10000);
+    let raw = await this.board.sendWait(command, null, 10000);
     return JSON.parse(raw);
   }
 
@@ -228,28 +228,28 @@ export default class Shell {
       'import os\r\n' +
       "os.remove('" + name + "')\r\n";
 
-    await this.pyboard.sendWait(command);
+    await this.board.sendWait(command);
   }
 
   async createDir(name) {
     let command =
       'import os\r\n' +
       "os.mkdir('" + name + "')\r\n";
-    await this.pyboard.sendWait(command);
+    await this.board.sendWait(command);
   }
 
   async changeDir(name) {
     let command =
       'import os\r\n' +
       "os.chdir('" + name + "')\r\n";
-    await this.pyboard.sendWait(command);
+    await this.board.sendWait(command);
   }
 
   async removeDir(name) {
     let command =
       'import os\r\n' +
       "os.rmdir('" + name + "')\r\n";
-    await this.pyboard.sendWait(command);
+    await this.board.sendWait(command);
   }
 
   async reset() {
@@ -257,15 +257,15 @@ export default class Shell {
       'import machine\r\n' +
       'machine.reset()\r\n';
 
-    await this.pyboard.send(command);
-    await this.pyboard.send(this.EOF, false); // Execute.
+    await this.board.send(command);
+    await this.board.send(this.EOF, false); // Execute.
     await Utils.sleep(1000);
-    await this.pyboard.reconnect();
+    await this.board.reconnect();
   }
 
   async safebootRestart() {
-    await this.pyboard.safeboot(4000);
-    await this.pyboard.enterRawReplNoReset();
+    await this.board.safeboot(4000);
+    await this.board.enterRawReplNoReset();
   }
 
   async eval(c, timeout) {
@@ -321,13 +321,13 @@ export default class Shell {
       return;
     }
 
-    await this.pyboard.enterFriendlyRepl();
-    await this.pyboard.send('\r\n');
+    await this.board.enterFriendlyRepl();
+    await this.board.send('\r\n');
 
     this.logger.info('Closed successfully');
 
-    if (this.pyboard.connection.type != 'serial') {
-      await this.pyboard.disconnectSilent();
+    if (this.board.connection.type != 'serial') {
+      await this.board.disconnectSilent();
     }
   }
 }

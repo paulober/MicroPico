@@ -20,7 +20,7 @@ let repl_entry_waitfor = 'raw REPL; CTRL-B to exit\r\n>';
 
 //statuses
 let DISCONNECTED = 0;
-let CONNECTED=1;
+let CONNECTED = 1;
 let FRIENDLY_REPL = 2;
 let RAW_REPL = 3;
 let PASTE_MODE = 4;
@@ -30,14 +30,14 @@ export default class Pyboard {
   constructor(settings) {
     this.connected = false;
     this.connecting = false;
-    this.receive_buffer = '';
-    this.receive_buffer_raw = Buffer.alloc(0);
-    this.waiting_for = null;
+    this.rawResponseStarted = false;
+    this.commandResponseBuffer = '';
+    this.waitingFor = null;
     this.promise = null;
-    this.waiting_for_timeout = 8000;
+    this.waitingForTimeout = 8000;
     this.status = DISCONNECTED;
     this.pingTimer = null;
-    this.ping_count = 0;
+    this.pingCount = 0;
     this.isSerial = false;
     this.type = null;
     this.settings = settings;
@@ -70,14 +70,14 @@ export default class Pyboard {
     this.pingTimer = setInterval(async function() {
       try {
         await _this.connection.sendPing();
-        _this.ping_count = 0;
+        _this.pingCount = 0;
       }
-      catch(err) {
-        _this.ping_count += 1;
+      catch (err) {
+        _this.pingCount += 1;
       }
 
-      if (_this.ping_count > 1) { // timeout after 2 pings
-        _this.ping_count = 0;
+      if (_this.pingCount > 1) { // timeout after 2 pings
+        _this.pingCount = 0;
         clearInterval(_this.pingTimer);
         _this.ontimeout(new Error('Connection lost'));
         await _this.disconnect();
@@ -103,19 +103,17 @@ export default class Pyboard {
   }
 
   async enterFriendlyRepl() {
-    await this.sendWait(CTRL_B, '\r\n>>>');
-    this.setStatus(FRIENDLY_REPL);
+    await this.sendWait(CTRL_B, '\r\n>>>', null);
   }
 
   async _enterFriendlyReplWait() {
     await this.sendWait(CTRL_B,
-      'Type "help()" for more information.\r\n>>>');
-    this.setStatus(FRIENDLY_REPL);
+      'Type "help()" for more information.\r\n>>>', null);
+    this.onmessage('\r\n>>> ');
   }
 
   async enterFriendlyReplNonBlocking() {
     await this.send(CTRL_B);
-    this.setStatus(FRIENDLY_REPL);
   }
 
   async _softReset(timeout) {
@@ -158,8 +156,6 @@ export default class Pyboard {
       this.logger.info('Entering raw repl');
 
       await this.sendWait(CTRL_A, repl_entry_waitfor, 5000);
-
-      this.setStatus(RAW_REPL);
     }
     catch (err) {
       this.promise.reject(err);
@@ -183,7 +179,7 @@ export default class Pyboard {
 
     if (this.isSerial) {
       this.connection = new Pyserial(this.address, this.params, this
-      .settings);
+        .settings);
     }
     else if (raw) {
       this.connection = new Pysocket(this.address, this.params);
@@ -199,7 +195,7 @@ export default class Pyboard {
         await this.authorize.run();
         await this._onconnect(callback);
       }
-      catch(error) {
+      catch (error) {
         await this._disconnected();
         callback(error, this.address);
       }
@@ -210,27 +206,28 @@ export default class Pyboard {
     await this.connection.connect(
       // onconnect
       async function() {
-        _this.connection.registerListener(async function(mssg, raw) {
-          await _this.receive(mssg, raw);
-        });
-        if (_this.connection.type != 'telnet') {
-          await _this._onconnect(callback);
-        }
-      },
-      // onerror
-      async function(err) {
-        await _this._disconnected();
-        _this.onerror(err);
-      },
-      // ontimeout
-      async function(mssg) {
-        // Timeout callback only works properly during connect
-        // after that it might trigger unneccesarily
-        if (_this.isConnecting()) {
-          await _this._disconnected();
-          ontimeout(mssg, raw);
-        }
-      });
+          // eslint-disable-next-line no-unused-vars
+          _this.connection.registerListener(async function(mssg, raw) {
+            await _this.receive(mssg);
+          });
+          if (_this.connection.type != 'telnet') {
+            await _this._onconnect(callback);
+          }
+        },
+        // onerror
+        async function(err) {
+            await _this._disconnected();
+            _this.onerror(err);
+          },
+          // ontimeout
+          async function(mssg) {
+            // Timeout callback only works properly during connect
+            // after that it might trigger unneccesarily
+            if (_this.isConnecting()) {
+              await _this._disconnected();
+              ontimeout(mssg, raw);
+            }
+          });
   }
 
   async _onconnect(cb) {
@@ -271,7 +268,7 @@ export default class Pyboard {
   }
 
   _getWaitType() {
-    let type = Object.prototype.toString.call(this.waiting_for);
+    let type = Object.prototype.toString.call(this.waitingFor);
 
     switch (type) {
       case '[object RegExp]':
@@ -289,7 +286,7 @@ export default class Pyboard {
     if (
       this._getWaitType() == 'literal' &&
       this.status != RAW_REPL &&
-      buffer.indexOf(this.waiting_for) > -1 &&
+      buffer.indexOf(this.waitingFor) > -1 &&
       buffer.indexOf('>>> ') > -1
     )
       return true;
@@ -301,24 +298,36 @@ export default class Pyboard {
     if (
       this._getWaitType() == 'literal' &&
       (this.status == RAW_REPL || buffer.indexOf(repl_entry_waitfor) > -1) &&
-      buffer.indexOf(this.waiting_for) > -1
+      buffer.indexOf(this.waitingFor) > -1
     )
       return true;
 
     return false;
   }
 
-  _isRegexWaitMatch(buffer) {
+  _isFriendlyRegexWaitMatch(buffer) {
     if (
+      this.status == FRIENDLY_REPL &&
       this._getWaitType() == 'regex' &&
-      this.waiting_for.test(buffer)
+      this.waitingFor.test(buffer)
     )
       return true;
 
     return false;
   }
 
-  async receive(mssg, raw) {
+  _isRawRegexWaitMatch(buffer) {
+    if (
+      this.status == RAW_REPL &&
+      this._getWaitType() == 'regex' &&
+      this.waitingFor.test(buffer)
+    )
+      return true;
+
+    return false;
+  }
+
+  async receive(mssg) {
     this.logger.silly('Received message: ' + mssg);
     if (!this.wait_for_block && typeof mssg != 'object' && this.onmessage !=
       undefined) {
@@ -326,37 +335,34 @@ export default class Pyboard {
     }
     let err_in_output = this.getErrorMessage(mssg);
 
-    this.receive_buffer += mssg;
-    this.receive_buffer_raw = Buffer.concat([this.receive_buffer_raw, raw]);
+    this.commandResponseBuffer += mssg;
 
-    if (this.receive_buffer.length > 80000) {
-      this.receive_buffer = this.receive_buffer.substr(40000);
+    if (this.commandResponseBuffer.length > 80000) {
+      this.commandResponseBuffer = this.commandResponseBuffer.substr(40000);
     }
 
-    if (this.receive_buffer_raw.length > 80000) {
-      this.receive_buffer_raw = this.receive_buffer_raw.slice(40000);
-    }
-
-    this.logger.silly('Buffer length now ' + this.receive_buffer.length);
+    this.logger.silly('Buffer length now ' + this.commandResponseBuffer
+      .length);
 
     if (err_in_output != '') {
       this.logger.silly('Error in output: ' + err_in_output);
       let err = new Error(err_in_output);
-      if (this.waiting_for != null) {
-        this._stopWaitingFor(this.receive_buffer, this.receive_buffer_raw,
-          err);
+      if (this.waitingFor != null) {
+        this._stopWaitingFor(this.commandResponseBuffer, err);
       }
       else {
         this.onerror(err);
       }
 
     }
-    else if (this.waiting_for != null && mssg) {
-      this.logger.silly('Waiting for ' + this.waiting_for);
+    else if (this.waitingFor != null && mssg) {
+      this.logger.silly('Waiting for ' + this.waitingFor);
 
-      if (this.receive_buffer === undefined) this.receive_buffer = '';
+      if (this.commandResponseBuffer === undefined) this
+        .commandResponseBuffer = '';
 
-      if (this.receive_buffer.indexOf('Invalid credentials, try again.') > -
+      if (this.commandResponseBuffer.indexOf(
+          'Invalid credentials, try again.') > -
         1) {
         await this._disconnected();
         this.onconnect('Invalid credentials');
@@ -367,44 +373,56 @@ export default class Pyboard {
       }
 
       if (this._getWaitType() == 'length') {
-        this.logger.silly('Waiting for ' + this.waiting_for + ', got ' + this
-          .receive_buffer.length + ' so far');
-        if (this.receive_buffer.length >= this.waiting_for) {
-          this._stopWaitingFor(this.receive_buffer, this.receive_buffer_raw);
+        this.logger.silly('Waiting for ' + this.waitingFor + ', got ' + this
+          .commandResponseBuffer.length + ' so far');
+        if (this.commandResponseBuffer.length >= this.waitingFor) {
+          this._stopWaitingFor(this.commandResponseBuffer);
         }
       }
       else if (
-        this._isFriendlyLiteralWaitMatch(this.receive_buffer) ||
-        this._isFriendlyLiteralWaitMatch(this.receive_buffer_raw) ||
-        this._isRegexWaitMatch(this.receive_buffer) ||
-        this._isRegexWaitMatch(this.receive_buffer_raw)
+        this._isFriendlyLiteralWaitMatch(this.commandResponseBuffer) ||
+        this._isFriendlyRegexWaitMatch(this.commandResponseBuffer)
       ) {
-        let trail = this.receive_buffer.split(this.waiting_for).pop(-1);
+        let trail = this.commandResponseBuffer.split(this.waitingFor).pop(-1);
         if (trail && trail.length > 0 && this.wait_for_block) {
           this.onmessage(trail);
         }
-        this._stopWaitingFor(this.receive_buffer, this.receive_buffer_raw);
+        this._stopWaitingFor(this.commandResponseBuffer);
       }
-      else if (
-        this._isRawLiteralWaitMatch(this.receive_buffer) ||
-        this._isRawLiteralWaitMatch(this.receive_buffer_raw)
-      ) {
-        let content = this.receive_buffer;
+      else if (mssg.indexOf(repl_entry_waitfor) > -1) {
+        this._stopWaitingFor(this.commandResponseBuffer);
+      }
+      else if (this.status == RAW_REPL) {
+        if (mssg.indexOf(repl_entry_waitfor) > -1)
+          mssg = '';
 
-        if (content.indexOf(repl_entry_waitfor) > -1)
-          content = '';
-
-        if (content.startsWith('OK'))
-          content = content.substr(2);
-
-        if (content.endsWith('>')) {
-          content = content.substr(0, content.length - 1);
+        if (!this.rawResponseStarted && mssg.startsWith('OK')) {
+          mssg = mssg.substr(2);
+          this.rawResponseStarted = true;
         }
 
-        if (content.length > 0 && this.wait_for_block) {
-          this.onmessage(content);
+        // this.logger.warning(`rawResponseStarted: ${this.rawResponseStarted}`);
+        // this.logger.warning(`mssg: ${mssg}`);
+        // this.logger.warning(`Waiting for: ${this.waitingFor}`);
+        // this.logger.warning('');
+
+        if (this.rawResponseStarted) {
+          // \u0004 is EOT - End of Transmission ASCII character.
+          if (/(\r\n)?\u0004\>/m.test(mssg)) {
+            mssg = mssg.substr(0, mssg.indexOf('\u0004>'));
+          }
+
+          this.logger.warning(`Modified mssg: ${mssg}`);
+
+          if (mssg.length > 0) {
+            this.onmessage(mssg);
+          }
         }
-        this._stopWaitingFor(this.receive_buffer, this.receive_buffer_raw);
+
+        if (this._isRawRegexWaitMatch(this.commandResponseBuffer)) {
+          // this.logger.warning('Stopping!');
+          this._stopWaitingFor(this.commandResponseBuffer);
+        }
       }
     }
   }
@@ -413,14 +431,14 @@ export default class Pyboard {
     let promise = this.promise;
 
     clearTimeout(this.waiting_for_timer);
-    this.waiting_for = null;
+    this.waitingFor = null;
     this.wait_for_block = false;
     this.promise = null;
 
     return promise;
   }
 
-  _stopWaitingFor(msg, raw, err) {
+  _stopWaitingFor(msg, err) {
     this.logger.silly('Stopping waiting for, got message of ' + msg.length +
       ' chars');
 
@@ -432,10 +450,7 @@ export default class Pyboard {
         promise.reject(err);
       }
       else {
-        promise.resolve({
-          msg: msg,
-          raw: raw
-        });
+        promise.resolve(msg);
       }
     }
     else {
@@ -453,39 +468,35 @@ export default class Pyboard {
   }
 
   async run(code) {
-    let alreadyRaw = this.status == RAW_REPL;
+    try {
+      let alreadyRaw = this.status == RAW_REPL;
 
-    await this._stopRunningPrograms();
-
-    if (!alreadyRaw) {
-      await this.enterRawReplNoReset();
+      await this._stopRunningPrograms();
+  
+      if (!alreadyRaw) {
+        await this.enterRawReplNoReset();
+      }
+  
+      // executing code delayed (20ms) to make sure _this.wait_for(">") is executed before execution is complete
+      code += '\r\nimport time';
+      code += '\r\ntime.sleep(0.1)';
+  
+      let response = await this.sendWait(code, null, 0);
+  
+      if (!alreadyRaw) {
+        await this._enterFriendlyReplWait();
+      }
+  
+      return response;
     }
-
-    // executing code delayed (20ms) to make sure _this.wait_for(">") is executed before execution is complete
-    code += '\r\nimport time';
-    code += '\r\ntime.sleep(0.1)';
-
-    let response = await this.sendWait(code, null, 0);
-
-    if (!alreadyRaw) {
-      await this._enterFriendlyReplWait();
+    catch(err) {
+      this.logger.error(err);
+      await this.softResetNoFollow();
     }
-
-    return response;
   }
 
   async sendUserInput(msg) {
     await this.send(msg);
-
-    if (msg == CTRL_A) {
-      this.status = RAW_REPL;
-    }
-    else if (msg == CTRL_B) {
-      this.status = FRIENDLY_REPL;
-    }
-    else if (msg == CTRL_E) {
-      this.status = PASTE_MODE;
-    }
   }
 
   waitForBlocking(wait_for, promise, timeout) {
@@ -495,42 +506,54 @@ export default class Pyboard {
 
   waitFor(wait_for, promise, timeout, clear = true) {
     this.wait_for_block = false;
-    this.waiting_for = wait_for;
+    this.waitingFor = wait_for;
     this.promise = promise;
-    this.waiting_for_timeout = timeout;
+    this.waitingForTimeout = timeout;
     if (clear) {
-      this.receive_buffer = '';
-      this.receive_buffer_raw = Buffer(0);
+      this.commandResponseBuffer = '';
+      this.rawResponseStarted = this.status != RAW_REPL;
     }
 
     let _this = this;
     clearTimeout(this.waiting_for_timer);
+    
     if (timeout && timeout > 0) {
       this.waiting_for_timer = setTimeout(function() {
         if (_this.promise) {
           let temp = _this.promise;
           _this.promise = null;
           _this.wait_for_block = false;
-          _this.waiting_for = null;
-          _this.receive_buffer = '';
-          _this.receive_buffer_raw = Buffer(0);
-          temp.reject(new Error('timeout'), _this.receive_buffer);
+          _this.waitingFor = null;
+          _this.commandResponseBuffer = '';
+          _this.rawResponseStarted = true;
+          temp.reject(new Error('timeout'), _this.commandResponseBuffer);
         }
       }, timeout);
     }
   }
 
-  async send(command, drain=true) {
-    if (this.connection)
+  async send(command, drain = true) {
+    if (this.connection) {
       await this.connection.send(command, drain);
+
+      if (command == CTRL_A) {
+        this.setStatus(RAW_REPL);
+      }
+      else if (command == CTRL_B) {
+        this.setStatus(FRIENDLY_REPL);
+      }
+      else if (command == CTRL_E) {
+        this.setStatus(PASTE_MODE);
+      }
+    }
   }
 
   async sendWait(command, waitFor = null, timeout = 5000) {
     let _this = this;
-    let result = null; 
+    let result = null;
 
     if (!waitFor)
-       waitFor = this.status == RAW_REPL ? '>' : command;
+      waitFor = this.status == RAW_REPL ? /(\r\n)?\u0004\>/ : command;
 
     if (!_.includes(CTRLS, command) && !command.endsWith('\r\n'))
       command += '\r\n';
@@ -539,8 +562,19 @@ export default class Pyboard {
     // run the commands we've sent if we're in 
     // raw REPL. Only do this if we're not exiting raw
     // REPL, though.
-    if (this.status == RAW_REPL && !command.endsWith(CTRL_D) && command != CTRL_B)
+    if (this.status == RAW_REPL && !command.endsWith(CTRL_D) && command !=
+      CTRL_B)
       command += CTRL_D;
+
+    // If we're changing mode, we'll be sending in one mode (already catered for
+    // above), but will looking for completion in another. Since we've now configured
+    // the data for sending, we're safe to change mode.
+    if (command == CTRL_A) {
+      this.setStatus(RAW_REPL);
+    }
+    else if (command == CTRL_B) {
+      this.setStatus(FRIENDLY_REPL);
+    }
 
     let promise = new Promise((resolve, reject) => {
       this.waitForBlocking(
@@ -554,11 +588,14 @@ export default class Pyboard {
     });
 
     result = await promise;
-    let received = result.msg;
+    let received = result;
 
     if (this.status == RAW_REPL) {
       if (received.startsWith('OK'))
         received = received.substr(2);
+
+      if (received.startsWith('>OK'))
+        received = received.substr(3);
 
       // EOT - End of Transmission ASCII character.
       if (received.indexOf('\u0004') >= 0)
