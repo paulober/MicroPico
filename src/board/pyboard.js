@@ -33,7 +33,6 @@ export default class Pyboard {
     this.receive_buffer = '';
     this.receive_buffer_raw = Buffer.alloc(0);
     this.waiting_for = null;
-    this.waiting_for_cb = null;
     this.promise = null;
     this.waiting_for_timeout = 8000;
     this.status = DISCONNECTED;
@@ -439,10 +438,6 @@ export default class Pyboard {
         });
       }
     }
-    else if (this.waiting_for_cb) {
-      // This is an olds-school callback.
-      this.waiting_for_cb(err, msg, raw);
-    }
     else {
       this.logger.silly('No callback after waiting');
     }
@@ -470,7 +465,7 @@ export default class Pyboard {
     code += '\r\nimport time';
     code += '\r\ntime.sleep(0.1)';
 
-    let response = await this.sendWait(code);
+    let response = await this.sendWait(code, null, 0);
 
     if (!alreadyRaw) {
       await this._enterFriendlyReplWait();
@@ -510,11 +505,10 @@ export default class Pyboard {
 
     let _this = this;
     clearTimeout(this.waiting_for_timer);
-    if (timeout) {
+    if (timeout && timeout > 0) {
       this.waiting_for_timer = setTimeout(function() {
-        if (_this.waiting_for_cb) {
+        if (_this.promise) {
           let temp = _this.promise;
-          _this.waiting_for_cb = null;
           _this.promise = null;
           _this.wait_for_block = false;
           _this.waiting_for = null;
