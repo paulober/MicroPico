@@ -7,6 +7,7 @@ import types
 import os 
 import threading
 import time
+import signal
 
 isWindows = sys.platform == "win32"
 
@@ -66,6 +67,7 @@ def getCharacterPosix():
       try:
         c = sys.stdin.read(1)
         yield c
+        time.sleep(0.001)
       except IOError: pass
   finally:
     termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
@@ -75,6 +77,7 @@ def getCharacterWindows():
     while True:
         c = msvcrt.getch().decode("utf-8")
         yield c     
+        time.sleep(0.001)
 
 def boardInput(data: bytes):
     sys.stdout.write(data.decode("utf-8"))
@@ -133,10 +136,16 @@ def listenForInput():
                 userInput(ch)
             time.sleep(0.001)
 
+def handler(signum, frame):
+    userInput(str(chr(3)))
+
 server = threading.Thread(target=runServer)
 server.start()
 
 inputMonitor = threading.Thread(target=listenForInput)
 inputMonitor.start()
+
+# Don't let Ctrl+C end this Python process: send it to the board instead!
+signal.signal(signal.SIGINT, handler)
 
 server.join()

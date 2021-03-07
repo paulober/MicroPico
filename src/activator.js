@@ -178,15 +178,20 @@ export default class Activator {
   }
 
   async _checkPythonVersion() {
-    let executable = process.platform == 'win32' ? 'py' : 'python3';
-    let result = await exec(`${executable} -V`);
-    let match = /(?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result.stdout);
-
-    if (match == null)
+    try {
+      let executable = process.platform == 'win32' ? 'py' : 'python3';
+      let result = await exec(`${executable} -V`);
+      let match = /Python (?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result.stdout);
+  
+      if (match == null)
+        return false;
+  
+      let major = parseInt(match.groups.major);
+      return major >= 3;
+    }
+    catch(err) {
       return false;
-
-    let major = parseInt(match.groups.major);
-    return major >= 3;
+    }
   }
 
   _getPinMapHtml(imageUrl) {
