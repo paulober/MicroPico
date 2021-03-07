@@ -6,6 +6,7 @@ import selectors
 import types
 import os 
 import threading
+import time
 
 isWindows = sys.platform == "win32"
 
@@ -101,7 +102,6 @@ def runServer():
     lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     lsock.bind((ip, port))
     lsock.listen()
-    lsock.setblocking(False)
 
     sel.register(lsock, selectors.EVENT_READ, data=None)
 
@@ -113,6 +113,7 @@ def runServer():
                     acceptWrapper(key.fileobj)
                 else:
                     serviceConnection(key, mask)
+            time.sleep(0.001)
     except KeyboardInterrupt:
         log("Caught keyboard interrupt: exiting!")
     finally:
@@ -124,11 +125,13 @@ def listenForInput():
             for ch in getCharacterWindows():
                 sys.stdout.flush()
                 userInput(ch)
+            time.sleep(0.001)
     else:
         while True:
             for ch in getCharacterPosix():
                 sys.stdout.flush()
                 userInput(ch)
+            time.sleep(0.001)
 
 server = threading.Thread(target=runServer)
 server.start()
