@@ -21,6 +21,8 @@ port = int(sys.argv[1]) if len(sys.argv) == 2 else 1337
 ip = "127.0.0.1"
 debug = False
 sel = selectors.DefaultSelector()
+socketDelay = 0.01
+characterDelay = 0.05
 
 clients = set()
 clients_lock = threading.Lock()
@@ -67,7 +69,7 @@ def getCharacterPosix():
       try:
         c = sys.stdin.read(1)
         yield c
-        time.sleep(0.001)
+        time.sleep(characterDelay)
       except IOError: pass
   finally:
     termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
@@ -77,7 +79,7 @@ def getCharacterWindows():
     while True:
         c = msvcrt.getch().decode("utf-8")
         yield c     
-        time.sleep(0.001)
+        time.sleep(characterDelay)
 
 def boardInput(data: bytes):
     sys.stdout.write(data.decode("utf-8"))
@@ -116,7 +118,7 @@ def runServer():
                     acceptWrapper(key.fileobj)
                 else:
                     serviceConnection(key, mask)
-            time.sleep(0.001)
+            time.sleep(socketDelay)
     except KeyboardInterrupt:
         log("Caught keyboard interrupt: exiting!")
     finally:
@@ -128,13 +130,13 @@ def listenForInput():
             for ch in getCharacterWindows():
                 sys.stdout.flush()
                 userInput(ch)
-            time.sleep(0.001)
+            time.sleep(characterDelay)
     else:
         while True:
             for ch in getCharacterPosix():
                 sys.stdout.flush()
                 userInput(ch)
-            time.sleep(0.001)
+            time.sleep(characterDelay)
 
 def handler(signum, frame):
     userInput(str(chr(3)))
