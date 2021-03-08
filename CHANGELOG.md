@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.2.2](https://github.com/cpwood/Pico-Go/tree/v1.2.2) (2021-03-08)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.2.1...v1.2.2)
+
+This fixes a huge CPU load issue introduced by the new Python-based terminal proxy and also ensures `print()` statements are returned to the Pico Console in real time, as opposed to only at the end of executing.
+
+
+**Fixed bugs:**
+
+- Reduce CPU load of Python terminal implementation [\#52](https://github.com/cpwood/Pico-Go/issues/52)
+- Pico Console not updating at runtime with print\(\) statements [\#51](https://github.com/cpwood/Pico-Go/issues/51)
+
 ## [v1.2.1](https://github.com/cpwood/Pico-Go/tree/v1.2.1) (2021-03-06)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.2.0...v1.2.1)
