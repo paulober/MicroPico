@@ -21,16 +21,18 @@ export default class Runner {
   }
 
   async start() {
-    await this.board.softResetNoFollow();
-
     let currentFile = this._getCurrentFile();
 
-    if (currentFile == undefined)
+    if (currentFile == undefined){
+      this.terminal.enter();
+      this.terminal.writelnAndPrompt('A file isn\'t open in the editor.');
       return;
+    }
+
+    await this.board.softResetNoFollow();
 
     this.terminal.writeln('Running ' + currentFile.filename);
     this.busy = true;
-    this.pymakr.view.setButtonState(this.busy);
 
     await this.board.run(currentFile.content);
     this.busy = false;
@@ -65,7 +67,7 @@ export default class Runner {
   _getCurrentFile() {
     let file = this.api.getOpenFile();
 
-    if (!file.content) {
+    if (!file || !file.content) {
       return;
     }
 

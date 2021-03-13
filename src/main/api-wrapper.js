@@ -166,6 +166,10 @@ export default class ApiWrapper {
 
   getOpenFile() {
     let editor = window.activeTextEditor;
+
+    if (editor == undefined)
+      return null;
+
     let doc = editor.document;
     let name = doc.fileName;
     return {
@@ -176,6 +180,10 @@ export default class ApiWrapper {
 
   getSelected() {
     let editor = window.activeTextEditor;
+
+    if (editor == undefined)
+      return null;
+
     let selection = editor.selection;
     let codesnip = '';
     if (!selection.isEmpty) {

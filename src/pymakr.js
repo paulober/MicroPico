@@ -491,6 +491,14 @@ export default class Pymakr extends EventEmitter {
         this.stopOperation();
       }
     }
+    else if (this.isRunning()) {
+      try{
+        await this.runner.toggle();
+      }
+      finally {
+        this.stopOperation();
+      }
+    }
   }
 
   async runSelection() {
@@ -758,6 +766,10 @@ export default class Pymakr extends EventEmitter {
 
   isSynchronizing() {
     return this.status == SYNCHRONIZING;
+  }
+
+  isRunning() {
+    return this.status == RUNNING;
   }
 
   isListeningFtp() {

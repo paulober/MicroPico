@@ -106,6 +106,8 @@ export default class FtpFileSystem {
     let data = Buffer.alloc(0);
     let _this = this;
 
+    fileName = this._resolvePath(fileName);
+
     stream.on('data', function(chunk) {
       data = Buffer.concat([data, chunk]);
     });
@@ -115,6 +117,9 @@ export default class FtpFileSystem {
         let writer = new FileWriter(_this._shell, _this._board, _this
           ._settings, null);
         await writer.writeFileContent(fileName, fileName, data, 0);
+      }
+      catch(err) {
+        _this.terminal.write(err);
       }
       finally {
         release();
@@ -212,6 +217,9 @@ export default class FtpFileSystem {
   }
 
   async close() {
+    if (mutex.isLocked())
+      mutex.cancel();
+
     this._shell.close();
   }
 }
