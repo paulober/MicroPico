@@ -312,12 +312,6 @@ export default class Pymakr extends EventEmitter {
     }
   }
 
-  // refresh button display based on current status
-  _setButtonState() {
-    this.view.setButtonState(this.runner.busy, this.isSynchronizing(), this
-      .synchronizeType);
-  }
-
   async connect(address, clickaction) {
     this.logger.info('Connecting...');
     this.logger.info(address);
@@ -408,7 +402,7 @@ export default class Pymakr extends EventEmitter {
       }, 10000);
     }
 
-    this._setButtonState();
+    this.view.setButtonState();
   }
 
   async _onErrored(err) {
@@ -428,7 +422,7 @@ export default class Pymakr extends EventEmitter {
       this.terminal.writeln('> Failed to connect (' + message +
         '). Click the "Pico Disconnected" button to try again.'
       );
-      this._setButtonState();
+      this.view.setButtonState();
     }
   }
 
@@ -439,7 +433,7 @@ export default class Pymakr extends EventEmitter {
     this.terminal.writeln(
       '> Connection timed out. Click the "Pico Disconnected" button to try again.'
     );
-    this._setButtonState();
+    this.view.setButtonState();
   }
 
   _onMessageReceived(mssg) {
@@ -469,7 +463,7 @@ export default class Pymakr extends EventEmitter {
     this.stopOperation();
 
     await this.runner.stop();
-    this._setButtonState();
+    this.view.setButtonState();
 
     if (showMessage)
       this.terminal.writeln('\r\nDisconnected');
@@ -491,7 +485,6 @@ export default class Pymakr extends EventEmitter {
         }
         else {
           await this.runner.toggle();
-          this._setButtonState();
         }
       }
       finally {
@@ -525,9 +518,7 @@ export default class Pymakr extends EventEmitter {
     }
     else if (this.isSynchronizing()) {
       await this._stopSync();
-      this._setButtonState();
     }
-    this._setButtonState();
   }
 
   async uploadFile() {
@@ -617,14 +608,11 @@ export default class Pymakr extends EventEmitter {
       }
 
       this.synchronizeType = type;
-      this._setButtonState();
 
       // Probably needs to stay as a callback
       // Not the last thing it does.
       // eslint-disable-next-line no-unused-vars
       let cb = function(err) {
-        _this.status = IDLE;
-        _this._setButtonState();
         _this.stopOperation();
         if (_this.board.type != 'serial') {
           setTimeout(async function() {
