@@ -52,71 +52,71 @@
   "contributes": {
     "commands": [
       {
-        "command": "pymakr.connect",
+        "command": "picogo.connect",
         "title": "Pico-Go > Connect"
       },
       {
-        "command": "pymakr.disconnect",
+        "command": "picogo.disconnect",
         "title": "Pico-Go > Disconnect"
       },
       {
-        "command": "pymakr.initialise",
+        "command": "picogo.initialise",
         "title": "Pico-Go > Configure project"
       },
       {
-        "command": "pymakr.upload",
+        "command": "picogo.upload",
         "title": "Pico-Go > Upload project"
       },
       {
-        "command": "pymakr.uploadFile",
+        "command": "picogo.uploadFile",
         "title": "Pico-Go > Upload current file only"
       },
       {
-        "command": "pymakr.download",
+        "command": "picogo.download",
         "title": "Pico-Go > Download project"
       },
       {
-        "command": "pymakr.run",
+        "command": "picogo.run",
         "title": "Pico-Go > Run current file"
       },
       {
-        "command": "pymakr.runselection",
+        "command": "picogo.runselection",
         "title": "Pico-Go > Run current selection"
       },
       {
-        "command": "pymakr.deleteAllFiles",
+        "command": "picogo.deleteAllFiles",
         "title": "Pico-Go > Delete all files from board"
       },
       {
-        "command": "pymakr.globalSettings",
+        "command": "picogo.globalSettings",
         "title": "Pico-Go > Global settings"
       },
       {
-        "command": "pymakr.reset.soft",
+        "command": "picogo.reset.soft",
         "title": "Pico-Go > Reset > Soft"
       },
       {
-        "command": "pymakr.reset.hard",
+        "command": "picogo.reset.hard",
         "title": "Pico-Go > Reset > Hard"
       },
       {
-        "command": "pymakr.extra.pins",
+        "command": "picogo.extra.pins",
         "title": "Pico-Go > Extras > Show Pico Pin Map"
       },
       {
-        "command": "pymakr.extra.getSerial",
+        "command": "picogo.extra.getSerial",
         "title": "Pico-Go > Extras > List serial ports"
       },
       {
-        "command": "pymakr.extra.getFullVersion",
+        "command": "picogo.extra.getFullVersion",
         "title": "Pico-Go > Extra > Get support info"
       },
       {
-        "command": "pymakr.help",
+        "command": "picogo.help",
         "title": "Pico-Go > Help"
       },
       {
-        "command": "pymakr.listCommands",
+        "command": "picogo.listCommands",
         "title": "Pico-Go > List all Commands"
       }
     ],
@@ -127,43 +127,43 @@
         "when": "terminalFocus"
       },
       {
-        "command": "pymakr.initialise",
+        "command": "picogo.initialise",
         "key": "ctrl+shift+i",
         "mac": "cmd+shift+i",
         "linux": "ctrl+shift+alt+i"
       },
       {
-        "command": "pymakr.connect",
+        "command": "picogo.connect",
         "key": "ctrl+shift+c",
         "mac": "cmd+shift+c"
       },
       {
-        "command": "pymakr.upload",
+        "command": "picogo.upload",
         "key": "ctrl+shift+u",
         "mac": "cmd+shift+u"
       },
       {
-        "command": "pymakr.uploadFile",
+        "command": "picogo.uploadFile",
         "key": "ctrl+shift+f",
         "mac": "ctrl+shift+f"
       },
       {
-        "command": "pymakr.run",
+        "command": "picogo.run",
         "key": "ctrl+shift+r",
         "mac": "cmd+shift+r"
       },
       {
-        "command": "pymakr.runselection",
+        "command": "picogo.runselection",
         "key": "ctrl+shift+enter",
         "mac": "cmd+shift+enter"
       },
       {
-        "command": "pymakr.globalSettings",
+        "command": "picogo.globalSettings",
         "key": "ctrl+shift+g",
         "mac": "cmd+shift+g"
       },
       {
-        "command": "pymakr.reset.soft",
+        "command": "picogo.reset.soft",
         "key": "ctrl+shift+d",
         "mac": "cmd+shift+d"
       }
@@ -171,40 +171,40 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "pymakr.upload",
-          "group": "pymakr"
+          "command": "picogo.upload",
+          "group": "picogo"
         },
         {
-          "command": "pymakr.run",
-          "group": "pymakr"
+          "command": "picogo.run",
+          "group": "picogo"
         }
       ],
       "editor/context": [
         {
-          "command": "pymakr.connect",
-          "group": "pymakr"
+          "command": "picogo.connect",
+          "group": "picogo"
         },
         {
-          "command": "pymakr.run",
-          "group": "pymakr"
+          "command": "picogo.run",
+          "group": "picogo"
         },
         {
-          "command": "pymakr.runselection",
-          "group": "pymakr"
+          "command": "picogo.runselection",
+          "group": "picogo"
         },
         {
-          "command": "pymakr.upload",
-          "group": "pymakr"
+          "command": "picogo.upload",
+          "group": "picogo"
         }
       ],
       "editor/title": [
         {
-          "command": "pymakr.run",
-          "group": "pymakr"
+          "command": "picogo.run",
+          "group": "picogo"
         },
         {
-          "command": "pymakr.upload",
-          "group": "pymakr"
+          "command": "picogo.upload",
+          "group": "picogo"
         }
       ]
     }
@@ -213,67 +213,61 @@
     {
       "key": "status",
       "name": "",
-      "command": "pymakr.toggleConnect",
+      "command": "picogo.toggleConnect",
       "tooltip": "Toggle board connection"
     },
     {
       "key": "run",
       "name": "$(play) Run",
-      "command": "pymakr.run",
+      "command": "picogo.run",
       "tooltip": "Run current file"
     },
     {
       "key": "runselection",
       "name": "$(play) Run Line",
-      "command": "pymakr.runselection",
+      "command": "picogo.runselection",
       "tooltip": "Run current line"
     },
     {
       "key": "upload",
       "name": "$(triangle-up) Upload file",
-      "command": "pymakr.uploadFile",
+      "command": "picogo.uploadFile",
       "tooltip": "Upload current file to your board"
     },
     {
       "key": "download",
       "name": "$(triangle-down) Download",
-      "command": "pymakr.download",
+      "command": "picogo.download",
       "tooltip": "Download project from your board"
     },
     {
       "key": "disconnect",
       "name": "$(chrome-close) Disconnect",
-      "command": "pymakr.disconnect",
+      "command": "picogo.disconnect",
       "tooltip": "Disconnect"
     },
     {
       "key": "softreset",
       "name": "$(refresh) Reset",
-      "command": "pymakr.reset.soft",
+      "command": "picogo.reset.soft",
       "tooltip": "Restart your board"
     },
     {
       "key": "settings",
       "name": "$(gear) Settings",
-      "command": "pymakr.globalSettings",
+      "command": "picogo.globalSettings",
       "tooltip": "Global Pico-Go settings"
-    },
-    {
-      "key": "getversion",
-      "name": "$(tag) Get version",
-      "command": "pymakr.extra.getVersion",
-      "tooltip": "Get firmware version"
     },
     {
       "key": "listserial",
       "name": "$(list-unordered) List serialports",
-      "command": "pymakr.extra.getSerial",
+      "command": "picogo.extra.getSerial",
       "tooltip": "List available serialports"
     },
     {
       "key": "listcommands",
       "name": "$(list-unordered) All commands",
-      "command": "pymakr.listCommands",
+      "command": "picogo.listCommands",
       "tooltip": "List all available Pico-Go commands"
     }
   ],

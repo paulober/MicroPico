@@ -33,7 +33,7 @@ export default class Activator {
 
     let terminal = v.terminal;
 
-    let disposable = vscode.commands.registerCommand('pymakr.help',
+    let disposable = vscode.commands.registerCommand('picogo.help',
       function() {
         terminal.show();
         vscode.env.openExternal(vscode.Uri.parse(
@@ -41,60 +41,60 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.listCommands',
+    disposable = vscode.commands.registerCommand('picogo.listCommands',
       function() {
         v.showQuickPick();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.initialise',
+    disposable = vscode.commands.registerCommand('picogo.initialise',
       function() {
         sm.addToWorkspace();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.connect',
+    disposable = vscode.commands.registerCommand('picogo.connect',
       async function() {
         terminal.show();
         await pymakr.connect();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.run',
+    disposable = vscode.commands.registerCommand('picogo.run',
       async function() {
         terminal.show();
         await pymakr.run();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.runselection',
+    disposable = vscode.commands.registerCommand('picogo.runselection',
       async function() {
         terminal.show();
         await pymakr.runSelection();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.upload', function() {
+    disposable = vscode.commands.registerCommand('picogo.upload', function() {
       terminal.show();
       pymakr.upload();
     });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.uploadFile',
+    disposable = vscode.commands.registerCommand('picogo.uploadFile',
       function() {
         terminal.show();
         pymakr.uploadFile();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.download',
+    disposable = vscode.commands.registerCommand('picogo.download',
       async function() {
         terminal.show();
         await pymakr.download();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.deleteAllFiles',
+    disposable = vscode.commands.registerCommand('picogo.deleteAllFiles',
       function() {
         terminal.show();
 
@@ -104,19 +104,19 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.globalSettings',
+    disposable = vscode.commands.registerCommand('picogo.globalSettings',
       async function() {
         await pymakr.openGlobalSettings();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.disconnect',
+    disposable = vscode.commands.registerCommand('picogo.disconnect',
       async function() {
         await pymakr.disconnect();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.toggleConnect',
+    disposable = vscode.commands.registerCommand('picogo.toggleConnect',
       async function() {
         if (!pymakr.board.connected) {
           terminal.show();
@@ -125,7 +125,7 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.extra.pins',
+    disposable = vscode.commands.registerCommand('picogo.extra.pins',
       function() {
         const panel = vscode.window.createWebviewPanel(
           'pins',
@@ -147,27 +147,27 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      'pymakr.extra.getFullVersion', async function() {
+      'picogo.extra.getFullVersion', async function() {
         terminal.show();
         await pymakr.getFullVersion();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.extra.getSerial',
+    disposable = vscode.commands.registerCommand('picogo.extra.getSerial',
       async function() {
         terminal.show();
         await pymakr.getSerial();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.reset.soft',
+    disposable = vscode.commands.registerCommand('picogo.reset.soft',
       async function() {
         terminal.show();
         await pymakr.resetSoft();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('pymakr.reset.hard',
+    disposable = vscode.commands.registerCommand('picogo.reset.hard',
       async function() {
         terminal.show();
         await pymakr.resetHard();

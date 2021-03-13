@@ -51,7 +51,7 @@ export default class PanelView extends EventEmitter {
     let quickPickItems = pkg.contributes.commands;
 
     for (let qpItem of quickPickItems) {
-      if (qpItem.command != 'pymakr.listCommands') {
+      if (qpItem.command != 'picogo.listCommands') {
         items.push({
           label: qpItem.title,
           description: '',
