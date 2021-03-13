@@ -297,6 +297,7 @@
     "vscode:prepublish": "npm ci && npm prune"
   },
   "dependencies": {
+    "async-mutex": "^0.3.1",
     "binascii": "0.0.2",
     "bindings": "^1.5.0",
     "child-process-promise": "^2.2.1",

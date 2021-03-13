@@ -109,6 +109,13 @@ export default class Config {
         default: ['MicroPython', 'Microsoft'],
         order: 13
       },
+      ftp_password: {
+        type: 'string',
+        default: 'pico',
+        title: 'FTP Password',
+        description: 'Password for FTP authentication. The username is \'pico\'.',
+        order: 14
+      }
     };
   }
 }

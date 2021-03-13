@@ -137,6 +137,7 @@ export default class SettingsWrapper extends EventEmitter {
     this.fast_upload = this.api.config('fast_upload');
     this.autoconnect_comport_manufacturers = this.api.config(
       'autoconnect_comport_manufacturers');
+    this.ftp_password = this.api.config('ftp_password');
 
     this.timeout = 15000;
     this._setProjectConfig();
@@ -314,6 +315,7 @@ export default class SettingsWrapper extends EventEmitter {
       config.manual_com_device = this.api.config('manual_com_device');
       config.autoconnect_comport_manufacturers = this.api.config(
         'autoconnect_comport_manufacturers');
+      config.ftp_password = this.api.config('ftp_password');
     }
     return config;
   }

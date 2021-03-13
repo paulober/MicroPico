@@ -713,7 +713,7 @@ export default class Pymakr extends EventEmitter {
     // eslint-disable-next-line no-unused-vars
     this._ftpServer.on('login', ({ connection, username, password }, resolve,
       reject) => {
-      if (username != 'pico' && password != 'pico')
+      if (username != 'pico' && password != _this.settings.ftp_password)
         reject(new Error('Invalid username and password.'));
 
       resolve({ fs: _this._fs});
