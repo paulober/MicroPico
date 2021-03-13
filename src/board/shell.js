@@ -231,6 +231,14 @@ export default class Shell {
     await this.board.sendWait(command);
   }
 
+  async renameFile(oldName, newName) {
+    let command =
+      'import os\r\n' +
+      "os.rename('" + oldName + "', '" + newName + "')\r\n";
+
+    await this.board.sendWait(command);
+  }
+
   async createDir(name) {
     let command =
       'import os\r\n' +
@@ -274,7 +282,7 @@ export default class Shell {
 
   async exit() {
     await this.stopWorking();
-    await this._cleanClose();
+    await this.cleanClose();
   }
 
   async stopWorking() {
@@ -311,7 +319,7 @@ export default class Shell {
     });
   }
 
-  async _cleanClose() {
+  async cleanClose() {
     this.logger.info('Closing shell cleanly');
 
     if (this.settings.reboot_after_upload) {
@@ -320,6 +328,19 @@ export default class Shell {
       this.reset();
       return;
     }
+
+    await this.board.enterFriendlyRepl();
+    await this.board.send('\r\n');
+
+    this.logger.info('Closed successfully');
+
+    if (this.board.connection.type != 'serial') {
+      await this.board.disconnectSilent();
+    }
+  }
+
+  async close() {
+    this.logger.info('Closing shell cleanly');
 
     await this.board.enterFriendlyRepl();
     await this.board.send('\r\n');

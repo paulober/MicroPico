@@ -466,7 +466,7 @@ export default class Pymakr extends EventEmitter {
 
     await this.board.disconnect();
 
-    this.status = IDLE;
+    this.stopOperation();
 
     await this.runner.stop();
     this._setButtonState();
@@ -699,8 +699,7 @@ export default class Pymakr extends EventEmitter {
   }
 
   async toggleConnect() {
-    this.board.connected ? await this.disconnect() : await this
-  .connect();
+    this.board.connected ? await this.disconnect() : await this.connect();
   }
 
   async toggleFtp() {
@@ -735,9 +734,9 @@ export default class Pymakr extends EventEmitter {
     this.outputHidden = true;
     this.startOperation('picogo.ftp', LISTENINGFTP);
 
-    this.terminal.enter();
-    this.terminal.writeln('Starting FTP server..');
     this._ftpServer.listen();
+    this.terminal.enter();
+    this.terminal.writeln('Started FTP server.');
   }
 
   async ftpStop() {
@@ -751,7 +750,7 @@ export default class Pymakr extends EventEmitter {
     this.stopOperation();
   }
 
-  startOperation(stopAction, status, shownButtons = ['status', 'disconnect', 'softreset']) {
+  startOperation(stopAction, status, shownButtons = ['status', 'disconnect']) {
     this.status = status;
     this.view.startOperation(stopAction, shownButtons);
   }

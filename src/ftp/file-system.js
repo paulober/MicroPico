@@ -190,6 +190,6 @@ export default class FtpFileSystem {
   }
 
   async close() {
-    this._shell._cleanClose();
+    this._shell.close();
   }
 }
