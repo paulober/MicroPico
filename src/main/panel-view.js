@@ -6,6 +6,7 @@ import Term from './terminal';
 import ApiWrapper from '../main/api-wrapper.js';
 import Logger from '../helpers/logger.js';
 import EventEmitter from 'events';
+import _ from 'lodash';
 
 const pkg = vscode.extensions.getExtension('chriswood.pico-go').packageJSON;
 
@@ -167,6 +168,47 @@ export default class PanelView extends EventEmitter {
 
   clearTerminal() {
     this.terminal.clear();
+  }
+
+  startOperation(stopAction, shownButtons) {
+    this.stopAction = stopAction;
+    this.hideAllButtons(shownButtons);
+  }
+
+  stopOperation() {
+    this.showAllButtons();
+    this.stopAction = null;
+  }
+
+  hideAllButtons(except) {
+    if (except == undefined) {
+      except = [];
+    }
+
+    for (let button in this.statusItems) {
+      if (!_.includes(except, button))
+        this.statusItems[button].hide();
+    }
+
+    this.statusItems['stop'].show();
+  }
+
+  showAllButtons() {
+    for (let button in this.statusItems) {
+      if (
+        (this.settings.statusbar_buttons &&
+          this.settings.statusbar_buttons.indexOf(button) > -1) ||
+        button == 'listcommands'
+      ) {
+        this.statusItems[button].show();
+      }
+    }
+
+    this.statusItems['stop'].hide();
+  }
+
+  setStopAction(action) {
+    this.stopAction = action;
   }
 
   // Tear down any state and detach

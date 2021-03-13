@@ -217,6 +217,12 @@
       "tooltip": "Toggle board connection"
     },
     {
+      "key": "stop",
+      "name": "$(primitive-square) Stop",
+      "command": "picogo.universalStop",
+      "tooltip": "Stop"
+    },
+    {
       "key": "run",
       "name": "$(play) Run",
       "command": "picogo.run",

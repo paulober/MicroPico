@@ -11,13 +11,18 @@ import EventEmitter from 'events';
 import * as vscode from 'vscode';
 import os from 'os';
 
+const IDLE = 0;
+const SYNCHRONIZING = 1;
+const DELETING = 2;
+const RUNNING = 3;
+const LISTENINGFTP = 4;
+
 export default class Pymakr extends EventEmitter {
 
   constructor(serializedState, pyboard, view, settings) {
     super();
     let _this = this;
     this.board = pyboard;
-    this.synchronizing = false;
     this.synchronizeType = '';
     this.settings = settings;
     this.api = new ApiWrapper(settings);
@@ -31,6 +36,7 @@ export default class Pymakr extends EventEmitter {
     this.terminal = this.view.terminal;
     this.runner = new Runner(pyboard, this.terminal, this);
     this.outputHidden = false;
+    this.status = IDLE;
 
     this.settings.on('format_error', function() {
       _this.terminal.writeln('JSON format error in global pico-go.json file');
@@ -274,6 +280,9 @@ export default class Pymakr extends EventEmitter {
   }
 
   async getFullVersion() {
+    if (this.isBusy())
+      return;
+
     let command =
       'import os; ' +
       'print("\\r\\n"); ' +
@@ -303,7 +312,7 @@ export default class Pymakr extends EventEmitter {
 
   // refresh button display based on current status
   _setButtonState() {
-    this.view.setButtonState(this.runner.busy, this.synchronizing, this
+    this.view.setButtonState(this.runner.busy, this.isSynchronizing(), this
       .synchronizeType);
   }
 
@@ -349,6 +358,7 @@ export default class Pymakr extends EventEmitter {
       await this.disconnect();
     }
 
+    this.stopOperation();
     this.board.status = 0;
     this.outputHidden = false;
 
@@ -406,7 +416,7 @@ export default class Pymakr extends EventEmitter {
     }
     if (this.board.connected) {
       this.logger.warning('An error occurred: ' + message);
-      if (this.synchronizing) {
+      if (this.isSynchronizing()) {
         this.terminal.writeln('An error occurred: ' + message);
         this.logger.warning('Synchronizing, stopping sync');
         await this.syncObj.stop();
@@ -431,7 +441,7 @@ export default class Pymakr extends EventEmitter {
   }
 
   _onMessageReceived(mssg) {
-    if (!this.synchronizing && !this.outputHidden) {
+    if (!this.isSynchronizing() && !this.outputHidden) {
       this.terminal.write(mssg);
     }
   }
@@ -454,7 +464,8 @@ export default class Pymakr extends EventEmitter {
 
     await this.board.disconnect();
 
-    this.synchronizing = false;
+    this.status = IDLE;
+
     await this.runner.stop();
     this._setButtonState();
 
@@ -467,15 +478,22 @@ export default class Pymakr extends EventEmitter {
       this.terminal.writeln('Please connect your device');
       return;
     }
-    if (!this.synchronizing) {
-      let code = this.api.getSelected();
-      // if user has selected code, run that instead of the file
-      if (code) {
-        await this.runSelection();
+    if (this.isIdle()) {
+      try {
+        this.startOperation('picogo.run', RUNNING);
+
+        let code = this.api.getSelected();
+        // if user has selected code, run that instead of the file
+        if (code) {
+          await this.runSelection();
+        }
+        else {
+          await this.runner.toggle();
+          this._setButtonState();
+        }
       }
-      else {
-        await this.runner.toggle();
-        this._setButtonState();
+      finally {
+        this.stopOperation();
       }
     }
   }
@@ -486,7 +504,7 @@ export default class Pymakr extends EventEmitter {
       return;
     }
 
-    if (!this.synchronizing) {
+    if (this.isIdle()) {
       let code = this.api.getSelectedOrLine();
 
       try {
@@ -500,10 +518,10 @@ export default class Pymakr extends EventEmitter {
   }
 
   async upload() {
-    if (!this.synchronizing) {
+    if (this.isIdle()) {
       await this._sync('send');
     }
-    else {
+    else if (this.isSynchronizing()) {
       await this._stopSync();
       this._setButtonState();
     }
@@ -537,7 +555,9 @@ export default class Pymakr extends EventEmitter {
       options);
 
     if (choice == 'Yes') {
-      if (!this.synchronizing) {
+      if (this.isIdle()) {
+        this.status = DELETING;
+
         let command =
           'import os\r\n' +
           'def deltree(target):\r\n' +
@@ -565,6 +585,9 @@ export default class Pymakr extends EventEmitter {
           this.logger.error(
             'Failed to send and execute codeblock ');
         }
+        finally {
+          this.status = IDLE;
+        }
       }
     }
   }
@@ -581,9 +604,16 @@ export default class Pymakr extends EventEmitter {
       this.terminal.writeln('Please connect your device');
       return;
     }
-    if (!this.synchronizing) {
+    if (this.isIdle()) {
       this.syncObj = new Sync(this.board, this.settings, this.terminal);
-      this.synchronizing = true;
+      
+      if (type == 'send') {
+        this.startOperation('picogo.upload', SYNCHRONIZING);
+      }
+      else {
+        this.startOperation('picogo.download', SYNCHRONIZING);
+      }
+
       this.synchronizeType = type;
       this._setButtonState();
 
@@ -591,8 +621,9 @@ export default class Pymakr extends EventEmitter {
       // Not the last thing it does.
       // eslint-disable-next-line no-unused-vars
       let cb = function(err) {
-        _this.synchronizing = false;
+        _this.status = IDLE;
         _this._setButtonState();
+        _this.stopOperation();
         if (_this.board.type != 'serial') {
           setTimeout(async function() {
             await _this.connect();
@@ -644,12 +675,12 @@ export default class Pymakr extends EventEmitter {
   async _stopSync() {
     let _this = this;
     _this.logger.info('Stopping upload/download now...');
-    if (this.synchronizing) {
+    if (this.isSynchronizing()) {
       let type = this.synchronizeType == 'receive' ? 'download' : 'upload';
       this.terminal.writeln('Stopping ' + type + '....');
 
       await this.syncObj.stop();
-      this.synchronizing = false;
+      this.stopOperation();
     }
   }
 
@@ -668,5 +699,31 @@ export default class Pymakr extends EventEmitter {
   async toggleConnect() {
     this.board.connected ? await this.disconnect() : await this
   .connect();
+  }
+
+  startOperation(stopAction, status, shownButtons = ['status', 'disconnect', 'softreset']) {
+    this.status = status;
+    this.view.startOperation(stopAction, shownButtons);
+  }
+
+  stopOperation() {
+    this.status = IDLE;
+    this.view.stopOperation();
+  }
+
+  isIdle() {
+    return this.status == IDLE;
+  }
+
+  isBusy() {
+    return this.status != IDLE;
+  }
+
+  isSynchronizing() {
+    return this.status == SYNCHRONIZING;
+  }
+
+  isListeningFtp() {
+    return this.status == LISTENINGFTP;
   }
 }

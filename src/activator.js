@@ -174,6 +174,13 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
+    disposable = vscode.commands.registerCommand('picogo.universalStop',
+    async function() {
+      if (v.stopAction != undefined)
+        vscode.commands.executeCommand(v.stopAction);
+    });
+  context.subscriptions.push(disposable);
+
     return v;
   }
 
