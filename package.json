@@ -240,7 +240,7 @@
     },
     {
       "key": "upload",
-      "name": "$(triangle-up) Upload file",
+      "name": "$(triangle-up) Upload",
       "command": "picogo.uploadFile",
       "tooltip": "Upload current file to your board"
     },

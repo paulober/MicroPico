@@ -126,12 +126,12 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('picogo.ftp',
-    async function() {
-      if (!pymakr.board.connected) {
-        terminal.show();
-      }
-      await pymakr.toggleFtp();
-    });
+      async function() {
+        if (!pymakr.board.connected) {
+          terminal.show();
+        }
+        await pymakr.toggleFtp();
+      });
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('picogo.extra.pins',
@@ -184,11 +184,11 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('picogo.universalStop',
-    async function() {
-      if (v.stopAction != undefined)
-        vscode.commands.executeCommand(v.stopAction);
-    });
-  context.subscriptions.push(disposable);
+      async function() {
+        if (v.stopAction != undefined)
+          vscode.commands.executeCommand(v.stopAction);
+      });
+    context.subscriptions.push(disposable);
 
     return v;
   }
@@ -197,15 +197,16 @@ export default class Activator {
     try {
       let executable = process.platform == 'win32' ? 'py' : 'python3';
       let result = await exec(`${executable} -V`);
-      let match = /Python (?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result.stdout);
-  
+      let match = /Python (?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result
+        .stdout);
+
       if (match == null)
         return false;
-  
+
       let major = parseInt(match.groups.major);
       return major >= 3;
     }
-    catch(err) {
+    catch (err) {
       return false;
     }
   }

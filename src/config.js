@@ -70,7 +70,7 @@ export default class Config {
         type: 'boolean',
         default: false,
         title: 'Open on start',
-        description: 'Automatically open the pymakr console and connect to the board after starting VS Code',
+        description: 'Automatically open the Pico-Go console and connect to the board after starting VS Code',
         order: 9
       },
       safe_boot_on_upload: {
