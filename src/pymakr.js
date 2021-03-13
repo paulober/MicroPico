@@ -11,7 +11,10 @@ import EventEmitter from 'events';
 import * as vscode from 'vscode';
 import os from 'os';
 import FtpFileSystem from './ftp/file-system.js';
-import FtpSrv, { FtpServer } from 'ftp-srv';
+import FtpSrv from 'ftp-srv';
+import fetch from 'node-fetch';
+import semver from 'semver';
+import { exec } from 'child-process-promise';
 
 const IDLE = 0;
 const SYNCHRONIZING = 1;
@@ -708,6 +711,11 @@ export default class Pymakr extends EventEmitter {
   }
 
   async ftpStart() {
+    if (!this.board.connected) {
+      this.terminal.writeln('Please connect your device');
+      return;
+    }
+
     let _this = this;
 
     this._ftpServer = new FtpSrv({
@@ -744,6 +752,94 @@ export default class Pymakr extends EventEmitter {
     }
 
     this.stopOperation();
+  }
+
+  async checkForFirmwareUpdates() {
+    if (!this.board.connected) {
+      this.terminal.writeln('Please connect your device');
+      return;
+    }
+
+    let board = await this._getBoardVersion();
+
+    if (board == undefined)
+      return;
+
+    let server = await this._getServerVersion();
+
+    try {
+      if (semver.gte(server.version + '.0', board.version + '.0') && server.date > board.date) {
+        let choice = await this.api.confirm(
+          `Firmware version v${server.version} (${server.date}) is available. Would you like to download it?`,
+          ['Yes', 'No']
+        );
+  
+        if (choice == 'Yes') {
+          vscode.env.openExternal(vscode.Uri.parse(server.url));
+        }
+      }
+      else {
+        vscode.window.showInformationMessage('No firmware updates are available.');
+      }
+    }
+    catch(err) {
+      this.logger.warning(`Error processing firmware: ${err}`);
+    }
+    finally {
+      this.terminal.writePrompt();
+    }
+  }
+
+  async _getBoardVersion() {
+    this.outputHidden = true;
+  
+    try{
+      let response = await this.board.run('import os;print(os.uname().version)\r\n');
+      
+      let m = /v([0-9]+\.[0-9]+(\.[0-9]+)?)/.exec(response);
+      let version = m[1];
+      
+      m = /[0-9]{4}-[0-9]{2}-[0-9]{2}/.exec(response);
+      let date = m[0];
+
+      return {
+        version: version,
+        date: date
+      };
+    }
+    catch(err) {
+      this.logger.warning(`Error while finding board version number: ${err}`);
+    }
+    finally {
+      this.outputHidden = false;
+    }
+  }
+
+  async _getServerVersion() {
+    try {
+      let response = await fetch('https://micropython.org/download/rp2-pico/');
+      let html = await response.text();
+      
+      let m = /href="(?<url>\/resources\/firmware\/rp2-pico-[0-9]{8}-v[^"]+)"/gm.exec(html);
+      let url = 'https://micropython.org' + m[1];
+
+      m = /v([0-9]+\.[0-9]+(\.[0-9]+)?)/.exec(url);
+      let version = m[1];
+      
+      m = /[0-9]{8}/.exec(url);
+      let date = m[0];
+      date = `${date.substr(0, 4)}-${date.substr(4, 2)}-${date.substr(6, 4)}`;
+
+      return {
+        version: version,
+        date: date,
+        url: url
+      };
+    }
+    catch(err) {
+      this.logger.warning(`Error while finding server version number: ${err}`)
+    }
+
   }
 
   startOperation(stopAction, status, shownButtons = ['status', 'disconnect']) {

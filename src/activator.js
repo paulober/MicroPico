@@ -190,6 +190,12 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
+    disposable = vscode.commands.registerCommand('picogo.extra.firmwareUpdates',
+      async function() {
+        await pymakr.checkForFirmwareUpdates();
+      });
+    context.subscriptions.push(disposable);
+
     return v;
   }
 
