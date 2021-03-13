@@ -32,7 +32,7 @@ const pipe = promisify(pipeline);
 
 export default class Shell {
 
-  constructor(board, method, settings) {
+  constructor(board, settings) {
     this.config = Config.constants();
     this.settings = settings;
     this.BIN_CHUNK_SIZE = this.settings.upload_chunk_size;

@@ -125,6 +125,15 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
+    disposable = vscode.commands.registerCommand('picogo.ftp',
+    async function() {
+      if (!pymakr.board.connected) {
+        terminal.show();
+      }
+      await pymakr.toggleFtp();
+    });
+    context.subscriptions.push(disposable);
+
     disposable = vscode.commands.registerCommand('picogo.extra.pins',
       function() {
         const panel = vscode.window.createWebviewPanel(

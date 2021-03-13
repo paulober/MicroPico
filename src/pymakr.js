@@ -10,6 +10,8 @@ import Config from './config.js';
 import EventEmitter from 'events';
 import * as vscode from 'vscode';
 import os from 'os';
+import FtpFileSystem from './ftp/file-system.js';
+import FtpSrv, { FtpServer } from 'ftp-srv';
 
 const IDLE = 0;
 const SYNCHRONIZING = 1;
@@ -699,6 +701,54 @@ export default class Pymakr extends EventEmitter {
   async toggleConnect() {
     this.board.connected ? await this.disconnect() : await this
   .connect();
+  }
+
+  async toggleFtp() {
+    if (this.isIdle()) {
+      await this.ftpStart();
+    }
+    else if (this.isListeningFtp()) {
+      await this.ftpStop();
+    }
+  }
+
+  async ftpStart() {
+    let _this = this;
+
+    this._ftpServer = new FtpSrv({
+      url: 'ftp://127.0.0.1:2121',
+      greeting: 'Pico FTP - welcome!',
+      blacklist: ['SITE']
+    });
+
+    this._fs = new FtpFileSystem(this.board, this.settings, this.terminal);
+
+    // eslint-disable-next-line no-unused-vars
+    this._ftpServer.on('login', ({ connection, username, password }, resolve,
+      reject) => {
+      if (username != 'pico' && password != 'pico')
+        reject(new Error('Invalid username and password.'));
+
+      resolve({ fs: _this._fs});
+    });
+
+    this.outputHidden = true;
+    this.startOperation('picogo.ftp', LISTENINGFTP);
+
+    this.terminal.enter();
+    this.terminal.writeln('Starting FTP server..');
+    this._ftpServer.listen();
+  }
+
+  async ftpStop() {
+    if (this._ftpServer != undefined) {
+      this._ftpServer.close();
+      await this._fs.close();
+      this.terminal.writeln('Stopped FTP server.');
+      this.outputHidden = false;
+    }
+
+    this.stopOperation();
   }
 
   startOperation(stopAction, status, shownButtons = ['status', 'disconnect', 'softreset']) {

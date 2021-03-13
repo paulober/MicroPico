@@ -717,7 +717,7 @@ export default class Sync {
   }
 
   async _startShell() {
-    this.shell = new Shell(this.board, this.method, this.settings);
+    this.shell = new Shell(this.board, this.settings);
     await this.shell.initialise();
   }
 

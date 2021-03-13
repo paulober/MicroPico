@@ -88,6 +88,10 @@
         "title": "Pico-Go > Delete all files from board"
       },
       {
+        "command": "picogo.ftp",
+        "title": "Pico-Go > Start FTP server"
+      },
+      {
         "command": "picogo.globalSettings",
         "title": "Pico-Go > Global settings"
       },
@@ -100,20 +104,20 @@
         "title": "Pico-Go > Reset > Hard"
       },
       {
+        "command": "picogo.help",
+        "title": "Pico-Go > Help > Getting started"
+      },
+      {
         "command": "picogo.extra.pins",
-        "title": "Pico-Go > Extras > Show Pico Pin Map"
+        "title": "Pico-Go > Help > Show Pico Pin Map"
       },
       {
         "command": "picogo.extra.getSerial",
-        "title": "Pico-Go > Extras > List serial ports"
+        "title": "Pico-Go > Help > List serial ports"
       },
       {
         "command": "picogo.extra.getFullVersion",
-        "title": "Pico-Go > Extra > Get support info"
-      },
-      {
-        "command": "picogo.help",
-        "title": "Pico-Go > Help"
+        "title": "Pico-Go > Help > Get support info"
       },
       {
         "command": "picogo.listCommands",
@@ -275,6 +279,12 @@
       "name": "$(list-unordered) All commands",
       "command": "picogo.listCommands",
       "tooltip": "List all available Pico-Go commands"
+    },
+    {
+      "key": "ftp",
+      "name": "$(references) FTP",
+      "command": "picogo.ftp",
+      "tooltip": "Start FTP server"
     }
   ],
   "scripts": {
@@ -298,8 +308,10 @@
     "electron-rebuild": "^1.11.0",
     "element-resize-detector": "1.1.15",
     "fs-extra": "^9.1.0",
+    "ftp-srv": "^4.4.0",
     "lie": "^3.3.0",
     "lodash": "^4.17.20",
+    "memorystream": "^0.3.1",
     "nan": "2.14.0",
     "ncp": "^2.0.0",
     "node-abi": "^2.19.3",
