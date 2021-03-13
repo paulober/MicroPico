@@ -5,7 +5,10 @@ import uuid from 'uuid';
 import { Readable } from 'stream';
 import MemoryStream from 'memorystream';
 import FileWriter from '../board/file-writer.js';
-import Utils from '../helpers/utils.js';
+import {Mutex} from 'async-mutex';
+import { list } from 'serialport';
+
+const mutex = new Mutex();
 
 export default class FtpFileSystem {
   constructor(board, settings, terminal) {
@@ -15,7 +18,6 @@ export default class FtpFileSystem {
     this._shell = new Shell(board, settings);
     this._cwd = '/';
     this._shellEntered = false;
-    this._writing = false;
   }
 
   async _ensureListing() {
@@ -29,13 +31,17 @@ export default class FtpFileSystem {
   }
 
   async _refreshListing() {
-    this._list = await this._shell.list('/', true, false);
-    this._list.push({
-      Fullname: '/',
-      Size: 0,
-      Path: '',
-      Name: '/',
-      Type: 'dir'
+    let _this = this;
+
+    await mutex.runExclusive(async () => {
+      _this._list = await _this._shell.list('/', true, false);
+      _this._list.push({
+        Fullname: '/',
+        Size: 0,
+        Path: '',
+        Name: '/',
+        Type: 'dir'
+      });
     });
   }
 
@@ -76,10 +82,6 @@ export default class FtpFileSystem {
   }
 
   async list(folderPath = '.') {
-    while (this._writing) {
-      await Utils.sleep(500);
-    }
-
     await this._refreshListing();
     folderPath = this._resolvePath(folderPath);
 
@@ -99,6 +101,7 @@ export default class FtpFileSystem {
   }
 
   async write(fileName, { append = false, start = 0 } = {}) {
+    let release = await mutex.acquire();
     let stream = new MemoryStream();
     let data = Buffer.alloc(0);
     let _this = this;
@@ -114,7 +117,8 @@ export default class FtpFileSystem {
         await writer.writeFileContent(fileName, fileName, data, 0);
       }
       finally {
-        _this._writing = false;
+        release();
+        await list();
       }
     });
 
@@ -132,8 +136,6 @@ export default class FtpFileSystem {
       stream.write(result.buffer.slice(0, start));
     }
 
-    this._writing = true;
-
     return {
       stream,
       fileName
@@ -142,42 +144,62 @@ export default class FtpFileSystem {
 
   async read(fileName, { start = 0 } = {}) {
     await this._ensureListing();
-    fileName = this._resolvePath(fileName);
 
-    let item = _.find(this._list, x => x.Fullname == fileName);
+    let _this = this;
 
-    if (item.Type == 'dir') {
-      throw new Error('Cannot read a directory');
-    }
+    return await mutex.runExclusive(async () => {
+      fileName = _this._resolvePath(fileName);
 
-    let result = await this._shell.readFile(fileName);
-    let stream = new Readable();
-    stream.push(result.buffer.slice(start));
-    stream.push(null);
-
-    return { stream, fileName };
+      let item = _.find(_this._list, x => x.Fullname == fileName);
+  
+      if (item.Type == 'dir') {
+        throw new Error('Cannot read a directory');
+      }
+  
+      let result = await _this._shell.readFile(fileName);
+      let stream = new Readable();
+      stream.push(result.buffer.slice(start));
+      stream.push(null);
+  
+      return { stream, fileName };
+    });
   }
 
   async delete(fileOrFolderPath) {
     await this._ensureListing();
-    fileOrFolderPath = this._resolvePath(fileOrFolderPath);
 
-    let item = _.find(this._list, x => x.Fullname == fileOrFolderPath);
+    let _this = this;
 
-    if (item.Type == 'dir') {
-      await this._shell.removeDir(fileOrFolderPath);
-    }
-    else {
-      await this,this._shell.removeFile(fileOrFolderPath);
-    }
+    await mutex.runExclusive(async () => {
+      fileOrFolderPath = _this._resolvePath(fileOrFolderPath);
+
+      let item = _.find(_this._list, x => x.Fullname == fileOrFolderPath);
+  
+      if (item.Type == 'dir') {
+        await _this._shell.removeDir(fileOrFolderPath);
+      }
+      else {
+        await _this._shell.removeFile(fileOrFolderPath);
+      }
+    });
   }
 
   async mkdir(folderPath) {
-    await this._shell.createDir(folderPath);
+    let _this = this;
+    
+    await mutex.runExclusive(async () => {
+      await _this._shell.createDir(folderPath);
+    });
+
+    await this.list();
   }
 
   async rename(from, to) {
-    await this._shell.renameFile(from, to);
+    let _this = this;
+
+    await mutex.runExclusive(async () => {
+      await _this._shell.renameFile(from, to);
+    });
   }
 
   // eslint-disable-next-line no-unused-vars

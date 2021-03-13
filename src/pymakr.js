@@ -724,7 +724,7 @@ export default class Pymakr extends EventEmitter {
 
     this._ftpServer.listen();
     this.terminal.enter();
-    this.terminal.writeln('Started FTP server.');
+    this.terminal.writeln('Started FTP server: ftp://pico@127.0.0.1:2121');
   }
 
   async ftpStop() {
