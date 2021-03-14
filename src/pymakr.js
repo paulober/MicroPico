@@ -794,6 +794,8 @@ export default class Pymakr extends EventEmitter {
   
     try{
       let response = await this.board.run('import os;print(os.uname().version)\r\n');
+
+      this.logger.warning(response);
       
       let m = /v([0-9]+\.[0-9]+(\.[0-9]+)?)/.exec(response);
       let version = m[1];

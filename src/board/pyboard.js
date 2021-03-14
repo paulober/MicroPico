@@ -158,7 +158,8 @@ export default class Pyboard {
       await this.sendWait(CTRL_A, repl_entry_waitfor, 5000);
     }
     catch (err) {
-      this.promise.reject(err);
+      if (this.promise)
+        this.promise.reject(err);
     }
   }
 
@@ -412,7 +413,7 @@ export default class Pyboard {
             mssg = mssg.substr(0, mssg.indexOf('\u0004>'));
           }
 
-          this.logger.warning(`Modified mssg: ${mssg}`);
+          // this.logger.warning(`Modified mssg: ${mssg}`);
 
           if (mssg.length > 0) {
             this.onmessage(mssg);
@@ -526,7 +527,9 @@ export default class Pyboard {
           _this.waitingFor = null;
           _this.commandResponseBuffer = '';
           _this.rawResponseStarted = true;
-          temp.reject(new Error('timeout'), _this.commandResponseBuffer);
+
+          if (temp)
+            temp.reject(new Error('timeout'), _this.commandResponseBuffer);
         }
       }, timeout);
     }
