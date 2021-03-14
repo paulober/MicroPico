@@ -7,8 +7,11 @@ import MemoryStream from 'memorystream';
 import FileWriter from '../board/file-writer.js';
 import {Mutex} from 'async-mutex';
 import { list } from 'serialport';
+import { ftpErrors } from 'ftp-srv';
 
-const mutex = new Mutex();
+const FileSystemError = ftpErrors.FileSystemError;
+const _mutex = new Mutex();
+const _logEnabled = false;
 
 export default class FtpFileSystem {
   constructor(board, settings, terminal) {
@@ -33,7 +36,7 @@ export default class FtpFileSystem {
   async _refreshListing() {
     let _this = this;
 
-    await mutex.runExclusive(async () => {
+    await _mutex.runExclusive(async () => {
       _this._list = await _this._shell.list('/', true, false);
       _this._list.push({
         Fullname: '/',
@@ -49,9 +52,11 @@ export default class FtpFileSystem {
     if (newPath == '.')
       return this._cwd;
 
-    return path.isAbsolute(newPath) ?
+    let result = (path.isAbsolute(newPath) ?
       path.normalize(newPath) :
-      path.join('/', this._cwd, newPath).replace('\\', '/');
+      path.join('/', this._cwd, newPath)).replaceAll('\\', '/');
+
+    return result;
   }
 
   get root() {
@@ -69,7 +74,7 @@ export default class FtpFileSystem {
     let item = _.find(this._list, x => x.Fullname == fileName);
 
     if (item == null)
-      return null;
+      throw new FileSystemError(`'${fileName}' does not exist!`);
 
     return {
       // 16895 is a directory with 0777; 511 is a file with 0777. 
@@ -83,9 +88,16 @@ export default class FtpFileSystem {
 
   async list(folderPath = '.') {
     await this._refreshListing();
+
     folderPath = this._resolvePath(folderPath);
+    this._log(`Listing: ${folderPath}`);
+
+    //this.log(`Resolved to: ${folderPath}`);
+    //this.log(`All items: ${JSON.stringify(this._list)}`);
 
     let items = _.filter(this._list, x => x.Path == folderPath);
+
+    //this.log(`Filtered: ${JSON.stringify(items)}`);
 
     return _.map(items, x => ({
       name: x.Name,
@@ -97,16 +109,32 @@ export default class FtpFileSystem {
   }
 
   async chdir(folderPath = '.') {
-    this._cwd = this._resolvePath(folderPath);
+    folderPath = this._resolvePath(folderPath);
+
+    this._log(`Changing directory to: ${folderPath}`);
+
+    let item = _.find(this._list, x => x.Fullname == folderPath);
+
+    if (item == null) {
+      throw new FileSystemError(`'${folderPath}' doesn't exist.`)
+    }
+
+    if (item.Type != 'dir') {
+      throw new FileSystemError(`'${folderPath}' is a file, not a folder.`);
+    }
+
+    this._cwd = folderPath;
   }
 
   async write(fileName, { append = false, start = 0 } = {}) {
-    let release = await mutex.acquire();
+    let release = await _mutex.acquire();
     let stream = new MemoryStream();
     let data = Buffer.alloc(0);
     let _this = this;
 
     fileName = this._resolvePath(fileName);
+
+    this._log(`Writing '${fileName}'`);
 
     stream.on('data', function(chunk) {
       data = Buffer.concat([data, chunk]);
@@ -134,7 +162,7 @@ export default class FtpFileSystem {
       let item = _.find(this._list, x => x.Fullname == fileName);
 
       if (item.Type == 'dir') {
-        throw new Error('Cannot read a directory');
+        throw new FileSystemError('Cannot read a directory');
       }
 
       let result = await this._shell.readFile(fileName);
@@ -152,13 +180,17 @@ export default class FtpFileSystem {
 
     let _this = this;
 
-    return await mutex.runExclusive(async () => {
+    return await _mutex.runExclusive(async () => {
       fileName = _this._resolvePath(fileName);
+      this._log(`Reading '${fileName}'`);
 
       let item = _.find(_this._list, x => x.Fullname == fileName);
+
+      if (item == null)
+        throw new FileSystemError(`'${fileName}' does not exist!`);
   
       if (item.Type == 'dir') {
-        throw new Error('Cannot read a directory');
+        throw new FileSystemError('Cannot read a directory');
       }
   
       let result = await _this._shell.readFile(fileName);
@@ -175,11 +207,15 @@ export default class FtpFileSystem {
 
     let _this = this;
 
-    await mutex.runExclusive(async () => {
+    await _mutex.runExclusive(async () => {
       fileOrFolderPath = _this._resolvePath(fileOrFolderPath);
+      this._log(`Deleting '${fileOrFolderPath}'`);
 
       let item = _.find(_this._list, x => x.Fullname == fileOrFolderPath);
   
+      if (item == null)
+        throw new FileSystemError(`'${fileOrFolderPath}' does not exist!`);
+
       if (item.Type == 'dir') {
         await _this._shell.removeDir(fileOrFolderPath);
       }
@@ -192,7 +228,8 @@ export default class FtpFileSystem {
   async mkdir(folderPath) {
     let _this = this;
     
-    await mutex.runExclusive(async () => {
+    await _mutex.runExclusive(async () => {
+      this._log(`Making Directory '${folderPath}'`);
       await _this._shell.createDir(folderPath);
     });
 
@@ -202,7 +239,17 @@ export default class FtpFileSystem {
   async rename(from, to) {
     let _this = this;
 
-    await mutex.runExclusive(async () => {
+    from = this._resolvePath(from);
+    to = this._resolvePath(to);
+
+    this._log(`Renaming from '${from}' to '${to}'`);
+
+    let item = _.find(_this._list, x => x.Fullname == from);
+  
+    if (item == null)
+      throw new FileSystemError(`'${from}' does not exist!`);
+
+    await _mutex.runExclusive(async () => {
       await _this._shell.renameFile(from, to);
     });
   }
@@ -217,9 +264,14 @@ export default class FtpFileSystem {
   }
 
   async close() {
-    if (mutex.isLocked())
-      mutex.cancel();
+    if (_mutex.isLocked())
+      _mutex.cancel();
 
     this._shell.close();
+  }
+
+  _log(message) {
+    if (_logEnabled)
+      this._terminal.writeln(message);
   }
 }

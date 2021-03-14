@@ -14,7 +14,6 @@ import FtpFileSystem from './ftp/file-system.js';
 import FtpSrv from 'ftp-srv';
 import fetch from 'node-fetch';
 import semver from 'semver';
-import { exec } from 'child-process-promise';
 
 const IDLE = 0;
 const SYNCHRONIZING = 1;
@@ -729,7 +728,7 @@ export default class Pymakr extends EventEmitter {
     // eslint-disable-next-line no-unused-vars
     this._ftpServer.on('login', ({ connection, username, password }, resolve,
       reject) => {
-      if (username != 'pico' && password != _this.settings.ftp_password)
+      if (username != 'pico' || (username == 'pico' && password != _this.settings.ftp_password))
         reject(new Error('Invalid username and password.'));
 
       resolve({ fs: _this._fs});
