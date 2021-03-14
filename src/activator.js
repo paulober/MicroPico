@@ -13,7 +13,7 @@ export default class Activator {
   async activate(context) {
     let _this = this;
     let sw = new SettingsWrapper();
-    await sw.initialize();
+    await sw.initialize(context.workspaceState);
 
     let pythonInstalled = await this._checkPythonVersion();
 
@@ -28,7 +28,10 @@ export default class Activator {
     await sm.updateStubs();
 
     let pb = new Pyboard(sw);
+
     let v = new PanelView(pb, sw);
+    await v.initialize();
+
     let pymakr = new Pymakr({}, pb, v, sw);
 
     let terminal = v.terminal;

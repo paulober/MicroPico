@@ -13,14 +13,17 @@ const pkg = vscode.extensions.getExtension('chriswood.pico-go').packageJSON;
 export default class PanelView extends EventEmitter {
   constructor(pyboard, settings) {
     super();
-    let _this = this;
+
     this.settings = settings;
     this.board = pyboard;
     this.visible = true;
     this.api = new ApiWrapper();
     this.logger = new Logger('PanelView');
-
     this.statusItems = {};
+  }
+
+  async initialize() {
+    let _this = this;
 
     for (let barItem of pkg.statusBar) {
       this.statusItems[barItem.key] = this._createStatusItem(
@@ -40,7 +43,9 @@ export default class PanelView extends EventEmitter {
     _this._setProjectName(_this.api.getProjectPath());
 
     // create terminal
-    this.terminal = new Term(onTermConnect, this.board, _this.settings);
+    this.terminal = new Term(this.board, _this.settings);
+    await this.terminal.initialize(onTermConnect);
+    
     this.terminal.setOnMessageListener(function(input) {
       _this.emit('user_input', input);
     });

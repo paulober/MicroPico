@@ -30,7 +30,9 @@ export default class SettingsWrapper extends EventEmitter {
     this.setFileChangedGlobal();
   }
 
-  async initialize() {
+  async initialize(workspaceContext = null) {
+    this.context = workspaceContext;
+
     if (!await Utils.exists(this.globalConfigFile)) {
       let gc = this.getDefaultGlobalConfig();
 
@@ -325,6 +327,7 @@ export default class SettingsWrapper extends EventEmitter {
       await this.createProjectSettings();
 
       let uri = vscode.Uri.file(this.projectConfigFile);
+      
       let textDoc = await workspace.openTextDocument(uri);
       await vscode.window.showTextDocument(textDoc);
     }

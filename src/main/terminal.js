@@ -6,7 +6,7 @@ import { Socket } from 'net';
 
 export default class Term {
 
-  constructor(cb, board, settings) {
+  constructor(board, settings) {
     this.port = parseInt(Math.random() * 1000 + 1337);
     this.host = '127.0.0.1';
     this.termBuffer = '';
@@ -29,15 +29,17 @@ export default class Term {
     //dragging
     this.startY = null;
     let _this = this;
-    this._create();
 
-    this._connect(cb);
-
-    vscode.window.onDidCloseTerminal(function(event) {
+    vscode.window.onDidCloseTerminal(async function(event) {
       if (!_this.createFailed && event._name == _this.terminalName) {
-        _this._create();
+        await _this._create();
       }
     });
+  }
+
+  async initialize(cb) {
+    await this._create();
+    this._connect(cb);
   }
 
   show() {
@@ -60,15 +62,30 @@ export default class Term {
 
   }
 
-  _create() {
+  async _create() {
     this.createFailed = false;
     this.port = parseInt(Math.random() * 1000 + 1337);
     try {
       let termpath = this.api.getPackagePath() + 'terminalExec.py';
       let shellpath = this.isWindows ? 'py.exe' : 'python3';
+
+      let existingProcessId = this.settings.context ? this.settings.context.get('processId') : null;
+
+      for(let t of vscode.window.terminals) {
+        let p = await t.processId;
+
+        if (p == existingProcessId) {
+          t.dispose();
+          break;
+        }
+      }
+
       this.terminal = vscode.window.createTerminal({ name: this.terminalName,
           shellPath: shellpath, shellArgs: [termpath, this.port
         .toString()] });
+      
+      this.settings.context.update('processId', await this.terminal.processId);
+
       if (this.settings.open_on_start) {
         this.show();
       }

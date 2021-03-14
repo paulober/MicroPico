@@ -13,9 +13,11 @@ async function activate(context) {
   }
 }
 
-function deactivate() {
+async function deactivate() {
   if (view != undefined)
-    view.destroy();
+    setTimeout(async() => {
+      await view.destroy();
+    }, 1500);
 }
 
 function getOsName() {
