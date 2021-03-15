@@ -116,7 +116,7 @@ export default class FtpFileSystem {
     let item = _.find(this._list, x => x.Fullname == folderPath);
 
     if (item == null) {
-      throw new FileSystemError(`'${folderPath}' doesn't exist.`)
+      throw new FileSystemError(`'${folderPath}' doesn't exist.`);
     }
 
     if (item.Type != 'dir') {
@@ -252,6 +252,8 @@ export default class FtpFileSystem {
     await _mutex.runExclusive(async () => {
       await _this._shell.renameFile(from, to);
     });
+
+    await this._refreshListing();
   }
 
   // eslint-disable-next-line no-unused-vars
