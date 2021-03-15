@@ -1,10 +1,54 @@
 # Changelog
 
+## [v1.3.0](https://github.com/cpwood/Pico-Go/tree/v1.3.0) (2021-03-15)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.2.3...v1.3.0)
+
+### FTP Server
+
+The headline for this release is the [new in-built FTP server](http://pico-go.net/docs/start/quick/#managing-files-via-ftp) allowing you to manage the files on your Pico's board using your FTP client of choice. This might be something like FileZilla, a broader file management application, or even a VS Code extension. Follow the link above to get started.
+
+### Firmware Updates
+
+You can also now check whether you have the latest stable firmware release from the Command Palette: choose `Pico-Go > Help > Check for firmware updates`. If an update is available, you can click to start the download to your computer. Apply the downloaded file to your Pico in the usual way.
+
+### Status Bar
+
+You'll notice some changes to the status bar in this release: buttons will disappear when they're not available to use. For example, the ability to upload or download files won't be shown when you're in the middle of running some code that hasn't finished yet.
+
+Additionally, Pico-Go now has a "universal stop button". Whether you're trying to stop your code, cancel a file transfer or close down the FTP server, it's the same button for all of the above! This will appear automatically when something is in progress and disappear once it's stopped.
+
+### Leaner and Meaner
+
+Finally, this version won't take as long to download! It looks like the original Pymakr code we inherited included a dependency on Electron (i.e. aside from the one used by VS Code). This meant the total package size was _well_ over 100MB. It was unnecessary and has been removed, and the package size is around 20MB!
+
+### The road ahead..
+
+From here onward, the focus will be on bug-fixing and polish rather than significant change. I feel the product scope is about right now; it's all about smoothing rough edges and keeping the auto-completion and linting up-to-date from here.
+
+Enjoy!
+
+
+**Implemented enhancements:**
+
+- Check for firmware updates [\#61](https://github.com/cpwood/Pico-Go/issues/61)
+- Universal stop button / hiding buttons when not available [\#59](https://github.com/cpwood/Pico-Go/issues/59)
+
+**Fixed bugs:**
+
+- Electron and Electron-Rebuild are included as dependencies; shouldn't be! [\#63](https://github.com/cpwood/Pico-Go/issues/63)
+- Window reload leaves a broken terminal behind [\#62](https://github.com/cpwood/Pico-Go/issues/62)
+- Error raised when Run is clicked and no file is open [\#60](https://github.com/cpwood/Pico-Go/issues/60)
+
 ## [v1.2.3](https://github.com/cpwood/Pico-Go/tree/v1.2.3) (2021-03-13)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.2.2...v1.2.3)
 
 Fixes a conflict that could arise where Python 2 and 3 are both installed on the same machine.
+
+**Implemented enhancements:**
+
+- Manage files on your Pico via FTP [\#55](https://github.com/cpwood/Pico-Go/issues/55)
 
 **Fixed bugs:**
 
