@@ -14,6 +14,7 @@ import FtpFileSystem from './ftp/file-system.js';
 import FtpSrv from 'ftp-srv';
 import fetch from 'node-fetch';
 import semver from 'semver';
+import FtpFileSystemInstance from './ftp/file-system-instance';
 
 const IDLE = 0;
 const SYNCHRONIZING = 1;
@@ -41,6 +42,7 @@ export default class Pymakr extends EventEmitter {
     this.runner = new Runner(pyboard, this.terminal, this);
     this.outputHidden = false;
     this.status = IDLE;
+    this._fileSystems
 
     this.settings.on('format_error', function() {
       _this.terminal.writeln('JSON format error in global pico-go.json file');
@@ -723,7 +725,8 @@ export default class Pymakr extends EventEmitter {
       blacklist: ['SITE']
     });
 
-    this._fs = new FtpFileSystem(this.board, this.settings, this.terminal);
+    if (!this._fs)
+      this._fs = new FtpFileSystem(this.board, this.settings, this.terminal);
 
     // eslint-disable-next-line no-unused-vars
     this._ftpServer.on('login', ({ connection, username, password }, resolve,
@@ -731,7 +734,7 @@ export default class Pymakr extends EventEmitter {
       if (username != 'pico' || (username == 'pico' && password != _this.settings.ftp_password))
         reject(new Error('Invalid username and password.'));
 
-      resolve({ fs: _this._fs});
+      resolve({ fs: new FtpFileSystemInstance(this._fs)});
     });
 
     this.outputHidden = true;
@@ -745,7 +748,12 @@ export default class Pymakr extends EventEmitter {
   async ftpStop() {
     if (this._ftpServer != undefined) {
       this._ftpServer.close();
-      await this._fs.close();
+
+      if (this._fs) {
+        await this._fs.close();
+        this._fs = null;
+      }
+
       this.terminal.writeln('Stopped FTP server.');
       this.outputHidden = false;
     }
