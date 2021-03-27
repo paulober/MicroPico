@@ -140,6 +140,7 @@ export default class SettingsWrapper extends EventEmitter {
     this.autoconnect_comport_manufacturers = this.api.config(
       'autoconnect_comport_manufacturers');
     this.ftp_password = this.api.config('ftp_password');
+    this.python_path = this.api.config('python_path');
 
     this.timeout = 15000;
     this._setProjectConfig();

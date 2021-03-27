@@ -115,6 +115,13 @@ export default class Config {
         title: 'FTP Password',
         description: 'Password for FTP authentication. The username is \'pico\'.',
         order: 14
+      },
+      python_path: {
+        type: 'string',
+        default: null,
+        title: 'Python Path',
+        description: 'Path to the Python interpreter. Defaults to null.',
+        order: 15
       }
     };
   }

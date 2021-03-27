@@ -15,12 +15,17 @@ export default class Activator {
     let sw = new SettingsWrapper();
     await sw.initialize(context.workspaceState);
 
-    let pythonInstalled = await this._checkPythonVersion();
+    let pythonInstalled = await this._checkPythonVersion(sw.python_path);
 
     if (!pythonInstalled) {
-      vscode.window.showErrorMessage(
-        'Python3 is not detected on this machine so Pico-Go cannot work. Ensure it is in your PATH.'
+      let choice = await vscode.window.showErrorMessage(
+        'Python3 is not detected on this machine so Pico-Go cannot work. Ensure it is in your PATH or set a python_path value in the Global Settings.',
+        null,
+        'OK', 'Global Settings'
       );
+      
+      if (choice == 'Global Settings')
+        await sw.api.openSettings();
       return;
     }
 
@@ -202,9 +207,10 @@ export default class Activator {
     return v;
   }
 
-  async _checkPythonVersion() {
+  async _checkPythonVersion(path) {
     try {
-      let executable = process.platform == 'win32' ? 'py' : 'python3';
+      let executable = path != undefined ? path : 
+        process.platform == 'win32' ? 'py' : 'python3';
       let result = await exec(`${executable} -V`);
       let match = /Python (?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result
         .stdout);
