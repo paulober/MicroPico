@@ -292,8 +292,8 @@ export default class Sync {
     this.choiceTimeout = Date.now();
 
     let options = [
-      'Cancel',
-      'Yes'
+      'Yes',
+      'Cancel'
     ];
 
     if (newFiles.length > 0) {
@@ -309,8 +309,6 @@ export default class Sync {
 
     mssg =
       `${mssg}. Do you want to download these files into your project (${this.projectName} - ${this.folderName}), overwriting existing files?`;
-    this._progress(mssg);
-    this._progress('(Use the confirmation box at the top of the screen)');
 
     let chosen = await this.api.confirm(mssg, options);
 

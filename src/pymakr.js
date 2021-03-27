@@ -553,7 +553,7 @@ export default class Pymakr extends EventEmitter {
       return;
     }
 
-    let options = ['Cancel', 'Yes'];
+    let options = ['Yes','Cancel'];
 
     let choice = await this.api.confirm(
       'Are you sure you want to delete all files and directories from the board?',

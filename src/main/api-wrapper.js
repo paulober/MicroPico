@@ -116,9 +116,7 @@ export default class ApiWrapper {
   }
 
   async confirm(text, options) {
-    return await window.showQuickPick(options, {
-      placeHolder: text
-    });
+   return await window.showWarningMessage(text, ...options);
   }
 
   getProjectPath() {
