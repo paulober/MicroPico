@@ -9,6 +9,8 @@ import Pymakr from './pymakr';
 import Pyboard from './board/pyboard';
 import StubsManager from './stubs/stubs-manager';
 
+const pkg = vscode.extensions.getExtension('chriswood.pico-go').packageJSON;
+
 export default class Activator {
   async activate(context) {
     let _this = this;
@@ -18,8 +20,16 @@ export default class Activator {
     let pythonInstalled = await this._checkPythonVersion(sw.python_path);
 
     if (!pythonInstalled) {
+      for(let item of pkg.contributes.commands) {
+        let disposable = vscode.commands.registerCommand(item.command,
+          function() {
+            vscode.window.showErrorMessage('Pico-Go was unable to start, most likely because Python wasn\'t found on your machine.');
+          });
+        context.subscriptions.push(disposable);
+      }
+
       let choice = await vscode.window.showErrorMessage(
-        'Python3 is not detected on this machine so Pico-Go cannot work. Ensure it is in your PATH or set a python_path value in the Global Settings.',
+        'Python3 is not detected on this machine so Pico-Go cannot work. Ensure it is in your PATH or set a python_path value in the Global Settings. Then restart VS Code.',
         null,
         'OK', 'Global Settings'
       );
