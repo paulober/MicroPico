@@ -272,6 +272,9 @@ export default class SettingsWrapper extends EventEmitter {
     if ('fast_upload' in this.projectConfig) {
       this.fast_upload = this.projectConfig.fast_upload;
     }
+    if ('manual_com_device' in this.projectConfig) {
+      this.manual_com_device = this.projectConfig.manual_com_device;
+    }
   }
 
   _isConfigComplete(settingsObject) {
