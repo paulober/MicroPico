@@ -67,7 +67,7 @@ export default class Term {
     this.port = parseInt(Math.random() * 1000 + 1337);
     try {
       let termpath = this.api.getPackagePath() + 'terminalExec.py';
-      let shellpath = this.isWindows ? 'py.exe' : 'python3';
+      let shellpath = this.settings.detectedPythonPath;
 
       let existingProcessId = this.settings.context ? this.settings.context.get('processId') : null;
 

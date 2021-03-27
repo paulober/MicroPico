@@ -17,9 +17,9 @@ export default class Activator {
     let sw = new SettingsWrapper();
     await sw.initialize(context.workspaceState);
 
-    let pythonInstalled = await this._checkPythonVersion(sw.python_path);
+    await this._checkPythonVersion(sw);
 
-    if (!pythonInstalled) {
+    if (sw.detectedPythonPath == undefined) {
       for(let item of pkg.contributes.commands) {
         let disposable = vscode.commands.registerCommand(item.command,
           function() {
@@ -217,22 +217,29 @@ export default class Activator {
     return v;
   }
 
-  async _checkPythonVersion(path) {
+  async _checkPythonVersion(sw) {
+    let executables = [sw.python_path, 'py.exe', 'python3'];
+
+    for(let executable of executables) {
+      if (executable != undefined) {
+        let result = await this._tryPython(executable);
+        let match = /Python (?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result);
+
+        if (match != undefined && parseInt(match.groups.major) >= 3){
+          sw.detectedPythonPath = executable;
+          return;
+        }
+      }
+    }
+  }
+
+  async _tryPython(executable) {
     try {
-      let executable = path != undefined ? path : 
-        process.platform == 'win32' ? 'py' : 'python3';
       let result = await exec(`${executable} -V`);
-      let match = /Python (?<major>[0-9]+)\.[0-9]+\.[0-9]+/gm.exec(result
-        .stdout);
-
-      if (match == null)
-        return false;
-
-      let major = parseInt(match.groups.major);
-      return major >= 3;
+      return result.stdout;
     }
     catch (err) {
-      return false;
+      return "error";
     }
   }
 
