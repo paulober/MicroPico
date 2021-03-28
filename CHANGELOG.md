@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.3.1](https://github.com/cpwood/Pico-Go/tree/v1.3.1) (2021-03-28)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.3.0...v1.3.1)
+
+Ability to set the Python path manuall, the COM port on a per-project basis and some UI refinements.
+
+**Implemented enhancements:**
+
+- Use standard message for confirmations; not quick-pick [\#73](https://github.com/cpwood/Pico-Go/issues/73)
+- Ability to Select a different COM port when more than one Pico is connected [\#70](https://github.com/cpwood/Pico-Go/issues/70)
+- Request more useful error message [\#69](https://github.com/cpwood/Pico-Go/issues/69)
+- Support Anaconda managed environments [\#68](https://github.com/cpwood/Pico-Go/issues/68)
+
+**Fixed bugs:**
+
+- Unable to use PicoGo - Command palette commands not found, python3 not found [\#72](https://github.com/cpwood/Pico-Go/issues/72)
+
 ## [v1.3.0](https://github.com/cpwood/Pico-Go/tree/v1.3.0) (2021-03-15)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.2.3...v1.3.0)
@@ -33,6 +50,7 @@ Enjoy!
 
 - Check for firmware updates [\#61](https://github.com/cpwood/Pico-Go/issues/61)
 - Universal stop button / hiding buttons when not available [\#59](https://github.com/cpwood/Pico-Go/issues/59)
+- Manage files on your Pico via FTP [\#55](https://github.com/cpwood/Pico-Go/issues/55)
 
 **Fixed bugs:**
 
@@ -45,10 +63,6 @@ Enjoy!
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.2.2...v1.2.3)
 
 Fixes a conflict that could arise where Python 2 and 3 are both installed on the same machine.
-
-**Implemented enhancements:**
-
-- Manage files on your Pico via FTP [\#55](https://github.com/cpwood/Pico-Go/issues/55)
 
 **Fixed bugs:**
 
