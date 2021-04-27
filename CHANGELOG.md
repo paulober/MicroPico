@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.4.0](https://github.com/cpwood/Pico-Go/tree/v1.4.0) (2021-04-27)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.3.1...v1.4.0)
+
+This release fixes compatibility issues with the Microsoft Store version of Python on Windows. It also **removes all keybindings because of conflicts with out-of-the-box VS Code keybindings.**
+
+This is a functional release; another minor release will be made very soon with updated stubs.
+
+**Implemented enhancements:**
+
+- Show Pico Pin Map - editor layout  [\#80](https://github.com/cpwood/Pico-Go/issues/80)
+
+**Fixed bugs:**
+
+- Disable Most Aggressive Keyboard Shortcut Thiefs [\#82](https://github.com/cpwood/Pico-Go/issues/82)
+- Command 'picogo.initialise' not found after installing extension [\#79](https://github.com/cpwood/Pico-Go/issues/79)
+
 ## [v1.3.1](https://github.com/cpwood/Pico-Go/tree/v1.3.1) (2021-03-28)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.3.0...v1.3.1)

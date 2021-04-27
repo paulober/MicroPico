@@ -2,7 +2,7 @@
   "name": "pico-go",
   "displayName": "Pico-Go",
   "description": "Autocompletion and a REPL console for the Raspberry Pi Pico.",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "publisher": "ChrisWood",
   "homepage": "http://pico-go.net/",
   "repository": "https://github.com/cpwood/Pico-Go",
