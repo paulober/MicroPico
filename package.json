@@ -128,54 +128,6 @@
         "title": "Pico-Go > List all Commands"
       }
     ],
-    "keybindings": [
-      {
-        "command": "",
-        "key": "ctrl+e",
-        "when": "terminalFocus"
-      },
-      {
-        "command": "picogo.initialise",
-        "key": "ctrl+shift+i",
-        "mac": "cmd+shift+i",
-        "linux": "ctrl+shift+alt+i"
-      },
-      {
-        "command": "picogo.connect",
-        "key": "ctrl+shift+c",
-        "mac": "cmd+shift+c"
-      },
-      {
-        "command": "picogo.upload",
-        "key": "ctrl+shift+u",
-        "mac": "cmd+shift+u"
-      },
-      {
-        "command": "picogo.uploadFile",
-        "key": "ctrl+shift+f",
-        "mac": "ctrl+shift+f"
-      },
-      {
-        "command": "picogo.run",
-        "key": "ctrl+shift+r",
-        "mac": "cmd+shift+r"
-      },
-      {
-        "command": "picogo.runselection",
-        "key": "ctrl+shift+enter",
-        "mac": "cmd+shift+enter"
-      },
-      {
-        "command": "picogo.globalSettings",
-        "key": "ctrl+shift+g",
-        "mac": "cmd+shift+g"
-      },
-      {
-        "command": "picogo.reset.soft",
-        "key": "ctrl+shift+d",
-        "mac": "cmd+shift+d"
-      }
-    ],
     "menus": {
       "explorer/context": [
         {
