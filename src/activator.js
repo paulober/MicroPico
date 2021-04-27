@@ -218,7 +218,7 @@ export default class Activator {
   }
 
   async _checkPythonVersion(sw) {
-    let executables = [sw.python_path, 'py.exe', 'python3', 'python'];
+    let executables = [sw.python_path, 'py.exe', 'python3.exe', 'python3', 'python'];
 
     for(let executable of executables) {
       if (executable != undefined) {
