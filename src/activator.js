@@ -157,7 +157,7 @@ export default class Activator {
         const panel = vscode.window.createWebviewPanel(
           'pins',
           'Pico Pin Map',
-          vscode.ViewColumn.One, {
+          vscode.ViewColumn.Active, {
             // Only allow the webview to access resources in our extension's media directory
             localResourceRoots: [vscode.Uri.file(path.join(context
               .extensionPath, 'images'))]
