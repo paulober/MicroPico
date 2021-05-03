@@ -166,7 +166,7 @@ export default class FileWriter {
     let root = `${this.api.getProjectPath()}${path.sep}`;
 
     if (dir) {
-      root = `${root}${path.sep}`;
+      root = `${root}${dir}${path.sep}`;
     }
 
     return root;
