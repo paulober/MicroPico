@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.4.1](https://github.com/cpwood/Pico-Go/tree/v1.4.1) (2021-05-03)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.4.0...v1.4.1)
+
+Updated the stubs for [firmware v1.15.0](https://micropython.org/download/rp2-pico/) and fixed an issue with custom `sync_root` values.
+
+**Implemented enhancements:**
+
+- Update stubs for Firmware 1.15.0 [\#85](https://github.com/cpwood/Pico-Go/issues/85)
+
+**Fixed bugs:**
+
+- When sync\_root is customised, incorrectly told file cannot be transferred [\#86](https://github.com/cpwood/Pico-Go/issues/86)
+
 ## [v1.4.0](https://github.com/cpwood/Pico-Go/tree/v1.4.0) (2021-04-27)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.3.1...v1.4.0)
