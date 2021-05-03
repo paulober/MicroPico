@@ -7,3 +7,15 @@ class Event:
         # ? 0: return self.state
     def set(self) -> None: ...
     def clear(self) -> None: ...
+
+class ThreadSafeFlag:
+    def ioctl(self):
+        pass
+
+    def set(self):
+        """
+        Set the flag. If there is a task waiting on the event, it will be scheduled to run.
+        """
+        pass
+
+    wait = None

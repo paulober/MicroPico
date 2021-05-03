@@ -121,3 +121,4 @@ def ticks_diff(ticks1: int, ticks2: int) -> int:
     :return: The difference between the given ticks values.
     """
     ...
+

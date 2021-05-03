@@ -12,15 +12,33 @@ def acos(x: float) -> float:
     """
     ...
 
+def acosh(x: float) -> float: 
+    """
+    Return the inverse hyperbolic cosine of ``x``, in radians.
+    """
+    ...
+
 def asin(x: float) -> float: 
     """
     Return the arc sine of ``x``, in radians.
     """
     ...
 
+def asinh(x: float) -> float: 
+    """
+    Return the inverse hyperbolic arc sine of ``x``, in radians.
+    """
+    ...
+
 def atan(x: float) -> float: 
     """
     Return the arc tangent of ``x``, in radians.
+    """
+    ...
+
+def atanh(x: float) -> float: 
+    """
+    Return the inverse hyperbolic arc tangent of ``x``, in radians.
     """
     ...
 
@@ -54,9 +72,28 @@ def cos(x: float) -> float:
     """
     ...
 
+def cosh(x: float) -> float: 
+    """
+    Return the hyperbolic cosine of ``x`` radians.
+    """
+    ...
+
 def degrees(x: float) -> float: 
     """
     Convert angle ``x`` from radians to degrees.
+    """
+    ...
+
+def erf(x: float) -> float: 
+    """
+    Return the error function at ``x``.
+    """
+    ...
+def erfc(x: float) -> float: 
+    """
+    Return the complementary error function at ``x``. The complementary error 
+    function is defined as ``1.0 - erf(x)``. It is used for large values of ``x`` where 
+    a subtraction from one would cause a loss of significance.
     """
     ...
 
@@ -66,9 +103,24 @@ def exp(x: float) -> float:
     """
     ...
 
+def expm1(x: float) -> float: 
+    """
+    Return ``e`` raised to the power ``x``, minus 1. Here e is the base of natural logarithms. 
+    For small floats ``x``, the subtraction in ``exp(x) - 1`` can result in a significant loss 
+    of precision; the ``expm1()`` function provides a way to compute this quantity to full 
+    precision.
+    """
+    ...
+
 def fabs(x: float) -> float: 
     """
     Return the absolute value of ``x``.
+    """
+    ...
+
+def factorial(x: int) -> int: 
+    """
+    Return ``x`` factorial as an integer. Raises ``ValueError`` if ``x`` is not integral or is negative.
     """
     ...
 
@@ -104,6 +156,36 @@ def frexp(x: float) -> Tuple[float, int]:
     """
     ...
 
+def gamma(x: float) -> float: 
+    """
+    Return the Gamma function at ``x``.
+    """
+    ...
+
+def isclose(a: float, b: float, *, rel_tol: float = ..., abs_tol: float = ...) -> bool: 
+    """
+    Return ``True`` if the values ``a`` and ``b`` are close to each other and ``False`` otherwise.
+
+    Whether or not two values are considered close is determined according to given 
+    absolute and relative tolerances.
+
+    ``rel_tol`` is the relative tolerance – it is the maximum allowed difference between 
+    ``a`` and ``b``, relative to the larger absolute value of ``a`` or ``b``. For example, to set a 
+    tolerance of 5%, pass ``rel_tol=0.05``. The default tolerance is ``1e-09``, which assures 
+    that the two values are the same within about 9 decimal digits. ``rel_tol`` must be 
+    greater than zero.
+
+    ``abs_tol`` is the minimum absolute tolerance – useful for comparisons near zero. 
+    ``abs_tol`` must be at least zero.
+
+    If no errors occur, the result will be: ``abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)``.
+
+    The IEEE 754 special values of ``NaN``, ``inf``, and ``-inf`` will be handled according to IEEE rules. 
+    Specifically, ``NaN`` is not considered close to any other value, including ``NaN``. ``inf`` and
+    ``-inf`` are only considered close to themselves.
+    """
+    ...
+
 def isfinite(x: float) -> bool: 
     """
     Check if the float ``x`` is finite.
@@ -129,12 +211,30 @@ def ldexp(x: float, i: int) -> float:
     """
     ...
 
+def lgamma(x: float) -> float: 
+    """
+    Return the natural logarithm of the absolute value of the Gamma function at ``x``.
+    """
+    ...
+
 def log(x: float, base: float = ...) -> float: 
     """
     With one argument, return the natural logarithm of ``x`` (to base ``e``).
 
     With two arguments, return the logarithm of ``x`` to the given base, 
     calculated as ``log(x)/log(base)``.
+    """
+    ...
+
+def log2(__x: float) -> float: 
+    """
+    Return the base-2 logarithm of ``x``. This is usually more accurate than ``log(x, 2)``.
+    """
+    ...
+
+def log10(__x: float) -> float: 
+    """
+    Return the base-10 logarithm of ``x``. This is usually more accurate than ``log(x, 10)``.
     """
     ...
 
@@ -167,7 +267,13 @@ def radians(x: float) -> float:
 
 def sin(x: float) -> float: 
     """
-    Return the sine of ``x`` radians.
+    Return the sine of ``x`` in radians.
+    """
+    ...
+
+def sinh(x: float) -> float: 
+    """
+    Return the inverse hyperbolic sine of ``x`` in radians.
     """
     ...
 
@@ -179,7 +285,13 @@ def sqrt(x: float) -> float:
 
 def tan(x: float) -> float: 
     """
-    Return the tangent of ``x`` radians.
+    Return the tangent of ``x`` in radians.
+    """
+    ...
+
+def tanh(x: float) -> float: 
+    """
+    Return the inverse hyperbolic tangent of ``x`` in radians.
     """
     ...
 

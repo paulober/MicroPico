@@ -65,3 +65,13 @@ def b2a_base64(data: Any) -> bytes:
     :return: Bytes string with the encoded data.
     """
     ...
+
+def crc32(data: Any, crc: int=0) -> int:
+    """
+    Computes CRC-32 incrementally, the 32-bit checksum of ``data``, starting
+    with an initial CRC of ``crc``.
+    :param data: Data to obtain its 32-bit checksum.
+    :param crc: Starting CRC value.
+    :return: 32-bit checksum of the provided data.
+    """
+    ...

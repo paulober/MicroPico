@@ -1,3 +1,4 @@
+from uarray import array
 from machine import Pin
 from typing import Sequence, Any, Iterable, Union
 
@@ -54,6 +55,9 @@ class PIO:
     OUT_LOW = 2
     SHIFT_LEFT = 0
     SHIFT_RIGHT = 1
+    JOIN_NONE = 0
+    JOIN_TX = 1
+    JOIN_RX = 2
 
     def __init__(self, pin:int) -> None: 
         ...
@@ -202,15 +206,45 @@ class StateMachine:
             - *shift* is an optional number of places to shift.
         """
     
-    def put(self, value: Union[bytes, int], shift: int=0):
+    def put(self, value: Union[bytes, int | array[int]], shift: int=0):
         """
         Sets data within the ``StateMachine``.
 
             - *buf* are optional bytes
             - *shift* is an optional number of places to shift.
         """
+    def restart(self):
+        """
+        ``Restarts`` the state machine.
 
-def asm_pio(set_init: int = None, out_shiftdir: int = None, autopull: bool = None, pull_thresh: int = None, set_pins: Iterable[Sequence[int]] = None, sideset_pins: int = None, sideset_init: int = None, out_init: int = None, autopush: bool = None, push_thresh: int = None, in_base: int = None, out_base: int = None) -> Any:
+            - it resets the statemachine to the initial state without the need to re-instantiation.
+            - It also makes PIO code easier, because then stalling as error state can be unlocked.
+        """
+    def rx_fifo(self) -> int:
+        """
+        Return the number of ``RX FIFO`` items. 0 if empty
+
+            - rx_fifo() is also useful, for MP code to check for data & timeout if no data arrived. 
+        """
+    def tx_fifo(self) -> int:
+        """
+        Return the number of ``TX FIFO`` items. 0 if empty
+
+            - tx_fifo() can be useful to check states where data is not processed.
+        """
+
+def asm_pio(
+    out_init: int = None,
+    set_init: int = None,
+    sideset_init: int = None,
+    in_shiftdir: int = 0,
+    out_shiftdir: int = 0,
+    autopush: bool = False,
+    autopull: bool = False,
+    push_thresh: int = 32,
+    pull_thresh: int = 32,
+    fifo_join=0,
+) -> Any:
     """
     This decorator lets MicroPython know that the method is written in PIO assembly.
 
