@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.4.2](https://github.com/cpwood/Pico-Go/tree/v1.4.2) (2021-05-04)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.4.1...v1.4.2)
+
+Compatibility with VS Code 1.57.
+
+**Implemented enhancements:**
+
+- Support VS Code 1.57 - ASM 87 [\#88](https://github.com/cpwood/Pico-Go/issues/88)
+
 ## [v1.4.1](https://github.com/cpwood/Pico-Go/tree/v1.4.1) (2021-05-03)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.4.0...v1.4.1)
