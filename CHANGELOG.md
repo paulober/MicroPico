@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.4.3](https://github.com/cpwood/Pico-Go/tree/v1.4.3) (2021-08-07)
+
+[Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.4.2...v1.4.3)
+
+Fixes an incompatibility between serialport and VS Code 1.59.
+
+**Fixed bugs:**
+
+- Failure to load - VS Code 1.59 [\#97](https://github.com/cpwood/Pico-Go/issues/97)
+
 ## [v1.4.2](https://github.com/cpwood/Pico-Go/tree/v1.4.2) (2021-05-04)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.4.1...v1.4.2)
