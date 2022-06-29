@@ -1,3 +1,6 @@
+# THIS PROJECT IS NO LONGER MAINTAINED; I SIMPLY DON'T HAVE THE TIME BETWEEN FAMILY AND WORK RESPONSIBILITIES.
+## FEEL FREE TO USE THE CODE FOR A DERIVATIVE PROJECT!
+
 #  Pico-Go VS Code Extension 
 
 Pico-Go provides code auto-completion and allows  you to communicate with your Raspberry Pi Pico board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
