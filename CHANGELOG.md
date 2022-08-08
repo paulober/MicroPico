@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.5.0](https://github.com/paulober/Pico-Go/tree/v1.5.0) (2022-08-08)
+
+[Full Changelog](https://github.com/paulober/Pico-Go/compare/v1.4.3...v1.5.0)
+
+Compatibility with VS Code 1.70
+
+**Implemented New Features**
+
+- Support for VS Code 1.70
+- Support for Raspberry Pi Pico W board (wifi)
+- Updated firmware to beta version of the official MicroPython Pico-W firmware
+
 ## [v1.4.3](https://github.com/cpwood/Pico-Go/tree/v1.4.3) (2021-08-07)
 
 [Full Changelog](https://github.com/cpwood/Pico-Go/compare/v1.4.2...v1.4.3)
