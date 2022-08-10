@@ -1,4 +1,4 @@
-name: Build Pico-Go
+name: Build Pico-W-Go
 
 on:
   pull_request: ~
