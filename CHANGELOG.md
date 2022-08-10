@@ -1,4 +1,4 @@
-# Changelog
+# Changelog (full changelogs arren't avail. at the moment)
 
 ## [v1.5.3](https://github.com/paulober/Pico-W-Go/tree/v1.5.3) (2022-08-10)
 
