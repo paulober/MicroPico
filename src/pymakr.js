@@ -45,7 +45,7 @@ export default class Pymakr extends EventEmitter {
     this._fileSystems
 
     this.settings.on('format_error', function() {
-      _this.terminal.writeln('JSON format error in global pico-go.json file');
+      _this.terminal.writeln('JSON format error in global pico-go-w.json file');
       if (_this.board.connected) {
         _this.terminal.writePrompt();
       }
@@ -53,7 +53,7 @@ export default class Pymakr extends EventEmitter {
 
     this.settings.on('format_error.project', function() {
       _this.terminal.writeln(
-        'JSON format error in project pico-go.json file');
+        'JSON format error in project pico-go-w.json file');
       if (_this.board.connected) {
         _this.terminal.writePrompt();
       }
@@ -292,7 +292,7 @@ export default class Pymakr extends EventEmitter {
     let command =
       'import os; ' +
       'print("\\r\\n"); ' +
-      `print("Pico-Go:      ${vscode.extensions.getExtension('chriswood.pico-go').packageJSON.version}"); ` +
+      `print("Pico-Go-W:      ${vscode.extensions.getExtension('paulober.pico-go-w').packageJSON.version}"); ` +
       `print("VS Code:      ${vscode.version}"); ` +
       `print("Electron:     ${process.versions.electron}"); ` +
       `print("Modules:      ${process.versions.modules}"); ` +
@@ -480,7 +480,7 @@ export default class Pymakr extends EventEmitter {
     }
     if (this.isIdle()) {
       try {
-        this.startOperation('picogo.run', RUNNING);
+        this.startOperation('picogow.run', RUNNING);
 
         let code = this.api.getSelected();
         // if user has selected code, run that instead of the file
@@ -613,10 +613,10 @@ export default class Pymakr extends EventEmitter {
       this.syncObj = new Sync(this.board, this.settings, this.terminal);
       
       if (type == 'send') {
-        this.startOperation('picogo.upload', SYNCHRONIZING);
+        this.startOperation('picogow.upload', SYNCHRONIZING);
       }
       else {
-        this.startOperation('picogo.download', SYNCHRONIZING);
+        this.startOperation('picogow.download', SYNCHRONIZING);
       }
 
       this.synchronizeType = type;
@@ -738,7 +738,7 @@ export default class Pymakr extends EventEmitter {
     });
 
     this.outputHidden = true;
-    this.startOperation('picogo.ftp', LISTENINGFTP);
+    this.startOperation('picogow.ftp', LISTENINGFTP);
 
     this._ftpServer.listen();
     this.terminal.enter();
@@ -777,7 +777,7 @@ export default class Pymakr extends EventEmitter {
     try {
       if (semver.gte(server.version + '.0', board.version + '.0') && server.date > board.date) {
         let choice = await this.api.confirm(
-          `Firmware version v${server.version} (${server.date}) is available. Would you like to download it?`,
+          `Firmware version v${server.version} (${server.date}) (unstable-${server.numbers1}-${server.numbers2}) is available. Would you like to download it?`,
           ['Yes', 'No']
         );
   
@@ -801,7 +801,7 @@ export default class Pymakr extends EventEmitter {
     this.outputHidden = true;
   
     try{
-      let response = await this.board.run('import os;print(os.uname().version)\r\n');
+      let response = await this.board.run('import uos;print(uos.uname().version)\r\n');
 
       this.logger.warning(response);
       
@@ -826,10 +826,12 @@ export default class Pymakr extends EventEmitter {
 
   async _getServerVersion() {
     try {
-      let response = await fetch('https://micropython.org/download/rp2-pico/');
+      let response = await fetch('https://micropython.org/download/rp2-pico-w/');
       let html = await response.text();
       
-      let m = /href="(?<url>\/resources\/firmware\/rp2-pico-[0-9]{8}-v[^"]+)"/gm.exec(html);
+      // TODO: currently it only searches for unstable firmware as no stable version is available yet
+      // TODO: change this after first stable firmware is released
+      let m = /href="(?<url>\/resources\/firmware\/rp2-pico-w-[0-9]{8}-unstable-v[^"]+)"/gm.exec(html);
       let url = 'https://micropython.org' + m[1];
 
       m = /v([0-9]+\.[0-9]+(\.[0-9]+)?)/.exec(url);
@@ -839,10 +841,18 @@ export default class Pymakr extends EventEmitter {
       let date = m[0];
       date = `${date.substr(0, 4)}-${date.substr(4, 2)}-${date.substr(6, 4)}`;
 
+      m = /[0-9]{3}/.exec(url);
+      let numbers1 = m[0];
+
+      m = /[a-z0-9]{10}/.exec(url);
+      let numbers2 = m[0];
+
       return {
         version: version,
         date: date,
-        url: url
+        url: url,
+        numbers1: numbers1,
+        numbers2: numbers2
       };
     }
     catch(err) {

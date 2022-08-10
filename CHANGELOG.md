@@ -9,8 +9,9 @@ Compatibility with VS Code 1.70
 **Implemented New Features**
 
 - Support for VS Code 1.70
-- Support for Raspberry Pi Pico W board (wifi)
+- Support for Raspberry Pi Pico W board (wifi) thought MicroPython 1.19.1 unstable firmware stubs
 - Updated firmware to beta version of the official MicroPython Pico-W firmware
+    > rp2-pico-w-20220805-unstable-v1.19.1-240-g9dfabcd6d
 
 ## [v1.4.3](https://github.com/cpwood/Pico-Go/tree/v1.4.3) (2021-08-07)
 

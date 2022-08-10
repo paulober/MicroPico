@@ -16,7 +16,7 @@ export default class StubsManager {
         if (!await Utils.exists(configFolder))
           await fsp.mkdir(configFolder, { recursive: true });
 
-        let existingVersionFile = path.join(configFolder, 'Pico-Stub', 'version.json');
+        let existingVersionFile = path.join(configFolder, 'Pico-W-Stub', 'version.json');
         let thisVersionFile = path.resolve(path.join(__dirname, '..', '..', 'stubs', 'version.json'));
         let thisVersion = JSON.parse(await fsp.readFile(thisVersionFile, 'utf-8'));
 
@@ -28,8 +28,8 @@ export default class StubsManager {
         }
 
         try {
-            await fse.emptyDir(path.join(configFolder, 'Pico-Stub')); 
-            await fse.copy(path.resolve(path.join(__dirname, '..', '..', 'stubs')), path.resolve(path.join(configFolder, 'Pico-Stub')));
+            await fse.emptyDir(path.join(configFolder, 'Pico-W-Stub')); 
+            await fse.copy(path.resolve(path.join(__dirname, '..', '..', 'stubs')), path.resolve(path.join(configFolder, 'Pico-W-Stub')));
         }
         catch(err) {
             console.log(err);
@@ -64,9 +64,9 @@ export default class StubsManager {
     }
 
     async _addStubs(vsc) {
-        if (!await Utils.exists(path.join(vsc, 'Pico-Stub'))) {
+        if (!await Utils.exists(path.join(vsc, 'Pico-W-Stub'))) {
             let configFolder = Utils.getConfigPath();
-            await fsp.symlink(path.resolve(path.join(configFolder, 'Pico-Stub')), path.resolve(path.join(vsc, 'Pico-Stub')), 'junction');
+            await fsp.symlink(path.resolve(path.join(configFolder, 'Pico-W-Stub')), path.resolve(path.join(vsc, 'Pico-Stub')), 'junction');
         }
     }
 
@@ -106,8 +106,8 @@ export default class StubsManager {
             settings['python.analysis.typeshedPaths'] = [];
         }
 
-        if (!_.includes(settings['python.analysis.typeshedPaths'], path.join('.vscode', 'Pico-Stub')))
-            settings['python.analysis.typeshedPaths'].push(path.join('.vscode', 'Pico-Stub'));
+        if (!_.includes(settings['python.analysis.typeshedPaths'], path.join('.vscode', 'Pico-W-Stub')))
+            settings['python.analysis.typeshedPaths'].push(path.join('.vscode', 'Pico-W-Stub'));
 
         settings['python.languageServer'] = 'Pylance';
         settings['python.analysis.typeCheckingMode'] = 'basic';
@@ -116,8 +116,8 @@ export default class StubsManager {
             settings['python.analysis.extraPaths'] = [];
         }
 
-        if (!_.includes(settings['python.analysis.extraPaths'], path.join('.vscode', 'Pico-Stub', 'stubs')))
-            settings['python.analysis.extraPaths'].push(path.join('.vscode', 'Pico-Stub', 'stubs'));
+        if (!_.includes(settings['python.analysis.extraPaths'], path.join('.vscode', 'Pico-W-Stub', 'stubs')))
+            settings['python.analysis.extraPaths'].push(path.join('.vscode', 'Pico-W-Stub', 'stubs'));
 
         await fsp.writeFile(path.join(vsc, 'settings.json'), JSON.stringify(settings, null, 4));
     }

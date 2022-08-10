@@ -1,4 +1,5 @@
 'use babel';
+
 import * as vscode from 'vscode';
 import Logger from '../helpers/logger.js';
 import ApiWrapper from '../main/api-wrapper.js';
@@ -10,7 +11,7 @@ export default class Term {
     this.port = parseInt(Math.random() * 1000 + 1337);
     this.host = '127.0.0.1';
     this.termBuffer = '';
-    this.terminalName = 'Pico Console';
+    this.terminalName = 'Pico W Console';
     this.shellPrompt = '>>> ';
     this.board = board;
     this.logger = new Logger('Term');

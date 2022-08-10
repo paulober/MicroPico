@@ -12,7 +12,7 @@ export default class ApiWrapper {
     this.defaultConfig = Config.settings();
     this.settings = settings;
     this.first_time_opening = false;
-    this.configFile = utils.getConfigPath('pico-go.json');
+    this.configFile = utils.getConfigPath('pico-w-go.json');
     this.isWindows = process.platform == 'win32';
     this.projectPath = this.getProjectPath();
     this.connectionStateFilename = 'connection_state.json';

@@ -59,9 +59,9 @@ export default class Shell {
 
   async getFreeSpace() {
     let command =
-      'import os, sys\r\n' +
-      "_s = os.statvfs('" + this.mcuRootFolder + "')\r\n" +
-      'sys.stdout.write(str(s[0]*s[3])\r\n' +
+      'import uos, usys\r\n' +
+      "_s = uos.statvfs('" + this.mcuRootFolder + "')\r\n" +
+      'usys.stdout.write(str(s[0]*s[3])\r\n' +
       'del(_s)\r\n';
 
     return await this.board.sendWait(command);
@@ -109,10 +109,10 @@ export default class Shell {
       return;
     }
 
-    let command = 'import os\r\n' +
+    let command = 'import uos\r\n' +
       'def ensureFolder(folder):\r\n' +
       '   try:\r\n' +
-      '     os.mkdir(folder)\r\n' +
+      '     uos.mkdir(folder)\r\n' +
       '   except OSError:\r\n' +
       '     ...\r\n' +
       '\r\n';
@@ -128,12 +128,12 @@ export default class Shell {
     this.working = true;
 
     // avoid leaking file handles 
-    let command = 'import ubinascii,sys' + '\r\n' +
+    let command = 'import ubinascii,usys' + '\r\n' +
       "with open('" + name + "', 'rb') as f:" + '\r\n' +
       '  while True:' + '\r\n' +
       '    c = ubinascii.b2a_base64(f.read(' + this.BIN_CHUNK_SIZE + '))' +
       '\r\n' +
-      '    sys.stdout.write(c)' + '\r\n' +
+      '    usys.stdout.write(c)' + '\r\n' +
       "    if not len(c) or c == b'\\n':" + '\r\n' +
       '        break\r\n';
 
@@ -225,38 +225,38 @@ export default class Shell {
 
   async removeFile(name) {
     let command =
-      'import os\r\n' +
-      "os.remove('" + name + "')\r\n";
+      'import uos\r\n' +
+      "uos.remove('" + name + "')\r\n";
 
     await this.board.sendWait(command);
   }
 
   async renameFile(oldName, newName) {
     let command =
-      'import os\r\n' +
-      "os.rename('" + oldName + "', '" + newName + "')\r\n";
+      'import uos\r\n' +
+      "uos.rename('" + oldName + "', '" + newName + "')\r\n";
 
     await this.board.sendWait(command);
   }
 
   async createDir(name) {
     let command =
-      'import os\r\n' +
-      "os.mkdir('" + name + "')\r\n";
+      'import uos\r\n' +
+      "uos.mkdir('" + name + "')\r\n";
     await this.board.sendWait(command);
   }
 
   async changeDir(name) {
     let command =
-      'import os\r\n' +
-      "os.chdir('" + name + "')\r\n";
+      'import uos\r\n' +
+      "uos.chdir('" + name + "')\r\n";
     await this.board.sendWait(command);
   }
 
   async removeDir(name) {
     let command =
-      'import os\r\n' +
-      "os.rmdir('" + name + "')\r\n";
+      'import uos\r\n' +
+      "uos.rmdir('" + name + "')\r\n";
     await this.board.sendWait(command);
   }
 

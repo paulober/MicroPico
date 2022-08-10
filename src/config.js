@@ -18,10 +18,10 @@ export default class Config {
         'EPIPE': 'Broken pipe',
         'MemoryError': 'Not enough memory available on the board.'
       },
-      start_text: 'Welcome to the Pico-Go plugin! Use the buttons on the left bottom to access all features and commands.\r\n' +
+      start_text: 'Welcome to the Pico-W-Go plugin! Use the buttons on the left bottom to access all features and commands.\r\n' +
         'This is how you get started:\r\n' +
         " 1: Open 'Global Settings' (we went ahead and did that for you)\r\n" +
-        ' 2: Connect a Raspberry Pi Pico board to your USB port and the terminal will auto-connect to it\r\n' +
+        ' 2: Connect a Raspberry Pi Pico W board to your USB port and the terminal will auto-connect to it\r\n' +
         ' 3: Open a micropython project\r\n' +
         ' 4: Start running files and uploading your code \r\n' +
         '\r\n' +

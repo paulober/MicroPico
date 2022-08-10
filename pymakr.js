@@ -2,7 +2,7 @@ const Activator = require('./lib/activator.js').default;
 const vscode = require('vscode');
 const os = require('os');
 const _ = require('lodash');
-const pkg = vscode.extensions.getExtension('chriswood.pico-go').packageJSON;
+const pkg = vscode.extensions.getExtension('paulober.pico-w-go').packageJSON;
 
 let view = null;
 
@@ -50,7 +50,7 @@ function checkSerialPort() {
 
     if (!isCompatible) {
       vscode.window.showErrorMessage(
-        `Sorry, Pico-Go isn't compatible with ${getOsName()} (${os.arch()}).`);
+        `Sorry, Pico-W-Go isn't compatible with ${getOsName()} (${os.arch()}).`);
       return false;
     }
 
@@ -64,27 +64,27 @@ function checkSerialPort() {
     if (e.message.includes('NODE_MODULE_VERSION')) {
       if (vscode.env.appName.includes('Insider')) {
         vscode.window.showErrorMessage(
-          'This version of Pico-Go is incompatible with VSCode Insiders ' +
+          'This version of Pico-W-Go is incompatible with VSCode Insiders ' +
           vscode.version +
           ". Check for an update to the extension. If one isn't available, don't worry, it will be available soon. There's no need to raise a GitHub issue."
           );
       }
       else {
         vscode.window.showErrorMessage(
-          'This version of Pico-Go is incompatible with VSCode ' + vscode
+          'This version of Pico-W-Go is incompatible with VSCode ' + vscode
           .version +
-          ". Check for an update to the extension. If one isn't available, raise a bug at https://github.com/cpwood/Pico-Go to get this fixed!"
+          ". Check for an update to the extension. If one isn't available, raise a bug at https://github.com/paulober/Pico-W-Go to get this fixed!"
           );
       }
     }
     else if (e.message.includes('.vscode-server')) {
       vscode.window.showErrorMessage(
-        "Pico-Go is not currently compatible with the 'VSCode Remote - SSH' extension."
+        "Pico-W-Go is not currently compatible with the 'VSCode Remote - SSH' extension."
         );
     }
     else {
       vscode.window.showErrorMessage(
-        'There was a problem loading the serialport bindings. Pico-Go will not work.'
+        'There was a problem loading the serialport bindings. Pico-W-Go will not work.'
         );
     }
 

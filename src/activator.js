@@ -9,7 +9,7 @@ import Pymakr from './pymakr';
 import Pyboard from './board/pyboard';
 import StubsManager from './stubs/stubs-manager';
 
-const pkg = vscode.extensions.getExtension('chriswood.pico-go').packageJSON;
+const pkg = vscode.extensions.getExtension('paulober.pico-w-go').packageJSON;
 
 export default class Activator {
   async activate(context) {
@@ -23,13 +23,13 @@ export default class Activator {
       for(let item of pkg.contributes.commands) {
         let disposable = vscode.commands.registerCommand(item.command,
           function() {
-            vscode.window.showErrorMessage('Pico-Go was unable to start, most likely because Python wasn\'t found on your machine.');
+            vscode.window.showErrorMessage('Pico-W-Go was unable to start, most likely because Python wasn\'t found on your machine.');
           });
         context.subscriptions.push(disposable);
       }
 
       let choice = await vscode.window.showErrorMessage(
-        'Python3 is not detected on this machine so Pico-Go cannot work. Ensure it is in your PATH or set a python_path value in the Global Settings. Then restart VS Code.',
+        'Python3 is not detected on this machine so Pico-W-Go cannot work. Ensure it is in your PATH or set a python_path value in the Global Settings. Then restart VS Code.',
         null,
         'OK', 'Global Settings'
       );
@@ -51,7 +51,7 @@ export default class Activator {
 
     let terminal = v.terminal;
 
-    let disposable = vscode.commands.registerCommand('picogo.help',
+    let disposable = vscode.commands.registerCommand('picowgo.help',
       function() {
         terminal.show();
         vscode.env.openExternal(vscode.Uri.parse(
@@ -59,60 +59,60 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.listCommands',
+    disposable = vscode.commands.registerCommand('picowgo.listCommands',
       function() {
         v.showQuickPick();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.initialise',
+    disposable = vscode.commands.registerCommand('picowgo.initialise',
       function() {
         sm.addToWorkspace();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.connect',
+    disposable = vscode.commands.registerCommand('picowgo.connect',
       async function() {
         terminal.show();
         await pymakr.connect();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.run',
+    disposable = vscode.commands.registerCommand('picowgo.run',
       async function() {
         terminal.show();
         await pymakr.run();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.runselection',
+    disposable = vscode.commands.registerCommand('picowgo.runselection',
       async function() {
         terminal.show();
         await pymakr.runSelection();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.upload', function() {
+    disposable = vscode.commands.registerCommand('picowgo.upload', function() {
       terminal.show();
       pymakr.upload();
     });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.uploadFile',
+    disposable = vscode.commands.registerCommand('picowgo.uploadFile',
       function() {
         terminal.show();
         pymakr.uploadFile();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.download',
+    disposable = vscode.commands.registerCommand('picowgo.download',
       async function() {
         terminal.show();
         await pymakr.download();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.deleteAllFiles',
+    disposable = vscode.commands.registerCommand('picowgo.deleteAllFiles',
       function() {
         terminal.show();
 
@@ -122,19 +122,19 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.globalSettings',
+    disposable = vscode.commands.registerCommand('picowgo.globalSettings',
       async function() {
         await pymakr.openGlobalSettings();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.disconnect',
+    disposable = vscode.commands.registerCommand('picowgo.disconnect',
       async function() {
         await pymakr.disconnect();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.toggleConnect',
+    disposable = vscode.commands.registerCommand('picowgo.toggleConnect',
       async function() {
         if (!pymakr.board.connected) {
           terminal.show();
@@ -143,7 +143,7 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.ftp',
+    disposable = vscode.commands.registerCommand('picowgo.ftp',
       async function() {
         if (!pymakr.board.connected) {
           terminal.show();
@@ -152,11 +152,11 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.extra.pins',
+    disposable = vscode.commands.registerCommand('picowgo.extra.pins',
       function() {
         const panel = vscode.window.createWebviewPanel(
           'pins',
-          'Pico Pin Map',
+          'Pico W Pin Map',
           vscode.ViewColumn.Active, {
             // Only allow the webview to access resources in our extension's media directory
             localResourceRoots: [vscode.Uri.file(path.join(context
@@ -165,7 +165,7 @@ export default class Activator {
         );
 
         const onDiskPath = vscode.Uri.file(
-          path.join(context.extensionPath, 'images', 'Pico-Pins.png')
+          path.join(context.extensionPath, 'images', 'Pico-W-Pins.svg')
         );
         const imageUrl = panel.webview.asWebviewUri(onDiskPath);
 
@@ -180,35 +180,35 @@ export default class Activator {
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.extra.getSerial',
+    disposable = vscode.commands.registerCommand('picowgo.extra.getSerial',
       async function() {
         terminal.show();
         await pymakr.getSerial();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.reset.soft',
+    disposable = vscode.commands.registerCommand('picowgo.reset.soft',
       async function() {
         terminal.show();
         await pymakr.resetSoft();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.reset.hard',
+    disposable = vscode.commands.registerCommand('picowgo.reset.hard',
       async function() {
         terminal.show();
         await pymakr.resetHard();
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.universalStop',
+    disposable = vscode.commands.registerCommand('picowgo.universalStop',
       async function() {
         if (v.stopAction != undefined)
           vscode.commands.executeCommand(v.stopAction);
       });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('picogo.extra.firmwareUpdates',
+    disposable = vscode.commands.registerCommand('picowgo.extra.firmwareUpdates',
       async function() {
         await pymakr.checkForFirmwareUpdates();
       });
@@ -249,7 +249,7 @@ export default class Activator {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pico Pin Map</title>
+        <title>Pico W Pin Map</title>
         <style type="text/css">
             body {
                 background-color: #191c2b;

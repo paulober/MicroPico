@@ -8,7 +8,7 @@ import Logger from '../helpers/logger.js';
 import EventEmitter from 'events';
 import _ from 'lodash';
 
-const pkg = vscode.extensions.getExtension('chriswood.pico-go').packageJSON;
+const pkg = vscode.extensions.getExtension('paulober.pico-w-go').packageJSON;
 
 export default class PanelView extends EventEmitter {
   constructor(pyboard, settings) {
@@ -57,7 +57,7 @@ export default class PanelView extends EventEmitter {
     let quickPickItems = pkg.contributes.commands;
 
     for (let qpItem of quickPickItems) {
-      if (qpItem.command != 'picogo.listCommands') {
+      if (qpItem.command != 'picowgo.listCommands') {
         items.push({
           label: qpItem.title,
           description: '',
@@ -127,11 +127,11 @@ export default class PanelView extends EventEmitter {
 
   _setTitle(status) {
     let icon = 'chrome-close';
-    let title = 'Pico Disconnected';
+    let title = 'Pico W Disconnected';
 
     if (status == 'connected') {
       icon = 'check';
-      title = 'Pico Connected';
+      title = 'Pico W Connected';
     }
 
     this._setButton('status', icon, title);

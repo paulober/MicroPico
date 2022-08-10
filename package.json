@@ -1,9 +1,9 @@
 {
-  "name": "pico-go",
+  "name": "pico-w-go",
   "displayName": "Pico-Go (W)",
   "description": "Autocompletion and a REPL console for the Raspberry Pi Pico (W).",
   "version": "1.5.0",
-  "publisher": "ChrisWood",
+  "publisher": "paulober",
   "repository": "https://github.com/paulober/Pico-Go",
   "icon": "images/logo.png",
   "license": "SEE LICENSE IN <LICENSE.md>",
@@ -17,7 +17,8 @@
   "keywords": [
     "raspberry",
     "pi",
-    "pico"
+    "pico",
+    "pico w"
   ],
   "categories": [
     "Other"
@@ -51,119 +52,119 @@
   "contributes": {
     "commands": [
       {
-        "command": "picogo.connect",
-        "title": "Pico-Go > Connect"
+        "command": "picowgo.connect",
+        "title": "Pico-W-Go > Connect"
       },
       {
-        "command": "picogo.disconnect",
-        "title": "Pico-Go > Disconnect"
+        "command": "picowgo.disconnect",
+        "title": "Pico-W-Go > Disconnect"
       },
       {
-        "command": "picogo.initialise",
-        "title": "Pico-Go > Configure project"
+        "command": "picowgo.initialise",
+        "title": "Pico-W-Go > Configure project"
       },
       {
-        "command": "picogo.upload",
-        "title": "Pico-Go > Upload project"
+        "command": "picowgo.upload",
+        "title": "Pico-W-Go > Upload project"
       },
       {
-        "command": "picogo.uploadFile",
-        "title": "Pico-Go > Upload current file only"
+        "command": "picowgo.uploadFile",
+        "title": "Pico-W-Go > Upload current file only"
       },
       {
-        "command": "picogo.download",
-        "title": "Pico-Go > Download project"
+        "command": "picowgo.download",
+        "title": "Pico-W-Go > Download project"
       },
       {
-        "command": "picogo.run",
-        "title": "Pico-Go > Run current file"
+        "command": "picowgo.run",
+        "title": "Pico-W-Go > Run current file"
       },
       {
-        "command": "picogo.runselection",
-        "title": "Pico-Go > Run current selection"
+        "command": "picowgo.runselection",
+        "title": "Pico-W-Go > Run current selection"
       },
       {
-        "command": "picogo.deleteAllFiles",
-        "title": "Pico-Go > Delete all files from board"
+        "command": "picowgo.deleteAllFiles",
+        "title": "Pico-W-Go > Delete all files from board"
       },
       {
-        "command": "picogo.ftp",
-        "title": "Pico-Go > Start FTP server"
+        "command": "picowgo.ftp",
+        "title": "Pico-W-Go > Start FTP server"
       },
       {
-        "command": "picogo.globalSettings",
-        "title": "Pico-Go > Global settings"
+        "command": "picowgo.globalSettings",
+        "title": "Pico-W-Go > Global settings"
       },
       {
-        "command": "picogo.reset.soft",
-        "title": "Pico-Go > Reset > Soft"
+        "command": "picowgo.reset.soft",
+        "title": "Pico-W-Go > Reset > Soft"
       },
       {
-        "command": "picogo.reset.hard",
-        "title": "Pico-Go > Reset > Hard"
+        "command": "picowgo.reset.hard",
+        "title": "Pico-W-Go > Reset > Hard"
       },
       {
-        "command": "picogo.help",
-        "title": "Pico-Go > Help > Getting started"
+        "command": "picowgo.help",
+        "title": "Pico-W-Go > Help > Getting started"
       },
       {
-        "command": "picogo.extra.pins",
-        "title": "Pico-Go > Help > Show Pico Pin Map"
+        "command": "picowgo.extra.pins",
+        "title": "Pico-W-Go > Help > Show Pico Pin Map"
       },
       {
-        "command": "picogo.extra.getSerial",
-        "title": "Pico-Go > Help > List serial ports"
+        "command": "picowgo.extra.getSerial",
+        "title": "Pico-W-Go > Help > List serial ports"
       },
       {
-        "command": "picogo.extra.getFullVersion",
-        "title": "Pico-Go > Help > Get support info"
+        "command": "picowgo.extra.getFullVersion",
+        "title": "Pico-W-Go > Help > Get support info"
       },
       {
-        "command": "picogo.extra.firmwareUpdates",
-        "title": "Pico-Go > Help > Check for firmware updates"
+        "command": "picowgo.extra.firmwareUpdates",
+        "title": "Pico-W-Go > Help > Check for firmware updates"
       },
       {
-        "command": "picogo.listCommands",
-        "title": "Pico-Go > List all Commands"
+        "command": "picowgo.listCommands",
+        "title": "Pico-W-Go > List all Commands"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "picogo.upload",
-          "group": "picogo"
+          "command": "picowgo.upload",
+          "group": "picowgo"
         },
         {
-          "command": "picogo.run",
-          "group": "picogo"
+          "command": "picowgo.run",
+          "group": "picowgo"
         }
       ],
       "editor/context": [
         {
-          "command": "picogo.connect",
-          "group": "picogo"
+          "command": "picowgo.connect",
+          "group": "picowgo"
         },
         {
-          "command": "picogo.run",
-          "group": "picogo"
+          "command": "picowgo.run",
+          "group": "picowgo"
         },
         {
-          "command": "picogo.runselection",
-          "group": "picogo"
+          "command": "picowgo.runselection",
+          "group": "picowgo"
         },
         {
-          "command": "picogo.upload",
-          "group": "picogo"
+          "command": "picowgo.upload",
+          "group": "picowgo"
         }
       ],
       "editor/title": [
         {
-          "command": "picogo.run",
-          "group": "picogo"
+          "command": "picowgo.run",
+          "group": "picowgo"
         },
         {
-          "command": "picogo.upload",
-          "group": "picogo"
+          "command": "picowgo.upload",
+          "group": "picowgo"
         }
       ]
     }
@@ -172,78 +173,78 @@
     {
       "key": "status",
       "name": "",
-      "command": "picogo.toggleConnect",
+      "command": "picowgo.toggleConnect",
       "tooltip": "Toggle board connection"
     },
     {
       "key": "stop",
       "name": "$(primitive-square) Stop",
-      "command": "picogo.universalStop",
+      "command": "picowgo.universalStop",
       "tooltip": "Stop"
     },
     {
       "key": "run",
       "name": "$(play) Run",
-      "command": "picogo.run",
+      "command": "picowgo.run",
       "tooltip": "Run current file"
     },
     {
       "key": "runselection",
       "name": "$(play) Run Line",
-      "command": "picogo.runselection",
+      "command": "picowgo.runselection",
       "tooltip": "Run current line"
     },
     {
       "key": "upload",
       "name": "$(triangle-up) Upload",
-      "command": "picogo.uploadFile",
+      "command": "picowgo.uploadFile",
       "tooltip": "Upload current file to your board"
     },
     {
       "key": "download",
       "name": "$(triangle-down) Download",
-      "command": "picogo.download",
+      "command": "picowgo.download",
       "tooltip": "Download project from your board"
     },
     {
       "key": "disconnect",
       "name": "$(chrome-close) Disconnect",
-      "command": "picogo.disconnect",
+      "command": "picowgo.disconnect",
       "tooltip": "Disconnect"
     },
     {
       "key": "softreset",
       "name": "$(refresh) Reset",
-      "command": "picogo.reset.soft",
+      "command": "picowgo.reset.soft",
       "tooltip": "Restart your board"
     },
     {
       "key": "settings",
       "name": "$(gear) Settings",
-      "command": "picogo.globalSettings",
-      "tooltip": "Global Pico-Go settings"
+      "command": "picowgo.globalSettings",
+      "tooltip": "Global Pico-W-Go settings"
     },
     {
       "key": "listserial",
       "name": "$(list-unordered) List serialports",
-      "command": "picogo.extra.getSerial",
+      "command": "picowgo.extra.getSerial",
       "tooltip": "List available serialports"
     },
     {
       "key": "listcommands",
       "name": "$(list-unordered) All commands",
-      "command": "picogo.listCommands",
-      "tooltip": "List all available Pico-Go commands"
+      "command": "picowgo.listCommands",
+      "tooltip": "List all available Pico-W-Go commands"
     },
     {
       "key": "ftp",
       "name": "$(references) FTP",
-      "command": "picogo.ftp",
+      "command": "picowgo.ftp",
       "tooltip": "Start FTP server"
     }
   ],
   "scripts": {
-    "changelog": "github_changelog_generator -u cpwood -p Pico-Go --future-release v$npm_package_version",
+    "changelog": "github_changelog_generator -u paulober -p Pico-W-Go --future-release v$npm_package_version",
     "copy-native": "node native_modules/copy-native.js",
     "build": "babel src --out-dir lib --source-maps",
     "build-dev": "babel src --out-dir lib --source-maps --watch",

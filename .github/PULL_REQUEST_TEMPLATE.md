@@ -19,4 +19,4 @@
 
 **VSCode version:**
 
-**Pico-Go version:**
+**Pico-W-Go version:**

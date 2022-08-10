@@ -7,5 +7,5 @@ contact_links:
     url: http://pico-go.net/docs/help/connect/
     about: Struggling to connect? Try this guidance before opening a bug.
   - name: Intellisense, Auto-complete and Linting Issues
-    url: https://github.com/cpwood/Pico-Stub/issues
-    about: These belong in the Pico-Stub project rather than Pico-Go.
+    url: https://github.com/paulober/Pico-W-Stub/issues
+    about: These belong in the Pico-W-Stub project rather than Pico-W-Go.

@@ -18,8 +18,8 @@ export default class SettingsWrapper extends EventEmitter {
     this.projectConfig = {};
     this.api = new ApiWrapper(this);
     this.projectPath = this.api.getProjectPath();
-    this.globalConfigFile = Utils.getConfigPath('pico-go.json');
-    this.projectConfigFile = this.projectPath + '/pico-go.json';
+    this.globalConfigFile = Utils.getConfigPath('pico-w-go.json');
+    this.projectConfigFile = this.projectPath + '/pico-w-go.json';
     this.logger = new Logger('SettingsWrapper');
     this.utils = new Utils(this);
     this.projectChangeCallbacks = [];
@@ -68,7 +68,7 @@ export default class SettingsWrapper extends EventEmitter {
 
   getProjectPath() {
     this.projectPath = this.api.getProjectPath();
-    this.projectConfigFile = this.projectPath + '/pico-go.json';
+    this.projectConfigFile = this.projectPath + '/pico-w-go.json';
     return this.projectPath;
   }
 
@@ -228,7 +228,7 @@ export default class SettingsWrapper extends EventEmitter {
     this.logger.info('Refreshing project config');
     this.projectConfig = {};
     this.projectPath = this.api.getProjectPath();
-    this.projectConfigFile = this.projectPath + '/pico-go.json';
+    this.projectConfigFile = this.projectPath + '/pico-w-go.json';
 
     try {
       let contents = await this._readConfigFile(this.projectConfigFile);

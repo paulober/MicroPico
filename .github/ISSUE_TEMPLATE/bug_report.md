@@ -24,7 +24,7 @@ labels: 'bug'
 
 ## Support info
 
-Copy this from the `Pico-Go > Help > Get support info` option in the command palette:
+Copy this from the `Pico-W-Go > Help > Get support info` option in the command palette:
 
 ```
 < Paste Here >

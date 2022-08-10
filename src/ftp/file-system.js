@@ -1,4 +1,4 @@
-// Marshals FTP access to the Pico board, ensuring that
+// Marshals FTP access to the Pico W board, ensuring that
 // only a single command is carried out at once, even though
 // there might be multiple FTP connections concurrently.
 

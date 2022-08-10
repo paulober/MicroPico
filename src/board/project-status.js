@@ -25,7 +25,7 @@ export default class ProjectStatus {
   }
 
   async read() {
-    let result = await this.shell.readFile('project.pico-go');
+    let result = await this.shell.readFile('project.pico-w-go');
 
     let json = [];
 
@@ -45,7 +45,7 @@ export default class ProjectStatus {
         let boardHashArray = Object.values(this.boardFileHashes);
         let projectFileContent = Buffer.from(JSON.stringify(
           boardHashArray));
-        await this.shell.writeFile('project.pico-go', null,
+        await this.shell.writeFile('project.pico-w-go', null,
           projectFileContent);
       }
       else {
