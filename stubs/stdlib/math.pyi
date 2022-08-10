@@ -1,10 +1,14 @@
-# Stubs for math
-# See: http://docs.python.org/2/library/math.html
+"""
+Module: 'math' on micropython-v1.19.1-rp2
+"""
+# MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
+from typing import Any, Tuple
 
-from typing import Tuple
-
-e = ...  # type: float
-pi = ...  # type: float
+e = 2.718282  # type: float
+nan = nan # type: float
+pi = 3.141593 # type: float
+tau = 6.283185 # type: float
+inf = inf # type: float
 
 def acos(x: float) -> float: 
     """

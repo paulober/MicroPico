@@ -1,11 +1,10 @@
 from uarray import array
 from machine import Pin
-from typing import Sequence, Any, Iterable, Union
+from typing import Optional, Sequence, Any, Iterable, Union, overload
 
-# make_stub_files: Wed 03 Feb 2021 at 08:12:32
 class Flash:
     # Determined from: https://github.com/raspberrypi/micropython/blob/1196871a0f2f974b03915e08cfcc0433de4b8a64/ports/rp2/rp2_flash.c
-    # Documentation put together via research and may be flawed!
+    # Documentation put together via research and may be flawed! And also from micropython docs rp2.Flash.html
     """
     Flash storage functionality.
     """
@@ -17,20 +16,24 @@ class Flash:
     CMD_BLOCK_SIZE = 5
     CMD_BLOCK_ERASE = 6
 
-    def ioctl(self, cmd: int, offsetBlocks: int = None):
+    # offsetBlocks: int = None changed to arg: Any
+    def ioctl(self, cmd: int, arg: Any):
         """
         Send a command to the Flash storage controller.
         """
+        ...
 
-    def readblocks(self, offsetBlocks: int, buffer: bytearray):
+    def readblocks(self, offsetBlocks: int, buffer: bytearray, offset: Optional[int | Any]=None):
         """
         Read data from the Flash storage.
         """
+        ...
 
-    def writeblocks(self, offsetBlocks: int, buffer: bytearray):
+    def writeblocks(self, offsetBlocks: int, buffer: bytearray, offset: Optional[int | Any]=None):
         """
         Write data to the Flash storage.
         """
+        ...
 
 class PIO:
     # Determined from: https://github.com/raspberrypi/micropython/blob/1196871a0f2f974b03915e08cfcc0433de4b8a64/ports/rp2/rp2_pio.c
@@ -45,94 +48,262 @@ class PIO:
     communications protocols.
     """
 
-    IN_HIGH = 1
-    IN_LOW = 0
-    IRQ_SM0 = 256
-    IRQ_SM1 = 512
-    IRQ_SM2 = 1024
-    IRQ_SM3 = 2048
-    OUT_HIGH = 3
-    OUT_LOW = 2
-    SHIFT_LEFT = 0
-    SHIFT_RIGHT = 1
-    JOIN_NONE = 0
-    JOIN_TX = 1
-    JOIN_RX = 2
+    IN_HIGH = 1 # type: int
+    IN_LOW = 0 # type: int
+    IRQ_SM0 = 256 # type: int
+    IRQ_SM1 = 512 # type: int
+    IRQ_SM2 = 1024 # type: int
+    IRQ_SM3 = 2048 # type: int
+    JOIN_NONE = 0 # type: int
+    JOIN_RX = 2 # type: int
+    JOIN_TX = 1 # type: int
+    OUT_HIGH = 3 # type: int
+    OUT_LOW = 2 # type: int
+    SHIFT_LEFT = 0 # type: int
+    SHIFT_RIGHT = 1 # type: int
 
-    def __init__(self, pin:int) -> None: 
+    def __init__(self, id: int) -> None:
+        """Gets the PIO instance numbered id. The 
+        RP2040 has two PIO instances, numbered 0 and 1.
+
+        Raises a ``ValueError`` if any other argument is provided."""
         ...
 
-    def add_program(self, prog):
+    def add_program(self, program):
         """
-        Adds program data to the PIO instruction memory.
+        Add the program to the instruction memory of this PIO instance.
+
+        The amount of memory available for programs on each PIO instance 
+        is limited. If there isn't enough space left in the PIO's program 
+        memory this method will raise ``OSError(ENOMEM)``.
         """
+        ...
 
     def irq(self, handler=None, trigger=IRQ_SM0|IRQ_SM1|IRQ_SM2|IRQ_SM3, hard=False):
         """
-        Execute assembly code when triggered.
+        Returns the IRQ object for this PIO instance.
+
+        MicroPython only uses IRQ 0 on each PIO instance. IRQ 1 is not available.
+
+        Optionally configure it.
         """
+        ...
 
     def remove_program(self, prog = None):
         """
-        Default to removing all programs from the PIO instruction
-        memory, but will remove a specific program if passed as a 
-        parameter.
-        """
+        Remove program from the instruction memory of this PIO instance.
 
-    def state_machine(self, id, prog, freq=-1, *, set=None) -> StateMachine:
+        If no program is provided, it removes all programs.
+
+        It is not an error to remove a program which has already been removed.
+        """
+        ...
+
+    def state_machine(self, id: int, program: Optional[Any] = None, freq: Optional[int]=-1, *args, **kwargs) -> StateMachine:
         """
         Returns the StateMachine object.
-        """
 
-class PIOASMError(Exception): ...
+        Gets the state machine numbered id. 
+        On the RP2040, each PIO instance has 
+        four state machines, numbered 0 to 3.
+        """
+        ...
+
+class PIOASMError(Exception): 
+    ...
+
 class PIOASMEmit:
-    def __init__(self) -> None: ...
-    def start_pass(self, pass_: Any) -> None: ...
-    def __getitem__(self, key: Any) -> Any: ...
-        #   0: return self.delay(key)
-        # ? 0: return self.delay(key)
-    def delay(self, delay: int) -> PIOASMEmit: ...
-        #   0: return self
-        # ? 0: return self
-    def side(self, value: Any) -> Any: ...
-        #   0: return self
-        # ? 0: return self
-    def wrap_target(self) -> None: ...
-    def wrap(self) -> None: ...
-    def label(self, label: Any) -> None: ...
-    def word(self, instr: Any, label: Any=None) -> Any: ...
-        #   0: return self
-        # ? 0: return self
-    def nop(self) -> Any: ...
-        #   0: return self.word()
-        # ? 0: return self.word()
-    def jmp(self, cond: Any, label: Any=None) -> Any: ...
-        #   0: return self.word(|cond<<,label)
-        # ? 0: return self.word(|cond<<, label)
-    def wait(self, polarity: Any, src: Any, index: Any) -> Any: ...
-        #   0: return self.word(|polarity<<|src<<|index)
-        # ? 0: return self.word(|polarity<<|src<<|index)
-    def in_(self, src: Any, data: Any) -> Any: ...
-        #   0: return self.word(|src<<|data&)
-        # ? 0: return self.word(|src<<|data&)
-    def out(self, dest: Any, data: Any) -> Any: ...
-        #   0: return self.word(|dest<<|data&)
-        # ? 0: return self.word(|dest<<|data&)
-    def push(self, value: Any=0, value2: Any=0) -> Any: ...
-        #   0: return self.word(|value&)
-        # ? 0: return self.word(|value&)
-    def pull(self, value: Any=0, value2: Any=0) -> Any: ...
-        #   0: return self.word(|value&)
-        # ? 0: return self.word(|value&)
-    def mov(self, dest: Any, src: Any) -> Any: ...
-        #   0: return self.word(|dest<<|src)
-        # ? 0: return self.word(|dest<<|src)
-    def irq(self, mod: Any, index: Any=None) -> Any: ...
-        #   0: return self.word(|mod&|index)
-        # ? 0: return self.word(|mod&|index)
-    def set(self, dest: Any, data: Any) -> Any: ...
-        #   0: return self.word(|dest<<|data)
-        # ? 0: return self.word(|dest<<|data)
+    def __init__(self) -> None:
+        ...
+
+    def start_pass(self, pass_: Any) -> None:
+        ...
+
+    def __getitem__(self, key: Any) -> Any:
+        ...
+        
+    def delay(self, value: int) -> Any: 
+        """This is a modifier which can be applied to any 
+        instruction, and specifies how many cycles to delay 
+        for after the instruction executes.
+
+        - *value*: cycles to delay, 0-31 (maximum value reduced 
+        if side-set pins are used)
+        """
+        ...
+
+    def side(self, value: Any) -> Any:
+        """This is a modifier which can be applied to any instruction, 
+        and is used to control side-set pin values.
+
+        - *value*: the value (bits) to output on the side-set pins
+        """
+        ...
+
+    def wrap_target(self) -> None:
+        """Specify the location where execution 
+        continues after program wrapping. By 
+        default this is the start of the PIO routine.
+        """
+        ...
+
+    def wrap(self) -> None:
+        """Specify the location where the program finishes
+         and wraps around. If this directive is not used then 
+         it is added automatically at the end of the PIO routine. 
+         Wrapping does not cost any execution cycles.
+        """
+        ...
+
+    def label(self, label: Any) -> None:
+        """Define a label called label at the current location. 
+        label can be a string or integer.
+        """
+        ...
+
+    def word(self, instr: Any, label: Any=None) -> Any:
+        """Insert an arbitrary 16-bit word in the assembled 
+        output.
+
+        *instr*: the 16-bit value
+
+        *label*: if given, look up the label and logical-or 
+        the label's value with *instr*
+        """
+        ...
+
+    def nop(self) -> Any:
+        """This is a pseudoinstruction that assembles 
+        to ``mov(y, y)`` and has no side effect.
+        """
+        ...
+
+    def jmp(self, cond: Any, label: Any=None) -> Any:
+        """This instruction takes two forms:
+        jmp(label)
+        - label: label to jump to unconditionally
+        
+        jmp(cond, label)
+        - *cond*: the condition to check, one of:
+
+        ``not_x``, ``not_y``: true if register is zero
+
+        ``x_dec``, ``y_dec``: true if register is non-zero, and do post decrement
+
+        ``x_not_y``: true if X is not equal to Y
+
+        ``pin``: true if the input pin is set
+
+        ``not_osre``: true if OSR is not empty (hasn’t reached its threshold)
+
+        - *label*: label to jump to if condition is true
+        """
+        ...
+
+    def wait(self, polarity: int, src: Any, index: int) -> Any:
+        """Block, waiting for high/low on a pin or IRQ line.
+
+        - *polarity*: 0 or 1, whether to wait for a low or high value
+
+        - *src*: one of: gpio (absolute pin), pin (pin relative to StateMachine's in_base argument), irq
+
+        - *index*: 0-31, the index for src"""
+        ...
+
+    def in_(self, src: Any, data: Any) -> Any:
+        """Shift data in from src to ISR.
+
+        - *src*: one of: ``pins``, ``x``, ``y``, ``null``, ``isr``, ``osr``
+        - *bit_count*: number of bits to shift in (1-32)"""
+        ...
+
+    def out(self, dest: Any, bit_count: int) -> Any:
+        """Shift data out from OSR to dest.
+
+        - *dest*: one of: ``pins``, ``x``, ``y``, ``pindirs``, ``pc``, ``isr``, ``exec``
+        - *bit_count*: number of bits to shift out (1-32)"""
+        ...
+
+    def push(self, value: Any=0, value2: Any=0) -> Any:
+        """Push ISR to the RX FIFO, then clear ISR to zero. 
+        This instruction takes the following forms:
+
+        - push()
+        - push(block)
+        - push(noblock)
+        - push(iffull)
+        - push(iffull, block)
+        - push(iffull, noblock)
+
+        If ``block`` is used then the instruction stalls if the 
+        RX FIFO is full. The default is to block. If ``iffull`` 
+        is used then it only pushes if the input shift count 
+        has reached its threshold.
+        """
+        ...
+
+    def pull(self, value: Any=0, value2: Any=0) -> Any:
+        """Pull from the TX FIFO into OSR. This instruction 
+        takes the following forms:
+
+        - pull()
+        - pull(block)
+        - pull(noblock)
+        - pull(ifempty)
+        - pull(ifempty, block)
+        - pull(ifempty, noblock)
+
+        If ``block`` is used then the instruction stalls if the 
+        TX FIFO is empty. The default is to block. If ``ifempty``
+        is used then it only pulls if the output shift count 
+        has reached its threshold.
+        """
+        ...
+        
+    def mov(self, dest: Any, src: Any) -> Any:
+        """Move into dest the value from src.
+
+        - *dest*: one of: pins, ``x``, ``y``, ``exec``, ``pc``, ``isr``, ``osr``
+        - *src*: one of: ``pins``, ``x``, ``y``, ``null``, ``status``, ``isr``, ``osr``
+        ; this argument can be optionally modified by wrapping it in ``invert()`` 
+        or ``reverse()`` (but not both together)
+        """
+        ...
+
+    @overload
+    def irq(self, mode: str, index: Any) -> Any:
+        ...
+    
+    def irq(self, index: Any) -> Any:
+        """Set or clear an IRQ flag. This instruction 
+        takes two forms:
+
+        irq(index)
+        - index: 0-7, or rel(0) to rel(7)
+
+        irq(mode, index)
+        - mode: one of: block, clear
+        - index: 0-7, or rel(0) to rel(7)
+        
+        If block is used then the instruction stalls 
+        until the flag is cleared by another entity. 
+        If clear is used then the flag is cleared 
+        instead of being set. Relative IRQ indices 
+        add the state machine ID to the IRQ index with 
+        modulo-4 addition. IRQs 0-3 are visible from to 
+        the processor, 4-7 are internal to the state 
+        machines.
+        """
+        ...
+    
+    def set(self, dest: Any, data: int) -> Any:
+        """Set dest with the value data.
+
+        - dest: ``pins, ``x``, ``y``, ``pindirs``
+        - data: value (0-31)
+        """
+        ...
+    
 
 class StateMachine:
     # Determined from: https://github.com/raspberrypi/micropython/blob/1196871a0f2f974b03915e08cfcc0433de4b8a64/ports/rp2/rp2_pio.c
@@ -158,6 +329,7 @@ class StateMachine:
             - *prog* is the assembly code to execute (decorated by ``@asm_pio``).
             - *freq* is the frequency at which the code should be executed (in milliseconds).
         """
+        ...
 
     def init(self, id, prog, freq: int=-1, *, in_base: Pin=None, out_base: Pin=None, set_base: Pin=None, jmp_pin: Pin=None, sideset_base: Pin=None, in_shiftdir: int=None, out_shiftdir: int=None, push_thresh: int=None, pull_thresh: int=None):
         """
@@ -180,16 +352,19 @@ class StateMachine:
             - *prog* is the assembly code to execute (decorated by ``@asm_pio``).
             - *freq* is the frequency at which the code should be executed (in milliseconds).
         """
+        ...
 
     def exec(self, instr: str):
         """
         Run an execution instruction.
         """
+        ...
 
     def irq(self, handler=None, trigger=0|1, hard=False):
         """
         Set an IRQ handler.
         """
+        ...
 
     def active(self, value: int):
         """
@@ -197,6 +372,7 @@ class StateMachine:
 
             - *value* should be 1 for active.
         """
+        ...
 
     def get(self, buf: bytes=None, shift: int=0):
         """
@@ -205,6 +381,7 @@ class StateMachine:
             - *buf* are optional bytes
             - *shift* is an optional number of places to shift.
         """
+        ...
     
     def put(self, value: Union[bytes, int | array[int]], shift: int=0):
         """
@@ -213,6 +390,8 @@ class StateMachine:
             - *buf* are optional bytes
             - *shift* is an optional number of places to shift.
         """
+        ...
+
     def restart(self):
         """
         ``Restarts`` the state machine.
@@ -220,18 +399,23 @@ class StateMachine:
             - it resets the statemachine to the initial state without the need to re-instantiation.
             - It also makes PIO code easier, because then stalling as error state can be unlocked.
         """
+        ...
+
     def rx_fifo(self) -> int:
         """
         Return the number of ``RX FIFO`` items. 0 if empty
 
             - rx_fifo() is also useful, for MP code to check for data & timeout if no data arrived. 
         """
+        ...
+
     def tx_fifo(self) -> int:
         """
         Return the number of ``TX FIFO`` items. 0 if empty
 
             - tx_fifo() can be useful to check states where data is not processed.
         """
+        ...
 
 def asm_pio(
     out_init: int = None,
@@ -260,10 +444,25 @@ def asm_pio(
     # ? 0: return emit.prog
     #   1: return dec
     # ? 1: return dec
+    ...
 
-def asm_pio_encode(instr: str, sideset_count: int) -> Any: ...
+
+def asm_pio_encode(instr: str, sideset_count: int, sideset_opt=False) -> Any:
+    """Assemble a single PIO instruction. You usually want to use ``asm_pio()`` instead."""
     #   0: return emit.prog[_PROG_DATA][]
     # ? 0: return emit.prog[_PROG_DATA][]
+    ...
 
-def const(value:Any) -> Any:
+def const(value: Any) -> Any:
     pass
+
+def country(*args, **kwargs) -> Any:
+    ...
+
+def dht_readinto(*args, **kwargs) -> Any:
+    """
+    Reads the temperature and humidity from the DHT sensor.
+
+    (this function is also the redirection target of dth.dth_readinto() on the rp2040)
+    """
+    ...

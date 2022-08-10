@@ -1,1 +1,1 @@
-from uhashlib import *
+from .uhashlib import *

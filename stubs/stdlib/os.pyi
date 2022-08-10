@@ -1,1 +1,1 @@
-from uos import *
+from .uos import *

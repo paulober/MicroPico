@@ -1,77 +1,49 @@
-# Copyright (c) 2019, Digi International, Inc.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
+"""
+Module: 'ubinascii' on micropython-v1.19.1-rp2
+"""
+# MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
 from typing import Any
 
-
-def hexlify(data: Any, sep: Any="") -> bytes:
-    """
-    Returns the hexadecimal representation of the provided binary data.
-
-    :param data: Binary data to convert.
-    :param sep: If supplied, this parameter is used as separator between
-        hexadecimal values.
-
-    :return: Bytes string with the hexadecimal representation.
+def a2b_base64(data: str) -> bytes:
+    """Decode base64-encoded data, ignoring invalid characters 
+    in the input. Conforms to RFC 2045 s.6.8. Returns 
+    a bytes object.
     """
     ...
 
-def unhexlify(data: Any) -> bytes:
-    """
-    Converts hexadecimal data to binary representation. Inverse of
-    ``ubinascii.hexlify()``.
-
-    :param data: Hexadecimal data to convert.
-
-    :return: Bytes string with the binary representation.
+def b2a_base64(data: Any, *, newline: bool=True) -> bytes:
+    """Encode binary data in base64 format, as in RFC 3548. 
+    Returns the encoded data followed by a newline character 
+    if *newline* is true, as a bytes object.
     """
     ...
 
-def a2b_base64(data: Any) -> bytes:
-    """
-    Decodes base64-encoded data, ignoring invalid characters in the input and
-    returns the decoded data. Conforms to RFC 2045 s.6.8.
+def crc32(data: Any, value: Any = ...) -> Any:
+    """Compute CRC-32, the unsigned 32-bit checksum of data, 
+    starting with an initial CRC of value. The default initial 
+    CRC is zero. The algorithm is consistent with the ZIP file 
+    checksum. Since the algorithm is designed for use as a 
+    checksum algorithm, it is not suitable for use as a 
+    general hash algorithm.
 
-    :param data: The base64-encoded data to decode.
-
-    :return: Bytes string with the decoded data.
-    """
-    ...
-
-def b2a_base64(data: Any) -> bytes:
-    """
-    Encodes binary data in base64 format, as in RFC 3548 and returns the
-    encoded data followed by a newline character, as a bytes object.
-
-    :param data: Binary data to encode in base64 format.
-
-    :return: Bytes string with the encoded data.
+    ---
+    © The Python Software Foundation.
+    >> https://docs.python.org/3.9/library/binascii.html
     """
     ...
 
-def crc32(data: Any, crc: int=0) -> int:
-    """
-    Computes CRC-32 incrementally, the 32-bit checksum of ``data``, starting
-    with an initial CRC of ``crc``.
-    :param data: Data to obtain its 32-bit checksum.
-    :param crc: Starting CRC value.
-    :return: 32-bit checksum of the provided data.
+def hexlify(data: Any, sep: Any = ...) -> bytes:
+    """Convert the bytes in the data object to a hexadecimal 
+    representation. Returns a bytes object.
+
+    If the additional argument *sep* is supplied it is used as 
+    a separator between hexadecimal values.
     """
     ...
+
+def unhexlify(data: Any) -> str:
+    """Convert hexadecimal data to binary representation. 
+    Returns bytes string. (i.e. inverse of hexlify)
+    """
+    ...
+

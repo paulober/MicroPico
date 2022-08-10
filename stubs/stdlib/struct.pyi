@@ -1,1 +1,1 @@
-from ustruct import *
+from .ustruct import *
