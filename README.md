@@ -1,6 +1,8 @@
 #  Pico-W-Go VS Code Extension 
 
-Pico-W-Go provides code auto-completion and allows  you to communicate with your Raspberry Pi Pico W board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
+Pico-W-Go provides code auto-completion and allows you to communicate with your Raspberry Pi Pico W board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
+
+> __Autocompletion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20220805-unstable-v1.19.1-240-g9dfabcd6d.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20220810-unstable-v1.19.1-250-gf72d3cec2.uf2)__
 
 This software is originally a derivative product of [Pymakr](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr) by Pycom Ltd under the terms of its [GNU GPL Version 3+ license](LICENSE.md) but it has now received significant rewrites. Non-RP2040 boards are not supported but may still work.
 
