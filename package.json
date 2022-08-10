@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-Go (W)",
   "description": "Autocompletion and a REPL console for the Raspberry Pi Pico (W).",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publisher": "paulober",
   "repository": "https://github.com/paulober/Pico-W-Go",
   "bugs": {
