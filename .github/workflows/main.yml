@@ -26,40 +26,12 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Fetch Electron Versions
-        id: electron
-        uses: ./.github/actions/fetch-electron-versions
-        with:
-          max-count: 3
-          git-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Install Dependencies
         shell: bash
         run: |
           npm install npx
           npm add prebuild-install --save-dev
           npm install --no-audit
-
-      #      todo: fix errors in running prebuild-install in Action runners
-      #      - name: Update Native Modules
-      #        run: npm run download-native
-
-      # TODO
-      # - name: Test Bindings
-
-      # generic all up electron test
-      - name: Test Bindings (macOS/Windows)
-        if: matrix.os != 'ubuntu-latest'
-        run: npm run test-electron -- ${{ steps.electron.outputs.versions }}
-
-      # electron tests with virtual x server
-      - name: Test Bindings (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: xvfb-run -e /dev/stdout -a npm run test-electron -- ${{ steps.electron.outputs.versions }}
-
-      # No tests written :(
-      # - name: Run Tests
-      #   run: npm run test
 
       - name: Package Extension
         run: npx vsce package -o pymakr-${{ github.sha }}.vsix
