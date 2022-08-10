@@ -1,16 +1,17 @@
-# THIS PROJECT IS NO LONGER MAINTAINED; I SIMPLY DON'T HAVE THE TIME BETWEEN FAMILY AND WORK RESPONSIBILITIES.
-## FEEL FREE TO USE THE CODE FOR A DERIVATIVE PROJECT!
+# ! IMPORTANT
 
-#  Pico-Go VS Code Extension 
+This project is based on [cpwood/Pico-Go](https://github.com/cpwood/Pico-Go).
+
+#  Pico-W-Go VS Code Extension 
 
 Pico-Go provides code auto-completion and allows  you to communicate with your Raspberry Pi Pico board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
 
 This software is originally a derivative product of [Pymakr](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr) by Pycom Ltd under the terms of its [GNU GPL Version 3+ license](LICENSE.md) but it has now received significant rewrites. Non-RP2040 boards are not supported but may still work.
 
 - Works with macOS, Linux, and Windows.
-- Connects to the Raspberry Pi Pico board.
+- Connects to the Raspberry Pi Pico W board.
 
-![Terminal](https://github.com/cpwood/Pico-Go/blob/main/images/autocomplete.gif?raw=true)
+![Terminal](https://github.com/paulober/Pico-W-Go/blob/main/images/autocomplete.gif?raw=true)
 
 To find out what's new, take a look at the [changelog](CHANGELOG.md).
 
