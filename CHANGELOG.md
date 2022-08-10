@@ -1,8 +1,18 @@
 # Changelog
 
-## [v1.5.0](https://github.com/paulober/Pico-Go/tree/v1.5.0) (2022-08-08)
+## [v1.5.3](https://github.com/paulober/Pico-W-Go/tree/v1.5.3) (2022-08-10)
 
-[Full Changelog](https://github.com/paulober/Pico-Go/compare/v1.4.3...v1.5.0)
+[Full Changelog](https://github.com/paulober/Pico-W-Go/compare/v1.5.0...v1.5.3)
+
+Compatibility with VS Code 1.70
+
+**Implemented New Features**
+
+- Fixed stub download
+
+## [v1.5.0](https://github.com/paulober/Pico-W-Go/tree/v1.5.0) (2022-08-10)
+
+[Full Changelog](https://github.com/paulober/Pico-W-Go/compare/v1.4.3...v1.5.0)
 
 Compatibility with VS Code 1.70
 

@@ -66,7 +66,7 @@ export default class StubsManager {
     async _addStubs(vsc) {
         if (!await Utils.exists(path.join(vsc, 'Pico-W-Stub'))) {
             let configFolder = Utils.getConfigPath();
-            await fsp.symlink(path.resolve(path.join(configFolder, 'Pico-W-Stub')), path.resolve(path.join(vsc, 'Pico-Stub')), 'junction');
+            await fsp.symlink(path.resolve(path.join(configFolder, 'Pico-W-Stub')), path.resolve(path.join(vsc, 'Pico-W-Stub')), 'junction');
         }
     }
 
