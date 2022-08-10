@@ -42,7 +42,7 @@ Do this in the usual way. The commit message should be `vX.Y.Z changelog`.
 
 ## Create a Release in GitHub
 
-[Create a new Release](https://github.com/cpwood/Pico-Go/releases/new) named vX.Y.Z.
+[Create a new Release](https://github.com/paulober/Pico-W-Go/releases/new) named vX.Y.Z.
 
 Make the description of the release:
 
@@ -52,5 +52,5 @@ See the [changelog](/CHANGELOG.md).
 
 ## Upload the New Version of the Extension
 
-- Go to the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/chriswood) and log in.
+- Go to the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/paulober) and log in.
 - Update the package by uploading the vsix file.
