@@ -1,20 +1,19 @@
 """DS18x20 temperature sensor driver
 """
-from typing import Any, List
 
 class DS18X20:
-    ''
+
     def convert_temp(self):
         """
         Convert the raw temperature data into degrees celsius and return as a fixed point with 2 decimal places.
         """
-        pass
+        ...
 
     def read_scratch(self, rom) -> bytearray:
         """
         Read the scratchpad memory of the addressed device. 9 bytes of data will be returned
         """
-        pass
+        ...
 
     def read_temp(self, rom) -> int:
         """
@@ -26,14 +25,14 @@ class DS18X20:
         return value, the calling app must decide, whether it is a reasonable value 
         in the given context.
         """
-        pass
+        ...
 
-    def scan(self) -> List[Any]:
+    def scan(self) -> list:
         """
         Return the list of DS18x2x devices on the bus. Only devices with 
         rom type 0x10, 0x22 and 0x22 are selected.
         """
-        pass
+        ...
 
     def write_scratch(self, rom, buf):
         """
@@ -41,8 +40,7 @@ class DS18X20:
         The first two bytes are the high and low alarm temperature. The third by is 
         the configuration. See the DS18B20 data sheet for details.
         """
-        pass
+        ...
 
 def const():
-    pass
-
+    ...

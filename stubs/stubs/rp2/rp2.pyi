@@ -1,6 +1,6 @@
-from uarray import array
-from machine import Pin
-from typing import Optional, Sequence, Any, Iterable, Union, overload
+from .uarray import array
+from .machine import Pin
+from typing import Any, overload
 
 class Flash:
     # Determined from: https://github.com/raspberrypi/micropython/blob/1196871a0f2f974b03915e08cfcc0433de4b8a64/ports/rp2/rp2_flash.c
@@ -23,13 +23,13 @@ class Flash:
         """
         ...
 
-    def readblocks(self, offsetBlocks: int, buffer: bytearray, offset: Optional[int | Any]=None):
+    def readblocks(self, offsetBlocks: int, buffer: bytearray, offset: int | Any | None=None):
         """
         Read data from the Flash storage.
         """
         ...
 
-    def writeblocks(self, offsetBlocks: int, buffer: bytearray, offset: Optional[int | Any]=None):
+    def writeblocks(self, offsetBlocks: int, buffer: bytearray, offset: int | Any | None=None):
         """
         Write data to the Flash storage.
         """
@@ -99,7 +99,7 @@ class PIO:
         """
         ...
 
-    def state_machine(self, id: int, program: Optional[Any] = None, freq: Optional[int]=-1, *args, **kwargs) -> StateMachine:
+    def state_machine(self, id: int, program: Any|None = None, freq: int|None=-1, *args, **kwargs) -> StateMachine:
         """
         Returns the StateMachine object.
 
@@ -194,7 +194,7 @@ class PIOASMEmit:
 
         ``pin``: true if the input pin is set
 
-        ``not_osre``: true if OSR is not empty (hasn’t reached its threshold)
+        ``not_osre``: true if OSR is not empty (hasn't reached its threshold)
 
         - *label*: label to jump to if condition is true
         """
@@ -331,7 +331,7 @@ class StateMachine:
         """
         ...
 
-    def init(self, id, prog, freq: int=-1, *, in_base: Pin=None, out_base: Pin=None, set_base: Pin=None, jmp_pin: Pin=None, sideset_base: Pin=None, in_shiftdir: int=None, out_shiftdir: int=None, push_thresh: int=None, pull_thresh: int=None):
+    def init(self, id, prog, freq: int=-1, *, in_base: Pin|None=None, out_base: Pin|None=None, set_base: Pin|None=None, jmp_pin: Pin|None=None, sideset_base: Pin|None=None, in_shiftdir: int|None=None, out_shiftdir: int|None=None, push_thresh: int|None=None, pull_thresh: int|None=None):
         """
         Create a new StateMachine containing two First-In-First-Out (FIFO)
         structures: one for incoming data and another for outgoing data.
@@ -374,7 +374,7 @@ class StateMachine:
         """
         ...
 
-    def get(self, buf: bytes=None, shift: int=0):
+    def get(self, buf: bytes|None=None, shift: int=0):
         """
         Get data from the ``StateMachine``.
 
@@ -383,7 +383,7 @@ class StateMachine:
         """
         ...
     
-    def put(self, value: Union[bytes, int | array[int]], shift: int=0):
+    def put(self, value: bytes|int | array[int], shift: int=0):
         """
         Sets data within the ``StateMachine``.
 
@@ -418,9 +418,9 @@ class StateMachine:
         ...
 
 def asm_pio(
-    out_init: int = None,
-    set_init: int = None,
-    sideset_init: int = None,
+    out_init: int|None = None,
+    set_init: int|None = None,
+    sideset_init: int|None = None,
     in_shiftdir: int = 0,
     out_shiftdir: int = 0,
     autopush: bool = False,
@@ -454,7 +454,7 @@ def asm_pio_encode(instr: str, sideset_count: int, sideset_opt=False) -> Any:
     ...
 
 def const(value: Any) -> Any:
-    pass
+    ...
 
 def country(*args, **kwargs) -> Any:
     ...

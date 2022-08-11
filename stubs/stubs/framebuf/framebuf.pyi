@@ -3,8 +3,6 @@
 This module provides a general frame buffer which can be used to create
 bitmap images, which can then be sent to a display.
 """
-from typing import Any, Optional, overload
-
 
 class FrameBuffer:
     """
@@ -24,7 +22,7 @@ class FrameBuffer:
         fbuf.hline(0, 10, 96, 0xffff)
     """
 
-    def __init__(self, buffer: Any, width: int, height: int, format: int,
+    def __init__(self, buffer: ..., width: int, height: int, format: int,
                  stride: int = 0) -> None:
         """
         Construct a FrameBuffer object.  The parameters are:
@@ -56,13 +54,7 @@ class FrameBuffer:
         """Fill the entire FrameBuffer with the specified color."""
         ...
 
-    @overload
-    def pixel(self, x: int, y: int) -> int:
-        """Get the color value of the specified pixel."""
-        ...
-
-    @overload
-    def pixel(self, x: int, y: int, c: int) -> None:
+    def pixel(self, x: int, y: int, c: int=...) -> None:
         """Set the specified pixel to the given color."""
         ...
 
@@ -111,7 +103,7 @@ class FrameBuffer:
         """
         ...
 
-    def blit(self, fbuf: FrameBuffer, x: int, y: int, key: Optional[int] = None) -> None:
+    def blit(self, fbuf: FrameBuffer, x: int, y: int, key: int|None = None) -> None:
         """
         Draw another FrameBuffer on top of the current one at the given coordinates.
 
@@ -125,7 +117,7 @@ class FrameBuffer:
         """
         ...
 
-def FrameBuffer1(self, buffer: Any, width: int, height: int, stride: int = 0) -> None:
+def FrameBuffer1(self, buffer: ..., width: int, height: int, stride: int = 0) -> None:
     """
     Old FrameBuffer1 class.
     """

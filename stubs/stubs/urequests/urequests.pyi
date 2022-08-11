@@ -2,7 +2,7 @@
 Module: 'urequests' on micropython-v1.19.1-rp2
 """
 # MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
-from typing import Any, Optional
+from typing import Any
 
 def get(url: str, **kwargs) -> Any:
     ...
@@ -19,10 +19,10 @@ class Response():
         ...
 
     @property
-    def text(self) -> Optional[str]:
+    def text(self) -> str|None:
         ...
     
-    def json(self) -> Optional[str]:
+    def json(self) -> str|None:
         """requires ujson module"""
         ...
 
@@ -40,7 +40,7 @@ def request(
     auth=None,
     timeout=None,
     parse_headers: bool=True,
-    ) -> Optional[Response]:
+    ) -> Response|None:
     """Could raise at least NotImplementedError, ValueError and OSErro"""
     ...
 

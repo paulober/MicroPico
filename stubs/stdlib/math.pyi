@@ -2,7 +2,6 @@
 Module: 'math' on micropython-v1.19.1-rp2
 """
 # MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
-from typing import Any, Tuple
 
 e = 2.718282  # type: float
 nan = nan # type: float
@@ -151,7 +150,7 @@ def fmod(x: float, y: float) -> float:
     """
     ...
 
-def frexp(x: float) -> Tuple[float, int]: 
+def frexp(x: float) -> tuple[float, int]: 
     """
     Return the mantissa and exponent of ``x`` as the pair ``(m, e)``. ``m`` is a float and 
     ``e`` is an integer such that ``x == m * 2**e`` exactly. If ``x`` is zero, returns ``(0.0, 0)``, 
@@ -242,7 +241,7 @@ def log10(__x: float) -> float:
     """
     ...
 
-def modf(x: float) -> Tuple[float, float]: 
+def modf(x: float) -> tuple[float, float]: 
     """
     Return the fractional and integer parts of ``x``. Both results carry the sign 
     of ``x`` and are floats.

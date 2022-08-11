@@ -18,7 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Iterator, List, Tuple
+from collections.abc import Iterator
+from typing import Any
 
 sep: str = ...
 
@@ -39,7 +40,7 @@ def getcwd() -> str:
     """
     ...
 
-def ilistdir(path: str=".") -> Iterator[Tuple]:
+def ilistdir(path: str=".") -> Iterator[tuple]:
     """
     Returns an iterator which then yields tuples corresponding to the entries
     in the directory that it is listing. With no argument it lists the current
@@ -63,7 +64,7 @@ def ilistdir(path: str=".") -> Iterator[Tuple]:
     """
     ...
 
-def listdir(path: str=".") -> List:
+def listdir(path: str=".") -> list:
     """
     Lists the specified path or the current one if ``path`` is not provided.
 
@@ -125,12 +126,12 @@ def rmdir(dir: str) -> None:
     """
     ...
 
-def stat(path: str) -> Tuple:
+def stat(path: str) -> tuple:
     """
     Get the status of a file or directory.
     """
 
-def statvfs(path: str) -> Tuple:
+def statvfs(path: str) -> tuple:
     """
     Gets the status of a fileystem.
 
@@ -162,7 +163,7 @@ def umount(mount_point: Any) -> None:
     """
     ...
 
-def uname() -> Tuple:
+def uname() -> tuple:
     """
     Gets the information about the machine or operating system.
 

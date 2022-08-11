@@ -2,7 +2,7 @@
 Module: 'ucollections' on micropython-v1.19.1-rp2
 """
 # MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
-from typing import Any, Optional, overload
+from typing import Any
 
 
 class OrderedDict(dict):
@@ -18,11 +18,7 @@ class OrderedDict(dict):
 
 
 class deque():
-    @overload
-    def __init__(self, iterable, maxlen: int, flags: Optional[int | Any]=None) -> None:
-        ...
-
-    def __init__(self, iterable, maxlen: int) -> None:
+    def __init__(self, iterable, maxlen: int, flags: int|Any|None=None) -> None:
         """Deques (double-ended queues) are a list-like container that 
         support O(1) appends and pops from either side of the deque. New 
         deques are created using the following arguments:

@@ -36,9 +36,9 @@ __license__ = "MIT https://opensource.org/licenses/MIT (as used by MicroPython).
 __version__ = "0.6.0"  # Version set by https://github.com/hlovatt/tag2ver
 
 
-from abc import abstractmethod
-from typing import overload, Union, Tuple, Optional, NoReturn, List, Callable
-from typing import Sequence, ClassVar, Any
+from collections.abc import Callable, Sequence
+from typing import overload, NoReturn
+from typing import ClassVar, Any
 
 
 class ADC:
@@ -55,7 +55,7 @@ class ADC:
        val = adc.read_u16()     # read a raw analog value in the range 0-65535
     """
 
-    def __init__(self, pin: Union[int, Pin], /):
+    def __init__(self, pin: int|Pin, /):
         """
         Access the ADC associated with a source identified by *id*.  This
         *id* may be an integer (usually specifying a channel number), a
@@ -89,7 +89,7 @@ class Pin:
     PULL_DOWN = 2
     PULL_UP = 1
 
-    def __init__(self, id: Union[int, str], /, mode: int = IN, pull: int = PULL_UP, af: Union[str, int] = -1):
+    def __init__(self, id: int|str, /, mode: int = IN, pull: int = PULL_UP, af: str|int = -1):
         """
         Create a new Pin object associated with the id.  If additional arguments are given,
         they are used to initialise the pin.  See :meth:`pin.init`.
@@ -142,8 +142,7 @@ class Pin:
         """
         ...
 
-    @overload
-    def value(self) -> int:
+    def value(self, value: Any=..., /) -> None:
         """
         Get or set the digital logic level of the pin:
 
@@ -153,19 +152,6 @@ class Pin:
             is set high, otherwise it is set low.
         """
         ...
-
-    @overload
-    def value(self, value: Any, /) -> None:
-        """
-        Get or set the digital logic level of the pin:
-
-            - With no argument, return 0 or 1 depending on the logic level of the pin.
-            - With ``value`` given, set the logic level of the pin.  ``value`` can be
-            anything that converts to a boolean.  If it converts to ``True``, the pin
-            is set high, otherwise it is set low.
-        """
-        ...
-
 
 class SPI:
     """
@@ -220,9 +206,9 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Optional[Pin] = None,
-        mosi: Optional[Pin] = None,
-        miso: Optional[Pin] = None,
+        sck: Pin|None = None,
+        mosi: Pin|None = None,
+        miso: Pin|None = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -239,7 +225,7 @@ class SPI:
     @overload
     def __init__(
         self,
-        id: int, Tupl
+        id: int,
         /,
         baudrate: int = 1_000_000,
         *,
@@ -247,7 +233,7 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: Optional[Tuple[Pin, Pin, Pin]] = None,
+        pins: tuple[Pin, Pin, Pin]|None = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -270,9 +256,9 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Optional[Pin] = None,
-        mosi: Optional[Pin] = None,
-        miso: Optional[Pin] = None,
+        sck: Pin|None = None,
+        mosi: Pin|None = None,
+        miso: Pin|None = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -306,7 +292,7 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: Optional[Tuple[Pin, Pin, Pin]] = None,
+        pins: tuple[Pin, Pin, Pin]|None = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -345,7 +331,7 @@ class SPI:
         """
         ...
 
-    def readinto(self, buf: bytes, write: int = 0x00, /) -> Optional[int]:
+    def readinto(self, buf: bytes, write: int = 0x00, /) -> int|None:
         """
          Read into the buffer specified by ``buf`` while continuously writing the
          single byte given by ``write``.
@@ -355,7 +341,7 @@ class SPI:
         """
         ...
 
-    def write(self, buf: bytes, /) -> Optional[int]:
+    def write(self, buf: bytes, /) -> int|None:
         """
          Write the bytes contained in ``buf``.
          Returns ``None``.
@@ -364,7 +350,7 @@ class SPI:
         """
         ...
 
-    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> Optional[int]:
+    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> int|None:
         """
          Write the bytes from ``write_buf`` while reading into ``read_buf``.  The
          buffers can be the same or different, but both buffers must have the
@@ -404,21 +390,6 @@ class SoftSPI:
    set the first bit to be the least significant bit
    """
 
-    @overload
-    def __init__(self, id: int, /):
-        """
-        Construct an SPI object on the given bus, *id*. Values of *id* depend
-        on a particular port and its hardware. Values 0, 1, etc. are commonly used
-        to select hardware SPI block #0, #1, etc.
-
-        With no additional parameters, the SPI object is created but not
-        initialised (it has the settings from the last initialisation of
-        the bus, if any).  If extra arguments are given, the bus is initialised.
-        See ``init`` for parameters of initialisation.
-        """
-        ...
-
-    @overload
     def __init__(
         self,
         id: int,
@@ -429,9 +400,9 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Optional[Pin] = None,
-        mosi: Optional[Pin] = None,
-        miso: Optional[Pin] = None,
+        sck: Pin|None = None,
+        mosi: Pin|None = None,
+        miso: Pin|None = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -456,7 +427,7 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: Optional[Tuple[Pin, Pin, Pin]] = None,
+        pins: tuple[Pin, Pin, Pin]|None = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -479,9 +450,9 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Optional[Pin] = None,
-        mosi: Optional[Pin] = None,
-        miso: Optional[Pin] = None,
+        sck: Pin|None = None,
+        mosi: Pin|None = None,
+        miso: Pin|None = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -515,7 +486,7 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: Optional[Tuple[Pin, Pin, Pin]] = None,
+        pins: tuple[Pin, Pin, Pin]|None = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -554,7 +525,7 @@ class SoftSPI:
         """
         ...
 
-    def readinto(self, buf: bytes, write: int = 0x00, /) -> Optional[int]:
+    def readinto(self, buf: bytes, write: int = 0x00, /) -> int|None:
         """
          Read into the buffer specified by ``buf`` while continuously writing the
          single byte given by ``write``.
@@ -564,7 +535,7 @@ class SoftSPI:
         """
         ...
 
-    def write(self, buf: bytes, /) -> Optional[int]:
+    def write(self, buf: bytes, /) -> int|None:
         """
          Write the bytes contained in ``buf``.
          Returns ``None``.
@@ -573,7 +544,7 @@ class SoftSPI:
         """
         ...
 
-    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> Optional[int]:
+    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> int|None:
         """
          Write the bytes from ``write_buf`` while reading into ``read_buf``.  The
          buffers can be the same or different, but both buffers must have the
@@ -661,18 +632,6 @@ class I2C:
         """
         ...
 
-    @overload
-    def init(self, *, freq: int = 400_000) -> None:
-        """
-       Initialise the I2C bus with the given arguments:
-
-          - *scl* is a pin object for the SCL line
-          - *sda* is a pin object for the SDA line
-          - *freq* is the SCL clock rate
-        """
-        ...
-
-    @overload
     def init(self, *, scl: Pin, sda: Pin, freq: int = 400_000) -> None:
         """
        Initialise the I2C bus with the given arguments:
@@ -683,7 +642,7 @@ class I2C:
         """
         ...
 
-    def scan(self) -> List[int]:
+    def scan(self) -> list[int]:
         """
         Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
         those that respond.  A device responds if it pulls the SDA line low after
@@ -941,7 +900,7 @@ class PWM:
         """
         ...
 
-    def freq(self, frequency: Optional[int]):
+    def freq(self, frequency: int|None=...):
         """
         With no arguments the frequency in Hz is returned.
 
@@ -949,7 +908,7 @@ class PWM:
         """
         ...
 
-    def duty_u16(self, duration: Optional[int]):
+    def duty_u16(self, duration: int|None=...):
         """
         Get or Set the current duty cycle of the PWM output, as an unsigned 16-bit value in the range 0 to 65535 inclusive.
 
@@ -959,7 +918,7 @@ class PWM:
         """
         ...
 
-    def duty_ns(self, duration: Optional[int]):
+    def duty_ns(self, duration: int|None=...):
         """
         Get or Set the current pulse width of the PWM output, as a value in nanoseconds.
 
@@ -996,7 +955,7 @@ class Signal:
         ...
 
     @overload
-    def __init__(self, id: Union[int, str], /, mode: int = Pin.IN, pull: int = Pin.PULL_UP, af: Union[str, int] = -1, invert: bool = False):
+    def __init__(self, id: int|str, /, mode: int = Pin.IN, pull: int = Pin.PULL_UP, af: str|int = -1, invert: bool = False):
         """
         Create a ``Signal`` object by passing required ``Pin`` parameters directly
         to ``Signal`` constructor, skipping the need to create intermediate ``Pin`` object.
@@ -1076,25 +1035,6 @@ class SoftI2C:
                                         #   starting at address 2 in the slave
     """
 
-    @overload
-    def __init__(self, id: int, /, *, freq: int = 400_000):
-        """
-        Construct and return a new I2C object using the following parameters:
-
-           - *id* identifies a particular I2C peripheral.  Allowed values for
-             depend on the particular port/board
-           - *scl* should be a pin object specifying the pin to use for SCL.
-           - *sda* should be a pin object specifying the pin to use for SDA.
-           - *freq* should be an integer which sets the maximum frequency
-             for SCL.
-
-        Note that some ports/boards will have default values of *scl* and *sda*
-        that can be changed in this constructor.  Others will have fixed values
-        of *scl* and *sda* that cannot be changed.
-        """
-        ...
-
-    @overload
     def __init__(self, id: int, /, *, scl: Pin, sda: Pin, freq: int = 400_000):
         """
         Construct and return a new I2C object using the following parameters:
@@ -1112,18 +1052,6 @@ class SoftI2C:
         """
         ...
 
-    @overload
-    def init(self, *, freq: int = 400_000) -> None:
-        """
-       Initialise the I2C bus with the given arguments:
-
-          - *scl* is a pin object for the SCL line
-          - *sda* is a pin object for the SDA line
-          - *freq* is the SCL clock rate
-        """
-        ...
-
-    @overload
     def init(self, *, scl: Pin, sda: Pin, freq: int = 400_000) -> None:
         """
        Initialise the I2C bus with the given arguments:
@@ -1134,7 +1062,7 @@ class SoftI2C:
         """
         ...
 
-    def scan(self) -> List[int]:
+    def scan(self) -> list[int]:
         """
         Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
         those that respond.  A device responds if it pulls the SDA line low after
@@ -1390,42 +1318,14 @@ class Timer:
     Timer operating mode.
     """
 
-    @overload
     def __init__(
         self,
-        /
-    ):
-        """
-        Construct a new timer object of the given id. Id of -1 constructs a
-        virtual timer (if supported by a board).
-
-        See ``init`` for parameters of initialisation.
-        """
-        ...
-
-    @overload
-    def __init__(
-        self,
-        id: int,
-        /
-    ):
-        """
-        Construct a new timer object of the given id. Id of -1 constructs a
-        virtual timer (if supported by a board).
-
-        See ``init`` for parameters of initialisation.
-        """
-        ...
-
-    @overload
-    def __init__(
-        self,
-        id: int,
+        id: int|None=None,
         /,
         *,
         mode: int = PERIODIC,
         period: int = -1,
-        callback: Optional[Callable[["Timer"], None]] = None,
+        callback: Callable[["Timer"], None] |None = None,
     ):
         """
         Construct a new timer object of the given id. Id of -1 constructs a
@@ -1438,10 +1338,10 @@ class Timer:
     def init(
         self,
         *,
-        freq: float = None,
+        freq: float|None = None,
         mode: int = PERIODIC,
         period: int = -1,
-        callback: Optional[Callable[["Timer"], None]] = None,
+        callback: Callable[["Timer"], None]|None = None,
     ) -> None:
         """
         Initialise the timer. Example::
@@ -1477,7 +1377,7 @@ class UART:
     bits wide.
     """
 
-    def __init__(self, id: int, baudrate: int = 9600, bits: int = 8, parity: int = None, stop: int = 1, tx: Pin = None, rx: Pin = None):
+    def __init__(self, id: int, baudrate: int = 9600, bits: int = 8, parity: int|None = None, stop: int = 1, tx: Pin|None = None, rx: Pin|None = None):
         """
         Construct a UART object of the given id and initialise the UART
         bus with the given parameters:
@@ -1488,8 +1388,8 @@ class UART:
         - *stop* is the number of stop bits, 1 or 2.
         - *tx* specifies the TX pin to use.
         - *rx* specifies the RX pin to use.
-       """
-       ...
+        """
+        ...
 
     INV_TX = 1
     INV_RX = 2
@@ -1500,8 +1400,7 @@ class UART:
         """
         ...
 
-    @overload
-    def read(self) -> Optional[bytes]:
+    def read(self, nbytes: int|None=None, /) -> bytes|None:
         """
         Read characters.  If ``nbytes`` is specified then read at most that many bytes.
         If ``nbytes`` are available in the buffer, returns immediately, otherwise returns
@@ -1518,26 +1417,7 @@ class UART:
         """
         ...
 
-    @overload
-    def read(self, nbytes: int, /) -> Optional[bytes]:
-        """
-        Read characters.  If ``nbytes`` is specified then read at most that many bytes.
-        If ``nbytes`` are available in the buffer, returns immediately, otherwise returns
-        when sufficient characters arrive or the timeout elapses.
-
-        If ``nbytes`` is not given then the method reads as much data as possible.  It
-        returns after the timeout has elapsed.
-
-        *Note:* for 9 bit characters each character takes two bytes, ``nbytes`` must
-        be even, and the number of characters is ``nbytes/2``.
-
-        Return value: a bytes object containing the bytes read in.  Returns ``None``
-        on timeout.
-        """
-        ...
-
-    @overload
-    def readinto(self, buf: bytes, /) -> Optional[int]:
+    def readinto(self, buf: bytes, nbytes: int|None=None, /) -> int|None:
         """
         Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
@@ -1547,18 +1427,7 @@ class UART:
         """
         ...
 
-    @overload
-    def readinto(self, buf: bytes, nbytes: int, /) -> Optional[int]:
-        """
-        Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-        that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
-
-        Return value: number of bytes read and stored into ``buf`` or ``None`` on
-        timeout.
-        """
-        ...
-
-    def readline(self) -> Optional[str]:
+    def readline(self) -> str|None:
         """
         Read a line, ending in a newline character. If such a line exists, return is
         immediate. If the timeout elapses, all available data is returned regardless
@@ -1568,7 +1437,7 @@ class UART:
         """
         ...
 
-    def write(self, buf: bytes, /) -> Optional[int]:
+    def write(self, buf: bytes, /) -> int|None:
         """
         Write the buffer of bytes to the bus.  If characters are 7 or 8 bits wide
         then each byte is one character.  If characters are 9 bits wide then two
@@ -1631,7 +1500,7 @@ def bootloader() -> NoReturn:
     ...
 
 
-def deepsleep(time_ms: int = None) -> None:
+def deepsleep(time_ms: int|None = None) -> None:
     """
     Stops execution in an attempt to enter a low power state.
 
@@ -1654,7 +1523,7 @@ def deepsleep(time_ms: int = None) -> None:
     ...
 
 
-def lightleep(time_ms: int = None) -> None:
+def lightleep(time_ms: int|None = None) -> None:
     """
     Stops execution in an attempt to enter a low power state.
 

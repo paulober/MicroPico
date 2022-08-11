@@ -7,7 +7,7 @@ def collect():
     """
     Run a garbage collection.
     """
-    pass
+    ...
 
 def disable():
     """
@@ -15,34 +15,34 @@ def disable():
     allocated, and garbage collection can still be initiated 
     manually using ``gc.collect()``.
     """
-    pass
+    ...
 
 def enable():
     """
     Enable automatic garbage collection.
     """
-    pass
+    ...
 
 def isenabled() -> bool:
     """
     Returns ``true`` when garbage collection is enabled.
     """
-    pass
+    ...
 
 def mem_alloc() -> int:
     """
     Return the number of bytes of heap RAM that are allocated.
     """
-    pass
+    ...
 
 def mem_free() -> int:
     """
     Return the number of bytes of available heap RAM, or -1 if this 
     amount is not known.
     """
-    pass
+    ...
 
-def threshold(amount:int = None) -> int:
+def threshold(amount:int|None = None) -> int:
     """
     Set or query the additional GC allocation threshold. Normally, a 
     collection is triggered only when a new allocation cannot be 
@@ -61,4 +61,4 @@ def threshold(amount:int = None) -> int:
     Calling the function without argument will return the current value 
     of the threshold. A value of -1 means a disabled allocation threshold.
     """
-    pass
+    ...

@@ -2,7 +2,7 @@
 Module: 'uhashlib' on micropython-v1.19.1-rp2
 """
 # MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
-from typing import Any, Optional
+from typing import Any
 
 
 class sha1():
@@ -46,7 +46,7 @@ class sha256():
     size constraints.
     """
 
-    def __init__(self, data: Optional[Any] = ...) -> None:
+    def __init__(self, data: Any = ...) -> None:
         """Create an SHA256 hasher object and optionally feed data into it."""
         ...
 

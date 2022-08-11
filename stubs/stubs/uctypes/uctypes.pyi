@@ -56,7 +56,7 @@ ULONGLONG = 805306368
 USHORT = 268435456
 VOID = 0
 
-def addressof(value:Any) -> int:
+def addressof(value: Any) -> int:
     """
     Return address of an object. Argument should be bytes, bytearray or
     other object supporting buffer protocol (and address of this buffer

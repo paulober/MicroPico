@@ -1,5 +1,5 @@
-from typing import Tuple, Sequence
-from machine import Pin
+from .machine import Pin
+from collections.abc import Sequence
 
 class OneWire:
     """
@@ -12,7 +12,7 @@ class OneWire:
     def __init__(self, pin : Pin):
         ...
 
-    def _search_rom(self, l_rom: bytearray, diff: int) -> Tuple[bytearray, int]:
+    def _search_rom(self, l_rom: bytearray, diff: int) -> tuple[bytearray, int]:
         ...
 
     def crc8(self, data:bytearray) -> int:
@@ -60,6 +60,4 @@ class OneWire:
 
 
 class OneWireError(Exception):
-    ''
     ...
-

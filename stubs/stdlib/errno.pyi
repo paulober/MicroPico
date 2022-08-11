@@ -1,1 +1,1 @@
-from uerrno import *
+from .uerrno import *
