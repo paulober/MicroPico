@@ -276,7 +276,7 @@
     "nan": "2.16.0",
     "ncp": "^2.0.0",
     "node-abi": "^3.24.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "object.assign": "^4.1.4",
     "ora": "^6.1.2",
     "promirepl": "^2.0.1",
