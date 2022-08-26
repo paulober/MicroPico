@@ -1,6 +1,21 @@
 # Changelog (full changelogs arren't avail. at the moment)
 
 
+## [v1.5.6](https://github.com/paulober/Pico-W-Go/tree/v1.5.6) (2022-08-26)
+
+[Full Changelog](https://github.com/paulober/Pico-W-Go/compare/v1.5.5...v1.5.6)
+
+Compatibility with VS Code 1.70
+
+**Implemented New Features**
+
+- Updated stubs to v1.19.1-319 (require Python 3.9+)
+  * Stubs from [paulober/Pico-W-Stub commit c09821e9b4ff5744cf9f06d3a1d832b8d102f426](https://github.com/paulober/Pico-W-Stub/commit/c09821e9b4ff5744cf9f06d3a1d832b8d102f426)
+
+**Fixed bugs:**
+
+- Some issues with registering vscode commands
+
 ## [v1.5.5](https://github.com/paulober/Pico-W-Go/tree/v1.5.5) (2022-08-12)
 
 [Full Changelog](https://github.com/paulober/Pico-W-Go/compare/v1.5.3...v1.5.5)
