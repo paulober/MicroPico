@@ -3,20 +3,23 @@ from typing import Any
 class Event:
     def __init__(self) -> None:
         ...
-        
-    def is_set(self) -> Any:
-        #   0: return self.state
-        # ? 0: return self.state
+
+    def clear(self) -> None:
         ...
         
     def set(self) -> None:
         ...
 
-    def clear(self) -> None:
+    def is_set(self) -> Any:
         ...
 
-class ThreadSafeFlag:
-    def ioctl(self):
+    wait : Any ## <class 'generator'> = <generator>
+
+class ThreadSafeFlag():
+    def __init__(self, *argv, **kwargs) -> None:
+        ...
+
+    def clear(self, *args, **kwargs) -> Any:
         ...
 
     def set(self):
@@ -25,4 +28,7 @@ class ThreadSafeFlag:
         """
         ...
 
-    wait = None
+    def ioctl(self):
+        ...
+
+    wait : Any ## <class 'generator'> = <generator>

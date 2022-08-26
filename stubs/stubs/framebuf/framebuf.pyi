@@ -3,6 +3,7 @@
 This module provides a general frame buffer which can be used to create
 bitmap images, which can then be sent to a display.
 """
+# MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
 
 class FrameBuffer:
     """
@@ -117,17 +118,24 @@ class FrameBuffer:
         """
         ...
 
+    def ellipse(self, *args, **kwargs) -> Any:
+        ...
+
+    def poly(self, *args, **kwargs) -> Any:
+        ...
+
+
 def FrameBuffer1(self, buffer: ..., width: int, height: int, stride: int = 0) -> None:
     """
     Old FrameBuffer1 class.
     """
     ...
 
-GS2_HMSB = 5
-GS4_HMSB = 2
-GS8 = 6
-MONO_HLSB = 3
-MONO_HMSB = 4
-MONO_VLSB = 0
-MVLSB = 0
-RGB565 = 1
+GS2_HMSB = 5 # type: int
+GS4_HMSB = 2 # type: int
+GS8 = 6 # type: int
+MONO_HLSB = 3 # type: int
+MONO_HMSB = 4 # type: int
+MONO_VLSB = 0 # type: int
+MVLSB = 0 # type: int
+RGB565 = 1 # type: int
