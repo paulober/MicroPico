@@ -12,6 +12,8 @@ Compatibility with VS Code 1.70
 - Updated stubs to v1.19.1-319 (require Python 3.9+)
   * Stubs from [paulober/Pico-W-Stub commit c09821e9b4ff5744cf9f06d3a1d832b8d102f426](https://github.com/paulober/Pico-W-Stub/commit/c09821e9b4ff5744cf9f06d3a1d832b8d102f426)
 
+- re-added linux arm64 support
+
 **Fixed bugs:**
 
 - Some issues with registering vscode commands
