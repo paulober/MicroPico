@@ -480,7 +480,7 @@ export default class Pymakr extends EventEmitter {
     }
     if (this.isIdle()) {
       try {
-        this.startOperation('picogow.run', RUNNING);
+        this.startOperation('picowgo.run', RUNNING);
 
         let code = this.api.getSelected();
         // if user has selected code, run that instead of the file
@@ -613,10 +613,10 @@ export default class Pymakr extends EventEmitter {
       this.syncObj = new Sync(this.board, this.settings, this.terminal);
       
       if (type == 'send') {
-        this.startOperation('picogow.upload', SYNCHRONIZING);
+        this.startOperation('picowgo.upload', SYNCHRONIZING);
       }
       else {
-        this.startOperation('picogow.download', SYNCHRONIZING);
+        this.startOperation('picowgo.download', SYNCHRONIZING);
       }
 
       this.synchronizeType = type;
@@ -738,7 +738,7 @@ export default class Pymakr extends EventEmitter {
     });
 
     this.outputHidden = true;
-    this.startOperation('picogow.ftp', LISTENINGFTP);
+    this.startOperation('picowgo.ftp', LISTENINGFTP);
 
     this._ftpServer.listen();
     this.terminal.enter();

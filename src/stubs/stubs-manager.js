@@ -55,7 +55,7 @@ export default class StubsManager {
         await this._addStubs(vsc);
         await this._addExtensions(vsc);
         await this._addSettings(vsc);
-        await this._addPicoGoSettings(settings);
+        await this._addPicoWGoSettings(settings);
 
         vscode.window.showInformationMessage('Project configuration complete!');
 
@@ -122,7 +122,7 @@ export default class StubsManager {
         await fsp.writeFile(path.join(vsc, 'settings.json'), JSON.stringify(settings, null, 4));
     }
 
-    async _addPicoGoSettings(settings) {
+    async _addPicoWGoSettings(settings) {
         await settings.createProjectSettings();
     }
 
