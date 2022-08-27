@@ -22,6 +22,18 @@ To find out what's new, take a look at the [changelog](CHANGELOG.md).
 - For setup:
 
     Have the onboard LED flashing in under 5 minutes by following the [Quick Start guide](http://pico-go.net/docs/start/quick/) over on the [Pico-Go web site](http://pico-go.net).
+    
+    Note that [accessing the onboard LED is slightly different for the Pico W compared with the Pico](https://picockpit.com/raspberry-pi/everything-about-the-raspberry-pi-pico-w/#Blink_onboard_LED). So, you can use the following script in place of `flash.py`:
+    ```python
+    from machine import Pin
+    from time import sleep
+
+    pin = Pin("LED", Pin.OUT)
+
+    while True:
+        pin.toggle()
+        sleep(1)
+    ```
 
 - For code:
     [Raspbery Pi Pico W Gudie Page 15 Chapter 3.4](https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf)
