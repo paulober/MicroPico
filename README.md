@@ -24,7 +24,7 @@ To find out what's new, take a look at the [changelog](CHANGELOG.md).
     Have the onboard LED flashing in under 5 minutes by following the [Quick Start guide](http://pico-go.net/docs/start/quick/) over on the [Pico-Go web site](http://pico-go.net).
 
 - For code:
-    [Raspbery Pi Pico W Guide Page 15 Chapter 3.4](https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf)
+    [Raspberry Pi Pico W Guide Page 15 Chapter 3.4](https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf)
 
 ---
 ### Note
