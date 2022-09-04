@@ -1,7 +1,7 @@
 .vscode/**
 .vscode-test/**
 out/**
-node_modules/**
+#node_modules/**
 src/**
 .gitignore
 .yarnrc
@@ -18,3 +18,11 @@ applyPatches.js
 
 # instance files
 connection_state.json
+azure-pipelines.yml
+
+# native bindings
+#!node_modules/@serialport/bindings-cpp
+#!node_modules/@serialport/bindings-cpp/prebuilds/win32-x64
+#!node_modules/@serialport/bindings-cpp/prebuilds/darwin-x64+arm64
+#!node_modules/@serialport/bindings-cpp/prebuilds/linux-arm64
+#!node_modules/@serialport/bindings-cpp/prebuilds/linux-x64

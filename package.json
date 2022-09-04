@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
   "description": "Autocompletion and a REPL console for the Raspberry Pi Pico (W).",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "publisher": "paulober",
   "license": "SEE LICENSE IN LICENSE.md",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
