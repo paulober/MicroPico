@@ -37,7 +37,6 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 - Updated github build workflow
 - Github issue templates/config
 - Vscode activation events from `*` to custom command base activation and `.picowgo` file based activation
-- Moved from npm to pnpm package manager
 
 ### Removed
 - Duplicate functions

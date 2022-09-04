@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
 
@@ -26,11 +26,10 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          npm install -g npx
           npm install --no-audit
 
       - name: Package Extension
-        run: npx vsce package -o picowgo-${{ github.sha }}.vsix
+        run: npx vsce package --no-yarn --dependencies -o picowgo-${{ github.sha }}.vsix
 
       - name: Upload VSIX
         #if: github.event_name == 'schedule'
