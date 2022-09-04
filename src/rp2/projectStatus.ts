@@ -164,7 +164,7 @@ export default class ProjectStatus {
     let contents = await fsp.readFile(filePath);
     let stats = await fsp.lstat(filePath);
     let hash = crypto.createHash('sha256').update(contents).digest('hex');
-    let filename = filePath.replace(pyFolder, '').replace('\\', '/');
+    let filename = filePath.replace(pyFolder, '').replaceAll('\\', '/');
     return [filename, 'f', hash, stats.size];
   }
 
