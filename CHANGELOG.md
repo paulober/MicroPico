@@ -1,6 +1,12 @@
 # Changelog (full changelogs arren't avail. at the moment)
 
 
+## [v1.5.7](https://github.com/paulober/Pico-W-Go/tree/v1.5.7) (2022-09-04)
+
+[Full Changelog](https://github.com/paulober/Pico-W-Go/compare/v1.5.6...v1.5.7)
+
+Compatibility with VS Code 1.71
+
 ## [v1.5.6](https://github.com/paulober/Pico-W-Go/tree/v1.5.6) (2022-08-26)
 
 [Full Changelog](https://github.com/paulober/Pico-W-Go/compare/v1.5.5...v1.5.6)

@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-Go (W)",
   "description": "Autocompletion and a REPL console for the Raspberry Pi Pico (W).",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "publisher": "paulober",
   "repository": "https://github.com/paulober/Pico-W-Go",
   "bugs": {
@@ -119,10 +119,6 @@
       {
         "command": "picowgo.extra.getSerial",
         "title": "Pico-W-Go > Help > List serial ports"
-      },
-      {
-        "command": "picowgo.extra.getFullVersion",
-        "title": "Pico-W-Go > Help > Get support info"
       },
       {
         "command": "picowgo.extra.firmwareUpdates",
@@ -295,14 +291,14 @@
   },
   "devDependencies": {
     "@types/mocha": "^9.1.1",
-    "@types/node": "^18.7.13",
+    "@types/node": "^18.7.14",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-preset-es2015": "6.24.1",
     "chai": "^4.3.6",
-    "electron": "^18.3.5",
+    "electron": "^19.0.12",
     "electron-rebuild": "^3.2.9",
-    "eslint": "^8.22.0",
+    "eslint": "^8.23.0",
     "mocha": "^10.0.0",
     "prebuild-install": "^7.1.1",
     "vscode": "^0.9.9"
