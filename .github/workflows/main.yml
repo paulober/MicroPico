@@ -26,9 +26,8 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          npm install -g yarn
-          yarn install npx
-          yarn install --no-audit
+          npm install -g npx
+          npm install --no-audit
 
       - name: Package Extension
         run: npx vsce package -o picowgo-${{ github.sha }}.vsix
