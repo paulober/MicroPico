@@ -1,0 +1,1 @@
+npx vsce package

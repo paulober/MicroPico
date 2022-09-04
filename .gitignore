@@ -1,24 +1,13 @@
-# no  node_modules
+# no compiled
+out
+dist
+# no dependencies
 node_modules
-# no transpiled
-/lib
+.vscode-test/
 # no packages
 *.vsix
-
-# ignore the vscode instance used in testing
-.vscode-test/**
-.vscode-test
-
-# ignore the test package lock ( but not the package file)
-test-electron/package-lock.json
-
 .env
-
-node_modules/**/config.gypi
-node_modules/**/**/config.gypi
-native_modules/**/config.gypi
-native_modules/**/**/config.gypi
-
 .DS_Store
-
 connection_state.json
+
+.fake

@@ -1,28 +1,34 @@
 {
-    "env": {
-        "browser": false,
-        "commonjs": true,
-        "es6": true,
-        "node": true
-    },
+    "root": true,
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaFeatures": {
-            "jsx": true
-        },
-        "sourceType": "module",
-        "ecmaVersion": 2017
+        "ecmaVersion": 11,
+        "sourceType": "module"
     },
+    "plugins": [
+        "@typescript-eslint"
+    ],
     "rules": {
-        "no-const-assign": "warn",
-        "no-this-before-super": "warn",
-        "no-undef": "warn",
-        "no-unreachable": "warn",
-        "no-unused-vars": "warn",
-        "constructor-super": "warn",
-        "valid-typeof": "warn",
-        "semi":"error",
-        "no-var":"error",
+        "@typescript-eslint/naming-convention": "warn",
+        "@typescript-eslint/semi": "warn",
+        "curly": "warn",
+        "eqeqeq": "warn",
+        "no-throw-literal": "warn",
+        "semi": "off",
         "no-mixed-requires":"error",
-        "quotes": [2, "single", { "avoidEscape": true }]
+        "no-this-before-super": "warn",
+        "no-unreachable": "warn",
+        "no-unused-vars": "warn"
+    },
+    "ignorePatterns": [
+        "out",
+        "dist",
+        "**/*.d.ts"
+    ],
+    "env": {
+        "node": true,
+        "es6": true,
+        "commonjs": true,
+        "browser": false
     }
 }

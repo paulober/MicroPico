@@ -2,13 +2,14 @@ import sys
 import socket
 import selectors
 import types
-import os 
+import os
 import threading
 import time
 import signal
 
-isWindows = sys.platform == "win32"
+NEXT_CHARACTER_IS_KEYCODE = [b'\xe0', b'\x00']
 
+isWindows = sys.platform == "win32"
 if isWindows:
     import msvcrt
 else:
@@ -25,6 +26,7 @@ characterDelay = 0.05
 clients = set()
 clients_lock = threading.Lock()
 
+
 def acceptWrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
 
@@ -36,6 +38,7 @@ def acceptWrapper(sock):
     data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
     sel.register(conn, events, data=data)
+
 
 def serviceConnection(key, mask):
     sock = key.fileobj
@@ -51,37 +54,63 @@ def serviceConnection(key, mask):
             sock.close()
             clients.remove(sock)
 
+
 def getCharacterPosix():
-  fd = sys.stdin.fileno()
+    fd = sys.stdin.fileno()
 
-  oldterm = termios.tcgetattr(fd)
-  newattr = termios.tcgetattr(fd)
-  newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
-  termios.tcsetattr(fd, termios.TCSANOW, newattr)
+    oldterm = termios.tcgetattr(fd)
+    newattr = termios.tcgetattr(fd)
+    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+    termios.tcsetattr(fd, termios.TCSANOW, newattr)
 
-  oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
-  fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+    oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
-  try:        
-    while True:            
-      try:
-        c = sys.stdin.read(1)
-        yield c
-        time.sleep(characterDelay)
-      except IOError: pass
-  finally:
-    termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
-    fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+    try:
+        while True:
+            try:
+                c = sys.stdin.read(1)
+                yield c
+                time.sleep(characterDelay)
+            except IOError:
+                pass
+    finally:
+        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+
 
 def getCharacterWindows():
     while True:
-        c = msvcrt.getch().decode("utf-8")
-        yield c     
+        c1 = msvcrt.getch()
+        # c1 is no unicode or even ascii char if it's a function key or an arrow key
+        # thes keys are sent as two bytes, e.g. 0xe0 0x48
+        # we need to wait for the second byte to avoid thrown errors by .decode()
+        # TODO: suport arrow up for history
+        if c1 in NEXT_CHARACTER_IS_KEYCODE:
+            # Wait for the second character.
+            c2 = ord(msvcrt.getch())
+            if c2 == 72: #Up arrow ↑
+                yield "\x1b[A"
+            elif c2 == 80: #Down arrow ↓
+                yield "\x1b[B"
+            elif c2 == 77: #Right arrow →
+                yield "\x1b[C"
+            elif c2 == 75: #Left arrow ←
+                yield "\x1b[D"
+            elif c2 == 83: #Delete
+                yield "\x1b[3~"
+
+        # german special chars
+        # TODO: avoid adding more and more chars thought try catch
+        elif c1 not in [b'\x84', b'\x81', b'\x94']:
+            yield c1.decode("utf-8")
         time.sleep(characterDelay)
+
 
 def boardInput(data: bytes):
     sys.stdout.write(data.decode("utf-8"))
     sys.stdout.flush()
+
 
 def userInput(ch: str):
     if (ch != ""):
@@ -95,9 +124,11 @@ def userInput(ch: str):
             for client in clients:
                 client.sendall(str.encode(ch))
 
+
 def log(msg: str):
     if debug:
         print(msg)
+
 
 def runServer():
     log("Starting server...")
@@ -122,6 +153,7 @@ def runServer():
     finally:
         sel.close()
 
+
 def listenForInput():
     if isWindows:
         while True:
@@ -136,8 +168,10 @@ def listenForInput():
                 userInput(ch)
             time.sleep(characterDelay)
 
+
 def handler(signum, frame):
     userInput(str(chr(3)))
+
 
 server = threading.Thread(target=runServer)
 server.start()

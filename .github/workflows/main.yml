@@ -7,9 +7,6 @@ on:
       - "dependabot/**"
     paths-ignore:
       - "doc/**"
-  schedule:
-    # Run everyday at 1am
-    - cron: "0 1 * * *"
 
 jobs:
   build:
@@ -24,24 +21,24 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: "16.14"
 
       - name: Install Dependencies
         shell: bash
         run: |
-          npm install npx
-          npm add prebuild-install --save-dev
-          npm install --no-audit
+          npm install -g pnpm
+          pnpm install npx
+          pnpm install --no-audit
 
       - name: Package Extension
-        run: npx vsce package -o pymakr-${{ github.sha }}.vsix
+        run: npx vsce package -o picowgo-${{ github.sha }}.vsix
 
       - name: Upload VSIX
-        if: github.event_name == 'schedule'
+        #if: github.event_name == 'schedule'
         uses: actions/upload-artifact@v3
         with:
-          name: pymakr-nightly.vsix
-          path: ./pymakr-${{ github.sha }}.vsix
+          name: picowgo-nightly.vsix
+          path: ./picowgo-${{ github.sha }}.vsix
 
 #   deploy:
 #    name: Publish

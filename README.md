@@ -1,45 +1,82 @@
-#  Pico-W-Go VS Code Extension 
+# Pico-W-Go Visual Studio Code Extension
 
-Pico-W-Go provides code auto-completion and allows you to communicate with your Raspberry Pi Pico W board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
+Pico-W-Go provides code auto-completion and allows you to communicate with your Raspberry Pi Pico (W) board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
 
-> __Autocompletion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20220805-unstable-v1.19.1-240-g9dfabcd6d.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20220810-unstable-v1.19.1-250-gf72d3cec2.uf2)__
+> __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20220805-unstable-v1.19.1-240-g9dfabcd6d.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20220810-unstable-v1.19.1-250-gf72d3cec2.uf2)__
 
-This software is originally a derivative product of [Pymakr](https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr) by Pycom Ltd under the terms of its [GNU GPL Version 3+ license](LICENSE.md) but it has now received significant rewrites. Non-RP2040 boards are not supported but may still work.
+This software is originally based on [Pico-Go](https://github.com/cpwood/Pico-Go) by cpwood.
 
-- Works with macOS, Linux, and Windows.
-- Connects to the Raspberry Pi Pico W board.
+Works with:
+| Platform | Architectures |
+|---|:---:|
+| Windows | x64 |
+| macOS | x64, arm64 |
+| Linux | x64, arm64 |
 
-![Terminal](https://github.com/paulober/Pico-W-Go/blob/main/images/autocomplete.gif?raw=true)
+## Features
 
-To find out what's new, take a look at the [changelog](CHANGELOG.md).
+- Auto-completion and docs
+- Console integration for communication with MicroPython REPL on the pico (w) board
+- Runing/Transfering files to/from your board
+- Built in FTP-Server for transfering files to and from the pico.
 
-## Dependencies
+![Terminal](images/autocomplete.gif)
+
+## Requirements
+
+* [MicroPython firmware](https://micropython.org/download) flashed onto the Raspberry Pi Pico (W):
+    - See [raspberry pi docs](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython) for help.
 
 * [Python 3.9 or newer](https://www.python.org/downloads/) installed on your system and in your PATH.
 
-## Getting Started
+Visual Studio Code extensions:
+* [ms-python.python](vscode:extension/ms-python.python)
+* [visualstudioexptteam.vscodeintellicode](vscode:extension/visualstudioexptteam.vscodeintellicode)
+* [ms-python.vscode-pylance](vscode:extension/ms-python.vscode-pylance)
 
-- For setup:
+## Getting started
 
-    Have the onboard LED flashing in under 5 minutes by following the [Quick Start guide](http://pico-go.net/docs/start/quick/) over on the [Pico-Go web site](http://pico-go.net).
-    
-    Note that [accessing the onboard LED is slightly different for the Pico W compared with the Pico](https://picockpit.com/raspberry-pi/everything-about-the-raspberry-pi-pico-w/#Blink_onboard_LED). So, you can use the following script in place of `flash.py`:
-    ```python
-    from machine import Pin
-    from time import sleep
+- First of all open a folder and run `Pico-W-Go > Configure Project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the auto-completion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in \#Requirements.
 
-    pin = Pin("LED", Pin.OUT)
+- Have the onboard LED flashing in under 5 minutes:
+> Note that [accessing the onboard LED is slightly different for the Pico W compared with the Pico (Page 15 Chapter 3.4)](https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf). So, you can use the following script in place of `flash.py`:
 
-    while True:
-        pin.toggle()
-        sleep(1)
-    ```
+```python
+from machine import Pin
+from time import sleep
 
-- For code:
-    [Raspberry Pi Pico W Guide Page 15 Chapter 3.4](https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf)
+pin = Pin("LED", Pin.OUT)
+
+while True:
+    pin.toggle()
+    sleep(1)
+```
 
 ---
+
+## Extension Settings
+
+This extension contributes the following settings:
+
+* `picowgo.autoConnect`: Ignores any 'device address' setting and automatically connects to the top item in the serialport list.
+* `picowgo.manualComDevice`: If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified.
+* `picowgo.syncFolder`: This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash.
+* `picowgo.syncAllFileTypes`: If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored.
+* `picowgo.syncFileTypes`: All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action.
+* `picowgo.pyIgnore`: Comma separated list of files and folders to ignore when uploading (no wildcard or regular expressions supported).
+* `picowgo.ctrlCOnConnect`: Stops all running programs when connecting to the board.
+* `picowgo.openOnStart`: Automatically open the Pico-W-Go console and connect to the board after starting VS Code.
+* `picowgo.statusbarButtons`: Select which buttons to show in the statusbar (DO NOT CHANGE, unless you know what you are doing)
+* `picowgo.safeBootOnUpload`: [Only works with firmware v1.16.0.b1 and up.] Safe boots the board before uploading to prevent running out of memory while uploading. But adds about 2 seconds to the upload procedure.
+* `picowgo.rebootAfterUpload`: Reboots your board after any upload or download action. Usefull if you are developing with `main.py` or `boot.py`.
+* `picowgo.fastUpload`: Uploads files in bigger chunks (multiplies the upload chunk size by a constant multiplier, see config.ts for values). This can speed up the upload process, but can also cause problems with some boards ('memory overflow'). If you experience problems with uploading, try disabling this option.
+* `picowgo.autoconnectComportManufacturers`: List of all the comport manufacturers supported for the autoconnect feature. Defaults to `MicroPython` and `Microsoft`.
+* `picowgo.ftpPassword`: Password for FTP authentication. The username is 'pico'.
+* `picowgo.pythonPath`: Path to the Python interpreter. Defaults to null so it will try to auto-detect a suitable python installation.
+
+---
+
 ### Note
 
-* This project is based on [cpwood/Pico-Go](https://github.com/cpwood/Pico-Go).
-* Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2022 Damien P. George, Paul Sokolovsky, and contributors.
++ _Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2022 Damien P. George, Paul Sokolovsky, and contributors._
++ For licensing purposes: As of version 2.0.0 i copletly moved to project to a Typescript codebase, removed unused code, rewrote many parts to work with new dependencies or just to confirm Typescript code-style. I also altered many dependencies and removed unused or duplicate code. In the future many other parts which are more or less copied from the fork base (cpwood/Pico-Go and it's base project) will be replaced step by step.
