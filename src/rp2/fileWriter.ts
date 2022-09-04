@@ -46,7 +46,7 @@ export default class FileWriter {
 
     let boardPath = filePath
       .replace(this.getSyncRootPath(), '')
-      .replace('\\', '/');
+      .replaceAll('\\', '/');
 
     await this.writeFileContent(name, boardPath, content);
   }
