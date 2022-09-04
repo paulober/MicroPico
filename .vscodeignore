@@ -1,6 +1,8 @@
 .vscode/**
 .vscode-test/**
 out/**
+# have to include node_modules because of external webpackmodules to
+# be added by vsce package --dependencies
 #node_modules/**
 src/**
 .gitignore
@@ -19,10 +21,3 @@ applyPatches.js
 # instance files
 connection_state.json
 azure-pipelines.yml
-
-# native bindings
-#!node_modules/@serialport/bindings-cpp
-#!node_modules/@serialport/bindings-cpp/prebuilds/win32-x64
-#!node_modules/@serialport/bindings-cpp/prebuilds/darwin-x64+arm64
-#!node_modules/@serialport/bindings-cpp/prebuilds/linux-arm64
-#!node_modules/@serialport/bindings-cpp/prebuilds/linux-x64
