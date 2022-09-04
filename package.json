@@ -21,7 +21,7 @@
   "engines": {
     "vscode": "^1.70.0",
     "node": ">=15.14.0",
-    "pnpm": ">=7.10.0"
+    "yarn": ">=1.22.19"
   },
   "keywords": [
     "raspberry",

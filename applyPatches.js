@@ -3,7 +3,7 @@ const path = require('path');
 
 const patches = [
   ['ftp-srv', 'ftp-srv.d.ts', path.join(__dirname, 'node_modules', 'ftp-srv', 'ftp-srv.d.ts')],
-  ['dtrace-provider', 'dtrace-provider.js', path.join(__dirname, 'node_modules', '.pnpm', 'dtrace-provider@0.8.8','node_modules','dtrace-provider', 'dtrace-provider.js')],
+  ['dtrace-provider', 'dtrace-provider.js', path.join(__dirname, 'node_modules', 'dtrace-provider', 'dtrace-provider.js')],
 ];
 
 for (let i = 0; i < patches.length; i++) {
