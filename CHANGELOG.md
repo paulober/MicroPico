@@ -9,6 +9,10 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 - Updated stub
 - Remove telnet and unix socket interfaces as they are never used and unable to connect to any plain MicroPython Raspberry Pi Pico (W) board
 
+## [2.0.3] - 2022-09-05
+### Changed
+- Fixed linting of builtin python features.
+
 ## [2.0.0] - 2022-09-04
 ### Known issues
 - Sometimes if you were already connected to a board which has not been unpluged since than and you restart VS Code autoconnect does not go into REPL mode correctly
