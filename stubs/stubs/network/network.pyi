@@ -30,7 +30,7 @@ class WLAN():
         """
         ...
 
-    def config(self, parameter:str="config('ssid') for example", mac: bytes|None = None, ssid: str|None =None, channel: int|None =None, hidden: bool|None=None, security: ...=None, key: str|None=None, hostname: str|None=None, reconnects: int|None=None, txpower: int|float|None =None) -> None:
+    def config(self, parameter:str="config('ssid') for example", mac: bytes|None = None, ssid: str|None =None, channel: int|None =None, hidden: bool|None=None, security: int|None=None, key: str|None=None, hostname: str|None=None, reconnects: int|None=None, txpower: int|float|None =None) -> None:
         """DOT NOT USE config(paramter=...) this is just for config('...') to work
 
         Get or set general network interface parameters. 
