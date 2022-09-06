@@ -34,6 +34,20 @@ Visual Studio Code extensions:
 * [visualstudioexptteam.vscodeintellicode](vscode:extension/visualstudioexptteam.vscodeintellicode)
 * [ms-python.vscode-pylance](vscode:extension/ms-python.vscode-pylance)
 
+Environment:
+
+On most Linux installations the device file of the Pico serial port is owned by root and a group you normal don't have by default. This leads to timeout and access denied errors when Pico-W-Go tries to connect to the Pico. There are two ways how to solve this problem:
+1. Run VS Code in sudo (NOT RECOMMENDED)
+2. Add the group who "owns" the serial port file to your current user. You can easily do this by downloading and executing the `scripts/solvePermissions.sh` script. However you have to change the marked line in the script if you raspberry pi pico (w) does not connect to/shows up as `/dev/ttyACM0` to the correct device file.
+```bash
+# download scripts/solvePermissions.sh
+wget https://raw.githubusercontent.com/paulober/Pico-W-Go/main/scripts/solvePermissions.sh
+# maybe not required
+chmod +x ./solvePermissions.sh
+# run the script
+./solvePermissions.sh
+``` 
+
 ## Getting started
 
 - First of all open a folder and run `Pico-W-Go > Configure Project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the auto-completion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in \#Requirements.
