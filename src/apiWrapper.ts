@@ -25,7 +25,7 @@ export default class ApiWrapper {
         .replace('/lib/main', '/')
         .replace(/\//g, '\\');
     } else {
-      return __dirname.replace('/lib/main', '/');
+      return path.join(__dirname, "..").replace('/lib/main', '/');
     }
   }
 
