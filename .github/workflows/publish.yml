@@ -1,4 +1,4 @@
-name: publish
+name: Publish to Marketplace
 
 on:
   release:
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: '16.14.x'
 
       - run: npm install
         name: NPM install

@@ -21,7 +21,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: "16.14"
+          node-version: "16.14.x"
 
       - name: Install Dependencies
         shell: bash
@@ -31,29 +31,10 @@ jobs:
       - name: Package Extension
         run: npx vsce package --no-yarn --dependencies -o picowgo-${{ github.sha }}.vsix
 
-      - name: Upload VSIX
-        #if: github.event_name == 'schedule'
-        uses: actions/upload-artifact@v3
-        with:
-          name: picowgo-nightly.vsix
-          path: ./picowgo-${{ github.sha }}.vsix
-
-#   deploy:
-#    name: Publish
-#    needs: build
-#    # if current branch name contains release and is not a PR
-#    if: contains(github.ref, 'release') && github.event_name == 'push'
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#
-#      - name: Install Production Dependencies
-#        run: |
-#          npm ci
-#          npm prune --production
-#
-#      - name: Package Extension
-#        run: npx vsce package
-#
-#      - name: Publish Extension
-#        run: npx vsce publish --pat ${{ secrets.VSCE_TOKEN }}
+# Stop uploading artifacts for the basic build process
+#      - name: Upload VSIX
+#        #if: github.event_name == 'schedule'
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: picowgo-nightly.vsix
+#          path: ./picowgo-${{ github.sha }}.vsix
