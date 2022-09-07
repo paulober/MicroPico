@@ -15,8 +15,7 @@ webpack.config.js
 
 .github/**
 patches/**
-applyPatches.js
-**/*.ps1
+scripts/**
 
 # instance files
 connection_state.json
