@@ -1,0 +1,20 @@
+trigger:
+ tags:
+   include:
+     - v*
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '16.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    npx vsce publish --target win32-x64 linux-x64 linux-arm64 darwin-x64 darwin-arm64
+  displayName: 'npm install, vsce publish'
+  env:
+    VSCE_PAT: $(System.AccessToken)
