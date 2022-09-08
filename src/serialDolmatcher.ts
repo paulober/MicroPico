@@ -608,10 +608,10 @@ export default class SerialDolmatcher extends EventEmitter {
         this.status = DELETING;
 
         let command =
-          'import os\r\n' +
+          'import uos as os\r\n' +
           'def deltree(target):\r\n' +
           '  for d in os.listdir(target):\r\n' +
-          "    if target === '/':\r\n" +
+          "    if target == '/':\r\n" +
           '      current = target + d\r\n' +
           '    else:\r\n' +
           "      current = target + '/' + d\r\n" +
