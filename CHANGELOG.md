@@ -8,13 +8,22 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 - Remove telnet and unix socket interfaces as they are never used and unable to connect to any plain MicroPython Raspberry Pi Pico (W) board
 
+## [2.0.6] - 2022-09-08
+### Known issues
+- Sometimes if you were already connected to a board which has not been unpluged since than and you restart VS Code autoconnect does not go into REPL mode correctly
+- Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first.
+
+### Changed
+- Updated stubs as of Firmware v1.19.1-378 unstable for the rp2 Pico-W board
+- Fixed SyntaxError in deleteAllFiles command
+
 ## [2.0.5] - 2022-09-07
 ### Known issues
 - Sometimes if you were already connected to a board which has not been unpluged since than and you restart VS Code autoconnect does not go into REPL mode correctly
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first.
 
 ### Changed
-- Updated stubs as of Firmware v1.19.1-375 unstable for the rp2 Pico-W board 
+- Updated stubs as of Firmware v1.19.1-375 unstable for the rp2 Pico-W board
 
 ## [2.0.4] - 2022-09-06
 ### Known issues
