@@ -37,3 +37,4 @@ jobs:
         env:
           #RELEASE_ID: ${{ github.event.release.id }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
