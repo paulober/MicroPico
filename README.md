@@ -2,7 +2,7 @@
 
 Pico-W-Go provides code auto-completion and allows you to communicate with your Raspberry Pi Pico (W) board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
 
-> __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20220906-unstable-v1.19.1-375-ge90b85cc9.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20220906-unstable-v1.19.1-375-ge90b85cc9.uf2)__
+> __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20220908-unstable-v1.19.1-378-g24678fe45.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20220908-unstable-v1.19.1-378-g24678fe45.uf2)__
 
 This software is originally based on [Pico-Go](https://github.com/cpwood/Pico-Go) by cpwood.
 
