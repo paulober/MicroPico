@@ -8,7 +8,7 @@ from _collections_abc import dict_items, dict_keys, dict_values
 from _typeshed import IdentityFunction, Incomplete, SupportsKeysAndGetItem
 from abc import ABCMeta, abstractmethod
 from contextlib import AbstractAsyncContextManager, AbstractContextManager
-from re import Match as Match, Pattern as Pattern
+from re import match as Match, Pattern as Pattern
 from types import (
     BuiltinFunctionType,
     CodeType,
