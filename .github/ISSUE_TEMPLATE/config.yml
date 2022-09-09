@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Breaking Changes
+  - name: Breaking changes and known issues
     url: https://github.com/paulober/Pico-W-Go/blob/main/CHANGELOG.md
-    about: Functionality that has changed significantly between versions of Pico-Go.
+    about: Functionality that has changed significantly between versions of Pico-W-Go or known issues.
   - name: Intellisense, Auto-complete and Linting Issues
     url: https://github.com/paulober/Pico-W-Stub/issues
     about: These belong in the Pico-W-Stub project rather than Pico-W-Go.
