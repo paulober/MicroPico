@@ -14,6 +14,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 - Remove telnet and unix socket interfaces as they are never used and unable to connect to any plain MicroPython Raspberry Pi Pico (W) board
 
+## [2.0.7] - 2022-09-12
+
+### Changed
+- Updated stubs as of Firmware v1.19.1-389-1 unstable for the rp2 Pico-W board
+
 ## [2.0.6] - 2022-09-08
 
 ### Changed
