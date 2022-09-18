@@ -8,10 +8,10 @@ This software is originally based on [Pico-Go](https://github.com/cpwood/Pico-Go
 
 Works with:
 | Platform | Architectures |
-|---|:---:|
-| Windows | x64 |
-| macOS | x64, arm64 |
-| Linux | x64, arm64 |
+|----------|:-------------:|
+| Windows  | x64           |
+| macOS    | x64, arm64    |
+| Linux    | x64, arm64    |
 
 ## Features
 
