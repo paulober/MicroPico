@@ -14,6 +14,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 - Remove telnet and unix socket interfaces as they are never used and unable to connect to any plain MicroPython Raspberry Pi Pico (W) board
 
+## [2.0.8] - 2022-09-18
+
+### Changed
+- Fixes if you reopen VS Code via desktop or taskbar shortcut i sometimes restores old terminal sessions with then cannot be closed because the close action will always close the now working session.
+
 ## [2.0.7] - 2022-09-12
 
 ### Changed

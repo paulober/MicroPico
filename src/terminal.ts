@@ -64,11 +64,14 @@ export default class Term {
     this.startY = null;
     let _this = this;
 
-    vscode.window.onDidCloseTerminal(async function (event) {
-      if (!_this.createFailed && event.name === _this.terminalName) {
+    // TODO: shuld be added to context.subscriptions
+    vscode.window.onDidCloseTerminal(async function (event: vscode.Terminal) {
+      if (!_this.createFailed 
+        && event.name === _this.terminalName
+        && (await event.processId) === (settings.context?.get('processId') as number)) {
         await _this.create();
       }
-    });
+    }, _this);
   }
 
   public async initialize(cb: (err: Error) => void) {
