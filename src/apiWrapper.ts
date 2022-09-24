@@ -106,16 +106,29 @@ export default class ApiWrapper {
   }
 
   /**
-   * @returns {Promise<boolean>}
+   * @deprecated Allways returns `true` because settings model switched to VS Code api.
+   * @returns {Promise<boolean>} true
    */
   public async settingsExist(): Promise<boolean> {
     return true;
   }
 
+  /**
+   * Not implemented yet.
+   * 
+   * @param content The content to write to the clipboard.
+   */
+  // eslint-disable-next-line no-unused-vars
   public async writeToClipboard(content: string) {
     // not implemented
   }
 
+  /**
+   * Shows a notification to the user thought VS Code api.
+   * 
+   * @param text The text to show in the notification.
+   * @param type The type of the notification. Can be `error`, `warning` or `info`.
+   */
   private notification(text: string, type: string) {
     if (type === 'warning') {
       window.showWarningMessage(text);
@@ -126,15 +139,32 @@ export default class ApiWrapper {
     }
   }
 
+  /**
+   * Alias for showing `notification(...)` of type `error`.
+   * 
+   * @param text The text to show in the notification.
+   */
   public error(text: string): void {
     this.notification(text, 'error');
   }
 
+  /**
+   * Alias for showing `notification(...)` of type `warning`.
+   * 
+   * @param text The text to show in the notification.
+   */
   public warning(text: string): void {
     this.notification(text, 'warning');
   }
 
-  public async confirm(text: string, ...items: any[]) {
+  /**
+   * Alias for showing `notification(...)` of type `warning` with options/items.
+   * 
+   * @param {string} text The text to show in the notification.
+   * @param items The items/options to show in the notification.
+   * @returns {Promise<string>} The selected item.
+   */
+  public async confirm(text: string, ...items: any[]): Promise<string> {
     return await window.showWarningMessage(text, ...items);
   }
 
@@ -143,6 +173,11 @@ export default class ApiWrapper {
     commands.executeCommand('workbench.action.focusPreviousGroup');
   }
 
+  /**
+   * Get the current in the editor opened file (... path).
+   * 
+   * @returns {{ content: string; path: string } | null} Null if no file is open.
+   */
   public getOpenFile(): { content: string; path: string } | null {
     let editor = window.activeTextEditor;
 

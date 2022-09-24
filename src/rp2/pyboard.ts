@@ -8,22 +8,22 @@ import Logger from '../logger';
 import SettingsWrapper, { SettingsKey } from '../settingsWrapper';
 import Authorize from './authorize';
 
-let CTRL_A = '\x01'; // raw repl
-let CTRL_B = '\x02'; // exit raw repl
-let CTRL_C = '\x03'; // ctrl-c
-let CTRL_D = '\x04'; // reset (ctrl-d)
-let CTRL_E = '\x05'; // paste mode (ctrl-e)
-let CTRL_F = '\x06'; // safe boot (ctrl-f)
-let CTRLS = [CTRL_A, CTRL_B, CTRL_C, CTRL_D, CTRL_E, CTRL_F];
+const CTRL_A = '\x01'; // raw repl
+const CTRL_B = '\x02'; // exit raw repl
+const CTRL_C = '\x03'; // ctrl-c
+const CTRL_D = '\x04'; // reset (ctrl-d)
+const CTRL_E = '\x05'; // paste mode (ctrl-e)
+const CTRL_F = '\x06'; // safe boot (ctrl-f)
+const CTRLS = [CTRL_A, CTRL_B, CTRL_C, CTRL_D, CTRL_E, CTRL_F];
 
-let replEntryWaitfor = 'raw REPL; CTRL-B to exit\r\n>';
+const replEntryWaitfor = 'raw REPL; CTRL-B to exit\r\n>';
 
 // statuses
-let DISCONNECTED = 0;
-let CONNECTED = 1;
-let FRIENDLY_REPL = 2;
-let RAW_REPL = 3;
-let PASTE_MODE = 4;
+const DISCONNECTED = 0;
+const CONNECTED = 1;
+const FRIENDLY_REPL = 2;
+const RAW_REPL = 3;
+const PASTE_MODE = 4;
 
 export default class Pyboard {
   public connected: boolean;
@@ -36,7 +36,7 @@ export default class Pyboard {
     resolve: (msg: string) => void;
     reject: (err: string | Error, arg2?: string) => void;
   } | null;
-  private waitingForTimeout: number;
+  private waitingForTimeout: number = 8000;
   public status: number;
   private pingTimer: NodeJS.Timer | null;
   private pingCount: number;
@@ -62,7 +62,10 @@ export default class Pyboard {
   private statusListenerCB: any;
   private onerror?: (err: Error) => Promise<void>;
   private waitForBlock: any;
-  private onconnect?: (err: string, addr?: string) => Promise<void>;
+  private onconnect?: (
+    err: string | null,
+    addr?: string | null
+  ) => Promise<void>;
   private ontimeout?: (mssg: Error, raw?: any) => void;
   private onmessage?: (message: string) => Promise<void>;
 
@@ -73,7 +76,6 @@ export default class Pyboard {
     this.commandResponseBuffer = '';
     this.waitingFor = null;
     this.promise = null;
-    this.waitingForTimeout = 8000;
     this.status = DISCONNECTED;
     this.pingTimer = null;
     this.pingCount = 0;
@@ -102,23 +104,22 @@ export default class Pyboard {
   }
 
   private startPings(interval: number) {
-    let _this = this;
-    this.pingTimer = setInterval(async function () {
+    this.pingTimer = setInterval(async () => {
       try {
-        await _this.connection?.sendPing();
-        _this.pingCount = 0;
+        await this.connection?.sendPing();
+        this.pingCount = 0;
       } catch (err) {
-        _this.pingCount += 1;
+        this.pingCount += 1;
       }
 
-      if (_this.pingCount > 1) {
+      if (this.pingCount > 1) {
         // timeout after 2 pings
-        _this.pingCount = 0;
-        clearInterval(_this.pingTimer!);
-        if (_this.ontimeout) {
-          _this.ontimeout(new Error('Connection lost'));
+        this.pingCount = 0;
+        clearInterval(this.pingTimer!);
+        if (this.ontimeout) {
+          this.ontimeout(new Error('Connection lost'));
         }
-        await _this.disconnect();
+        await this.disconnect();
       }
     }, interval * 1000);
   }
@@ -220,7 +221,7 @@ export default class Pyboard {
 
   public async connect(
     address: string,
-    callback: (err: string, addr?: string) => Promise<void>,
+    callback: (err: string | null, addr?: string | null) => Promise<void>,
     onerror: (err: Error) => Promise<void>,
     ontimeout: (err: Error, raw?: any) => void,
     onmessage: any,
@@ -256,46 +257,52 @@ export default class Pyboard {
       }
     }
 
+    // deprecated via arrow function replace for "function () {}"
     // local memory this reference
-    let _this = this;
+    //let _this = this;
 
     // start connection via one of the ConnectionTarget defined interfaces
     await this.connection.connect(
       // onconnect
-      async function () {
-        _this.connection?.registerListener(async function (
-          msg: string,
-          raw?: any
-        ) {
-          await _this.receive(msg);
-        });
+      async () => {
+        this.connection?.registerListener(
+          async (
+            msg: string,
+            // eslint-disable-next-line no-unused-vars
+            raw?: any
+          ) => {
+            await this.receive(msg);
+          }
+        );
 
-        if (_this.connection?.type !== 'telnet') {
-          await _this.onConnnect(callback);
+        if (this.connection?.type !== 'telnet') {
+          await this.onConnnect(callback);
         }
       },
 
       // onerror
-      async function (err: Error) {
-        await _this.disconnected();
-        if (_this.onerror) {
-          _this.onerror(err);
+      async (err: Error) => {
+        await this.disconnected();
+        if (this.onerror) {
+          this.onerror(err);
         }
       },
 
       // ontimeout
-      async function (msg: Error) {
+      async (msg: Error) => {
         // Timeout callback only works properly during connect
         // after that it might trigger unneccesarily
-        if (_this.isConnecting()) {
-          await _this.disconnected();
+        if (this.isConnecting()) {
+          await this.disconnected();
           ontimeout(msg, raw);
         }
       }
     );
   }
 
-  private async onConnnect(cb: Function) {
+  private async onConnnect(
+    cb: (err: string | null, address?: string | null) => Promise<void>
+  ) {
     this.setStatus(CONNECTED);
     this.connected = true;
     this.connection!.connected = true;
@@ -305,8 +312,9 @@ export default class Pyboard {
     if (this.params?.ctrlCOnConnect && this.type !== 'socket') {
       await this.stopRunningPrograms();
     } else {
-      cb(null, this.address);
+      await cb(null, this.address);
     }
+
     this.startPings(5);
   }
 
@@ -317,7 +325,7 @@ export default class Pyboard {
     this.stopPings();
   }
 
-  async reconnect() {
+  public async reconnect() {
     let address = this.address;
     let callback = this.onconnect;
     let onerror = this.onerror;
@@ -397,18 +405,18 @@ export default class Pyboard {
     return false;
   }
 
-  public async receive(mssg: string): Promise<void> {
-    this.logger.silly('Received message: ' + mssg);
+  public async receive(msg: string): Promise<void> {
+    this.logger.silly('Received message: ' + msg);
     if (
       !this.waitForBlock &&
-      typeof mssg !== 'object' &&
+      typeof msg !== 'object' &&
       this.onmessage !== undefined
     ) {
-      this.onmessage(mssg);
+      this.onmessage(msg);
     }
-    let errInOutput = this.getErrorMessage(mssg);
+    let errInOutput = this.getErrorMessage(msg);
 
-    this.commandResponseBuffer += mssg;
+    this.commandResponseBuffer += msg;
 
     if (this.commandResponseBuffer.length > 80000) {
       this.commandResponseBuffer = this.commandResponseBuffer.substring(40000);
@@ -426,7 +434,7 @@ export default class Pyboard {
           this.onerror(err);
         }
       }
-    } else if (this.waitingFor !== null && mssg) {
+    } else if (this.waitingFor !== null && msg) {
       this.logger.silly('Waiting for ' + this.waitingFor);
 
       if (this.commandResponseBuffer === undefined) {
@@ -443,9 +451,11 @@ export default class Pyboard {
         }
         this.stopWaitingForSilent();
         this.waitForBlocking('Login as:', {
+          // eslint-disable-next-line no-unused-vars
           resolve: function (msg: string) {
             // do nothing
           },
+          // eslint-disable-next-line no-unused-vars
           reject: function (err: string | Error, arg2?: string) {
             // do nothing
           },
@@ -473,33 +483,33 @@ export default class Pyboard {
           this.onmessage(trail);
         }
         this.stopWaitingFor(this.commandResponseBuffer);
-      } else if (mssg.indexOf(replEntryWaitfor) > -1) {
+      } else if (msg.indexOf(replEntryWaitfor) > -1) {
         this.stopWaitingFor(this.commandResponseBuffer);
       } else if (this.status === RAW_REPL) {
-        if (mssg.indexOf(replEntryWaitfor) > -1) {
-          mssg = '';
+        if (msg.indexOf(replEntryWaitfor) > -1) {
+          msg = '';
         }
 
-        if (!this.rawResponseStarted && mssg.startsWith('OK')) {
-          mssg = mssg.substring(2);
+        if (!this.rawResponseStarted && msg.startsWith('OK')) {
+          msg = msg.substring(2);
           this.rawResponseStarted = true;
         }
 
         // this.logger.warning(`rawResponseStarted: ${this.rawResponseStarted}`);
-        // this.logger.warning(`mssg: ${mssg}`);
+        // this.logger.warning(`msg: ${msg}`);
         // this.logger.warning(`Waiting for: ${this.waitingFor}`);
         // this.logger.warning('');
 
         if (this.rawResponseStarted) {
           // \u0004 is EOT - End of Transmission ASCII character.
-          if (/(\r\n)?\u0004\>/m.test(mssg)) {
-            mssg = mssg.substring(0, mssg.indexOf('\u0004>'));
+          if (/(\r\n)?\u0004\>/m.test(msg)) {
+            msg = msg.substring(0, msg.indexOf('\u0004>'));
           }
 
           // this.logger.warning(`Modified mssg: ${mssg}`);
 
-          if (mssg.length > 0 && this.onmessage) {
-            this.onmessage(mssg);
+          if (msg.length > 0 && this.onmessage) {
+            this.onmessage(msg);
           }
         }
 
@@ -560,7 +570,13 @@ export default class Pyboard {
     await this.disconnected();
   }
 
-  public async run(code: string) {
+  /**
+   * Run code on Pico (W) repl
+   *
+   * @param code Code to run
+   * @returns Promise that resolves with the output of the code
+   */
+  public async run(code: string): Promise<string | undefined> {
     try {
       let alreadyRaw = this.status === RAW_REPL;
 
@@ -624,24 +640,23 @@ export default class Pyboard {
       this.rawResponseStarted = this.status !== RAW_REPL;
     }
 
-    let _this = this;
     clearTimeout(this.waitingForTimer);
 
     if (timeout && timeout > 0) {
-      this.waitingForTimer = setTimeout(function () {
-        if (_this.promise) {
+      this.waitingForTimer = setTimeout(() => {
+        if (this.promise) {
           let temp: {
             resolve: (msg: string) => void;
             reject: (err: string | Error, arg2?: string) => void;
-          } = _this.promise;
-          _this.promise = null;
-          _this.waitForBlock = false;
-          _this.waitingFor = null;
-          _this.commandResponseBuffer = '';
-          _this.rawResponseStarted = true;
+          } = this.promise;
+          this.promise = null;
+          this.waitForBlock = false;
+          this.waitingFor = null;
+          this.commandResponseBuffer = '';
+          this.rawResponseStarted = true;
 
           if (temp) {
-            temp.reject(new Error('timeout'), _this.commandResponseBuffer);
+            temp.reject(new Error('timeout'), this.commandResponseBuffer);
           }
         }
       }, timeout);
@@ -667,7 +682,6 @@ export default class Pyboard {
     waitFor: string | RegExp | null = null,
     timeout: number | null = 5000
   ): Promise<string> {
-    let _this = this;
     let result: string | null = null;
 
     if (!waitFor) {
@@ -709,7 +723,7 @@ export default class Pyboard {
         timeout
       );
 
-      _this.send(command);
+      this.send(command);
     });
 
     result = await (promise as Promise<string>);
