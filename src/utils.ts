@@ -123,7 +123,13 @@ export default class Utils {
     await this._rimraf(path);
   }
 
-  public static getConfigPath(filename?: string) {
+  /**
+   * Returns to the VS Code local user data directory.
+   * 
+   * @param filename
+   * @returns VS Code local user data directory full path
+   */
+  public static getConfigPath(filename?: string): string {
     let folder =
       process.env.APPDATA ||
       (process.platform === "darwin"

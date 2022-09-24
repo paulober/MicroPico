@@ -20,3 +20,6 @@ scripts/**
 # instance files
 connection_state.json
 azure-pipelines.yml
+
+# other
+*.vsix

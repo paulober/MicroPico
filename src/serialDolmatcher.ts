@@ -15,6 +15,8 @@ import FtpFileSystemInstance from './ftp/fileSystemInstance';
 import fetch from 'node-fetch';
 import * as semver from 'semver';
 import PanelView from './panelView';
+import { c, COLORS, C_RESET, OPTIONS } from './paintBox';
+import Term from './terminal';
 
 const IDLE = 0;
 const SYNCHRONIZING = 1;
@@ -41,9 +43,8 @@ export default class SerialDolmatcher extends EventEmitter {
   private autoconnectTimer: NodeJS.Timer | null;
   private autoconnectAddress: string | null;
   private connectionTimer?: NodeJS.Timer;
-  private utils: Utils;
-  private terminal: any;
-  private runner: any;
+  private terminal?: Term;
+  private runner?: Runner;
   private outputHidden: boolean;
   private status: number;
   private _fileSystems: any;
@@ -64,14 +65,16 @@ export default class SerialDolmatcher extends EventEmitter {
     this.synchronizeType = '';
     this.settings = settings;
     this.api = new ApiWrapper();
-    this.logger = new Logger('Pymakr');
+    this.logger = new Logger('SerialDolmatcher');
     this.config = Config.constants();
     this.view = view;
+    if (this.view.terminal !== undefined) {
+      this.terminal = this.view.terminal;
+      this.runner = new Runner(pyboard, this.terminal!, this);
+    }
     this.autoconnectTimer = null;
     this.autoconnectAddress = null;
-    this.utils = new Utils(settings);
-    this.terminal = this.view.terminal;
-    this.runner = new Runner(pyboard, this.terminal, this);
+    //this.utils = new Utils(settings);
     this.outputHidden = false;
     this.status = IDLE;
     this._fileSystems;
@@ -83,31 +86,36 @@ export default class SerialDolmatcher extends EventEmitter {
 
     // here
     this.settings.on('format_error', function () {
-      _this.terminal.writeln('JSON format error in global pico-w-go.json file');
+      _this.terminal?.writeln('JSON format error in global pico-w-go.json file');
       if (_this.board.connected) {
-        _this.terminal.writePrompt();
+        _this.terminal?.writePrompt();
       }
     });*/
 
-    this.view.on('term-connected', async function (err: any) {
+    this.view.on('term_connected', async (err?: Error) => {
+      if (this.terminal === undefined) {
+        this.terminal = this.view.terminal;
+        this.runner = new Runner(pyboard, this.terminal!, this);
+      }
+
       // removed this because it's maybe not needed anymore because of the new settings structure
       // _this.settings.setFileChangedGlobal();
-      if (err) {
-        _this.logger.error('Error from terminal connect:');
+      if (err !== undefined && err !== null) {
+        this.logger.error('Error from terminal connect:');
         if (typeof err === 'string') {
-          _this.logger.error(err);
+          this.logger.error(err);
         } else {
-          _this.logger.error(err.message);
+          this.logger.error(err.message);
         }
-        _this.api.error('Unable to start the terminal');
+        this.api.error('Unable to start the terminal');
       }
-      _this.logger.info('Connected trigger from view');
+      this.logger.info('Connected trigger from view');
 
-      _this.firstTimeStart = !(await _this.api.settingsExist());
-      if (_this.firstTimeStart) {
-        _this.firstTimeStart = false;
-        _this.api.openSettings();
-        _this.writeGetStartedText();
+      this.firstTimeStart = !(await this.api.settingsExist());
+      if (this.firstTimeStart) {
+        this.firstTimeStart = false;
+        this.api.openSettings();
+        this.writeGetStartedText();
       }
 
       // hide panel if it was hidden after last shutdown of atom
@@ -116,21 +124,25 @@ export default class SerialDolmatcher extends EventEmitter {
         'visible' in serializedState &&
         !serializedState.visible;
 
-      if (!_this.settings.get(SettingsKey.openOnStart) || closeTerminal) {
-        await _this.hidePanel();
+      if (
+        !(this.settings.get(SettingsKey.openOnStart) as boolean) ||
+        closeTerminal
+      ) {
+        await this.hidePanel();
       } else {
-        await _this.startAutoConnect(true);
+        await this.startAutoConnect(true);
       }
     });
 
-    this.view.on('terminal_click', async function () {
-      _this.logger.verbose('Terminal click emitted');
-      if (!_this.board.connected && !_this.board.connecting) {
-        _this.logger.verbose('Connecting because of terminal click');
-        await _this.connect();
+    this.view.on('terminal_click', async () => {
+      this.logger.verbose('Terminal click emitted');
+      if (!this.board.connected && !this.board.connecting) {
+        this.logger.verbose('Connecting because of terminal click');
+        await this.connect();
       }
     });
 
+    // TODO !!
     this.view.on('user_input', function (input: string) {
       _this.board.sendUserInput(input).catch(async (err) => {
         if (err && err.message === 'timeout') {
@@ -152,15 +164,15 @@ export default class SerialDolmatcher extends EventEmitter {
 
     this.board.registerStatusListener(function (status: number) {
       if (status === 3) {
-        _this.terminal.enter();
+        _this.terminal?.enter();
       }
     });
 
     this.settings.onChange(
       'auto_connect',
-      async function (oldValue: SettingsType, newValue: SettingsType) {
+      async function (_oldValue: SettingsType, newValue: SettingsType) {
         _this.logger.info('autoConnect setting changed to ' + newValue);
-        await _this._stopAutoConnect();
+        await _this.stopAutoConnect();
         await _this.startAutoConnect();
       }
     );
@@ -168,21 +180,22 @@ export default class SerialDolmatcher extends EventEmitter {
 
   private async startAutoConnect(wait?: boolean) {
     if (this.view.visible) {
-      let _this = this;
       this.logger.info('Starting autoconnect interval...');
-      await this._stopAutoConnect();
-      //this.terminal.writeln("AutoConnect enabled, ignoring 'address' setting (see Global Settings)")
-      this.terminal.writeln('Searching for boards on serial devices...');
+      await this.stopAutoConnect();
+      this.terminal?.writeln(
+        "(AutoConnect enabled, ignoring 'manual com port' address setting)"
+      );
+      this.terminal?.writeln('Searching for boards on serial devices...');
       if (!wait) {
-        await this._setAutoconnectAddress();
+        await this.setAutoconnectAddress();
       }
-      this.autoconnectTimer = setInterval(async function () {
-        await _this._setAutoconnectAddress();
+      this.autoconnectTimer = setInterval(async () => {
+        await this.setAutoconnectAddress();
       }, 2500);
     }
   }
 
-  async _stopAutoConnect() {
+  private async stopAutoConnect() {
     let previous = this.board.address;
     if (this.autoconnectTimer) {
       this.logger.info('Stop autoconnect');
@@ -199,20 +212,26 @@ export default class SerialDolmatcher extends EventEmitter {
     }
   }
 
-  async _setAutoconnectAddress() {
+  private async setAutoconnectAddress() {
     let address = await this.getAutoconnectAddress();
 
     this.logger.silly('Found address: ' + address);
     if (this.autoconnectAddress === undefined && !address) {
       // undefined means first time use
-      this.terminal.writeln('No boards found on USB');
+      this.terminal?.writeln('No boards found on USB');
     } else if (address && address !== this.autoconnectAddress) {
       this.logger.silly('Found a board on USB: ' + address);
       this.emit('auto_connect', address);
     } else if (this.autoconnectAddress && !address) {
       this.autoconnectAddress = null;
       await this.disconnect();
-      this.terminal.writeln('\r\nPrevious board is not available anymore');
+      this.terminal?.writeln(
+        `\r\n${c(
+          COLORS.red,
+          [],
+          true
+        )}Previous board is not available anymore${C_RESET}`
+      );
       this.logger.silly('Previous board is not available anymore');
     } else if (!address) {
       this.logger.silly('No address found');
@@ -233,9 +252,9 @@ export default class SerialDolmatcher extends EventEmitter {
       return this.settings.get(SettingsKey.manualComDevice) as string;
     }
 
-    if ((this.settings.get(SettingsKey.autoConnect) as boolean)) {
+    if (this.settings.get(SettingsKey.autoConnect) as boolean) {
       this.logger.silly('Autoconnect enabled');
-      let result = await this._getBoard();
+      let result = await this.getBoard();
 
       let currentAddress = this.board.address;
       if (result.name) {
@@ -265,7 +284,11 @@ export default class SerialDolmatcher extends EventEmitter {
     return null;
   }
 
-  async _getBoard() {
+  private async getBoard(): Promise<{
+    name: string | null;
+    manu: string | null;
+    list: string[];
+  }> {
     let result = await PySerial.listTargetBoards(this.settings);
 
     if (result.names.length > 0) {
@@ -286,27 +309,27 @@ export default class SerialDolmatcher extends EventEmitter {
     };
   }
 
-  async openProjectSettings() {
+  public async openProjectSettings() {
     try {
       await this.settings.openProjectSettings();
     } catch (err: any) {
       console.log(err);
-      this.terminal.writeln(err.message);
+      this.terminal?.writeln(err.message);
       if (this.board.connected) {
-        this.terminal.writePrompt();
+        this.terminal?.writePrompt();
       }
     }
   }
 
-  async openGlobalSettings() {
-    await this.api.openSettings();
+  public async openGlobalSettings() {
+    this.api.openSettings();
   }
 
   public async getSerial(): Promise<void> {
-    this.terminal.enter();
+    this.terminal?.enter();
     let result = await PySerial.listBoards(this.settings);
 
-    this.terminal.writeln(
+    this.terminal?.writeln(
       'Found ' +
         result.names.length +
         ' serialport' +
@@ -321,10 +344,10 @@ export default class SerialDolmatcher extends EventEmitter {
         text += ' (copied to clipboard)';
       }
 
-      this.terminal.writeln(text);
+      this.terminal?.writeln(text);
     }
 
-    this.terminal.writePrompt();
+    this.terminal?.writePrompt();
   }
 
   public async connect(address?: string, clickaction?: any) {
@@ -340,7 +363,7 @@ export default class SerialDolmatcher extends EventEmitter {
       }
     }
     if (this.settings.get(SettingsKey.autoConnect) && !address && clickaction) {
-      this.terminal.writeln('AutoConnect: No device available');
+      this.terminal?.writeln('AutoConnect: No device available');
     }
 
     let state = await this.api.getConnectionState(address!);
@@ -350,7 +373,7 @@ export default class SerialDolmatcher extends EventEmitter {
       state['project'] !== this.view.projectName &&
       state['timestamp'] > ts - 11000
     ) {
-      this.terminal.writeln(
+      this.terminal?.writeln(
         "Already connected in another window (project '" +
           state['project'] +
           "')"
@@ -386,13 +409,15 @@ export default class SerialDolmatcher extends EventEmitter {
 
     if (address === '' || address === null || address === undefined) {
       if (!this.settings.get(SettingsKey.autoConnect)) {
-        this.terminal.writeln(
+        this.terminal?.writeln(
           'Address not configured. Please go to the settings to configure a valid address or comport'
         );
       }
     } else {
-      this.terminal.writeln(
-        connectPreamble + 'Connecting to ' + address + '...'
+      this.terminal?.writeln(
+        `${connectPreamble}Connecting to ${c(
+          COLORS.green
+        )}${address}${C_RESET}...`
       );
 
       // start connection to address via the pyboard interface and the pyserial module
@@ -408,29 +433,30 @@ export default class SerialDolmatcher extends EventEmitter {
 
   /**
    * Event handler for when the board is connected.
-   * 
-   * @param err Error
-   * @param address Address connected to
+   *
+   * @param {string|null} err Error
+   * @param {string} address Address connected to
    */
-  private async onConnected(err: string, address?: string): Promise<void> {
-    let _this = this;
-
+  private async onConnected(
+    err: string | null,
+    address?: string | null
+  ): Promise<void> {
     if (err || !address) {
       if (!err) {
         err = 'onConnected to undefined address';
       }
-      this.terminal.writeln('Connection error: ' + err);
+      this.terminal?.writeln('Connection error: ' + err);
     } else {
       await this.api.setConnectionState(address, true, this.view.projectName);
-      this.connectionTimer = setInterval(async function () {
-        if (_this.board.connected) {
-          await _this.api.setConnectionState(
+      this.connectionTimer = setInterval(async () => {
+        if (this.board.connected) {
+          await this.api.setConnectionState(
             address,
             true,
-            _this.view.projectName
+            this.view.projectName
           );
         } else {
-          clearTimeout(_this.connectionTimer);
+          clearTimeout(this.connectionTimer);
         }
       }, 10000);
     }
@@ -440,7 +466,7 @@ export default class SerialDolmatcher extends EventEmitter {
 
   /**
    * Event handler for when the connection to the board has thown an error.
-   * 
+   *
    * @param err The thrown error
    */
   private async onErrored(err: Error): Promise<void> {
@@ -451,13 +477,13 @@ export default class SerialDolmatcher extends EventEmitter {
     if (this.board.connected) {
       this.logger.warning('An error occurred: ' + message);
       if (this.isSynchronizing()) {
-        this.terminal.writeln('An error occurred: ' + message);
+        this.terminal?.writeln('An error occurred: ' + message);
         this.logger.warning('Synchronizing, stopping sync');
         await this.syncObj.stop();
       }
     } else {
-      this.terminal.writeln(
-        '> Failed to connect (' +
+      this.terminal?.writeln(
+        `> ${c(COLORS.red)}Failed to connect${C_RESET} (` +
           message +
           '). Click the "Pico Disconnected" button (or unplug and than plug the pico back in if it still not works) to try again.'
       );
@@ -467,31 +493,36 @@ export default class SerialDolmatcher extends EventEmitter {
 
   /**
    * Event handler for when the connection to the board has timed out.
-   * 
+   *
    * @param err The thrown timed-out error
    */
+  // eslint-disable-next-line no-unused-vars
   private onTimedOut(err: Error): void {
     this.board.connected = false;
-    this.terminal.enter();
-    this.terminal.writeln(
-      '> Connection timed out. Click the "Pico Disconnected" button to try again.'
+    this.terminal?.enter();
+    this.terminal?.writeln(
+      `> ${c(
+        COLORS.red,
+        [OPTIONS.bold],
+        true
+      )}Connection timed out. Click the "Pico Disconnected" button to try again.${C_RESET}`
     );
     this.view.setButtonState();
   }
 
   /**
    * Event handler for when a message is received from the board.
-   * 
+   *
    * @param msg The message received
    */
   private onMessageReceived(msg: string): void {
     if (!this.isSynchronizing() && !this.outputHidden) {
-      this.terminal.write(msg);
+      this.terminal?.write(msg);
     }
   }
 
   public async disconnect(): Promise<void> {
-    this.logger.info('Disconnecting...');
+    this.logger.info(`${c(COLORS.yellow)}Disconnecting...${C_RESET}`);
 
     let showMessage = false;
 
@@ -500,8 +531,8 @@ export default class SerialDolmatcher extends EventEmitter {
     }
 
     if (this.board.isConnecting()) {
-      this.terminal.enter();
-      this.terminal.writeln('Connection attempt cancelled');
+      this.terminal?.enter();
+      this.terminal?.writeln('Connection attempt cancelled');
     }
 
     clearInterval(this.connectionTimer);
@@ -513,17 +544,17 @@ export default class SerialDolmatcher extends EventEmitter {
 
     this.stopOperation();
 
-    await this.runner.stop();
+    await this.runner?.stop();
     this.view.setButtonState();
 
     if (showMessage) {
-      this.terminal.writeln('\r\nDisconnected');
+      this.terminal?.writeln('\r\nDisconnected');
     }
   }
 
   public async run(): Promise<void> {
     if (!this.board.connected) {
-      this.terminal.writeln('Please connect your device');
+      this.terminal?.writeln('Please connect your device');
       return;
     }
     if (this.isIdle()) {
@@ -535,14 +566,14 @@ export default class SerialDolmatcher extends EventEmitter {
         if (code) {
           await this.runSelection();
         } else {
-          await this.runner.toggle();
+          await this.runner?.toggle();
         }
       } finally {
         this.stopOperation();
       }
     } else if (this.isRunning()) {
       try {
-        await this.runner.toggle();
+        await this.runner?.toggle();
       } finally {
         this.stopOperation();
       }
@@ -551,7 +582,7 @@ export default class SerialDolmatcher extends EventEmitter {
 
   public async runSelection(): Promise<void> {
     if (!this.board.connected) {
-      this.terminal.writeln('Please connect your device');
+      this.terminal?.writeln('Please connect your device');
       return;
     }
 
@@ -559,8 +590,12 @@ export default class SerialDolmatcher extends EventEmitter {
       let code = this.api.getSelectedOrLine();
 
       try {
-        await this.runner.selection(code);
-        this.api.editorFocus();
+        if (code !== null) {
+          await this.runner?.selection(code);
+          this.api.editorFocus();
+        } else {
+          throw new Error("Can't run selection");
+        }
       } catch (err) {
         this.logger.error('Failed to send and execute codeblock ');
       }
@@ -592,7 +627,7 @@ export default class SerialDolmatcher extends EventEmitter {
     this.logger.info('Delete All Files');
 
     if (!this.board.connected) {
-      this.terminal.writeln('Please connect your device');
+      this.terminal?.writeln('Please connect your device');
       return;
     }
 
@@ -647,10 +682,10 @@ export default class SerialDolmatcher extends EventEmitter {
     this.logger.info(type);
     let _this = this;
     if (!this.board.connected) {
-      this.terminal.writeln('Please connect your device');
+      this.terminal?.writeln('Please connect your device');
       return;
     }
-    if (this.isIdle()) {
+    if (this.isIdle() && this.terminal) {
       this.syncObj = new Sync(this.board, this.settings, this.terminal);
 
       if (type === 'send') {
@@ -664,7 +699,7 @@ export default class SerialDolmatcher extends EventEmitter {
       // Probably needs to stay as a callback
       // Not the last thing it does.
       // eslint-disable-next-line no-unused-vars
-      let cb = function (err: any) {
+      let cb = function (_err: any) {
         _this.stopOperation();
         if (_this.board.type !== 'serial') {
           setTimeout(async function () {
@@ -693,17 +728,17 @@ export default class SerialDolmatcher extends EventEmitter {
     let command = 'import machine\r\nmachine.reset()\r\n';
 
     if (!this.board.connected) {
-      this.terminal.writeln('Please connect to your device');
+      this.terminal?.writeln('Please connect to your device');
       return;
     }
 
     try {
-      this.terminal.writeln('\r\nPerforming a hard reset..');
+      this.terminal?.writeln('\r\nPerforming a hard reset..');
       this.outputHidden = true;
       await this.board.send(command, false);
       await Utils.sleep(1000);
 
-      this.terminal.enter();
+      this.terminal?.enter();
       await this.disconnect();
       await this.connect();
     } catch (err) {
@@ -716,7 +751,7 @@ export default class SerialDolmatcher extends EventEmitter {
     _this.logger.info('Stopping upload/download now...');
     if (this.isSynchronizing()) {
       let type = this.synchronizeType === 'receive' ? 'download' : 'upload';
-      this.terminal.writeln('Stopping ' + type + '....');
+      this.terminal?.writeln('Stopping ' + type + '....');
 
       await this.syncObj.stop();
       this.stopOperation();
@@ -724,9 +759,9 @@ export default class SerialDolmatcher extends EventEmitter {
   }
 
   private writeGetStartedText(): void {
-    this.terminal.enter();
-    this.terminal.write(this.config.startText);
-    this.terminal.writeln('');
+    this.terminal?.enter();
+    this.terminal?.write(this.config.startText);
+    this.terminal?.writeln('');
   }
 
   private async hidePanel(): Promise<void> {
@@ -749,7 +784,7 @@ export default class SerialDolmatcher extends EventEmitter {
 
   public async ftpStart(): Promise<void> {
     if (!this.board.connected) {
-      this.terminal.writeln('Please connect your device');
+      this.terminal?.writeln('Please connect your device');
       return;
     }
 
@@ -761,13 +796,17 @@ export default class SerialDolmatcher extends EventEmitter {
       blacklist: ['SITE'],
     });
 
-    if (this._fs === null || this._fs === undefined) {
+    if (
+      (this._fs === null || this._fs === undefined) &&
+      this.terminal !== undefined
+    ) {
       this._fs = new FtpFileSystem(this.board, this.settings, this.terminal);
     }
 
     // eslint-disable-next-line no-unused-vars
     this.ftpServer.on(
       'login',
+      // eslint-disable-next-line no-unused-vars
       ({ connection, username, password }, resolve, reject) => {
         if (
           username !== 'pico' ||
@@ -785,8 +824,8 @@ export default class SerialDolmatcher extends EventEmitter {
     this.startOperation('picowgo.ftp', LISTENINGFTP);
 
     this.ftpServer.listen();
-    this.terminal.enter();
-    this.terminal.writeln('Started FTP server: ftp://pico@127.0.0.1:2121');
+    this.terminal?.enter();
+    this.terminal?.writeln('Started FTP server: ftp://pico@127.0.0.1:2121');
   }
 
   public async ftpStop() {
@@ -798,7 +837,7 @@ export default class SerialDolmatcher extends EventEmitter {
         this._fs = undefined;
       }
 
-      this.terminal.writeln('Stopped FTP server.');
+      this.terminal?.writeln('Stopped FTP server.');
       this.outputHidden = false;
     }
 
@@ -807,7 +846,7 @@ export default class SerialDolmatcher extends EventEmitter {
 
   public async checkForFirmwareUpdates() {
     if (!this.board.connected) {
-      this.terminal.writeln('Please connect your device');
+      this.terminal?.writeln('Please connect your device');
       return;
     }
 
@@ -822,7 +861,8 @@ export default class SerialDolmatcher extends EventEmitter {
     try {
       if (
         semver.gte(server?.version + '.0', board?.version + '.0') &&
-        server?.date !== undefined && board?.date !== undefined &&
+        server?.date !== undefined &&
+        board?.date !== undefined &&
         server?.date > board?.date
       ) {
         let choice = await this.api.confirm(
@@ -841,14 +881,17 @@ export default class SerialDolmatcher extends EventEmitter {
     } catch (err) {
       this.logger.warning(`Error processing firmware: ${err}`);
     } finally {
-      this.terminal.writePrompt();
+      this.terminal?.writePrompt();
     }
   }
 
-  public async getBoardVersion(): Promise<{
-    version: string | undefined;
-    date: string | undefined;
-  } | undefined> {
+  public async getBoardVersion(): Promise<
+    | {
+        version: string | undefined;
+        date: string | undefined;
+      }
+    | undefined
+  > {
     this.outputHidden = true;
 
     try {
@@ -878,7 +921,7 @@ export default class SerialDolmatcher extends EventEmitter {
     return undefined;
   }
 
-  public async getServerVersion(): Promise<ServerVersion|undefined> {
+  public async getServerVersion(): Promise<ServerVersion | undefined> {
     try {
       let response = await fetch(
         'https://micropython.org/download/rp2-pico-w/'

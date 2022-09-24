@@ -48,9 +48,10 @@ export default class Activator {
     let pb = new Pyboard(sw);
 
     let v = new PanelView(pb, sw);
-    await v.initialize();
-
     let serialDolmatcher = new SerialDolmatcher({}, pb, v, sw);
+    // do initialize PanelView after binding it to serialdolmatcher for events to trigger in sd
+    await v.initialize();
+    
     let terminal = v.terminal;
 
     // close serial port safely to avoid permission denied
@@ -300,9 +301,11 @@ export default class Activator {
 
   private tryPython(executable: string): Promise<string> {
     // not doing reject because it throws an error to parrent
+    // eslint-disable-next-line no-unused-vars
     return new Promise((resolve, reject): void => {
       try {
         // assigend to variable to avoid non blocking behaviour
+        // eslint-disable-next-line no-unused-vars
         let ex = exec(`${executable} -V`, (error, stdout, stderr) => {
           if (error) {
             //console.debug("Err");

@@ -47,9 +47,7 @@ export default class PanelView extends EventEmitter {
 
     this.setTitle('not connected');
     // terminal logic
-    let onTermConnect = function (err: any) {
-      _this.emit('term-connected', err);
-    };
+    let onTermConnect = (err?: Error) => this.emit('term_connected', err);
 
     _this.setProjectName(_this.api.getProjectPath());
 

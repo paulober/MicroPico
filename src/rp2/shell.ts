@@ -59,7 +59,7 @@ export default class Shell {
     this.interrupted = false;
   }
 
-  async initialise() {
+  public async initialise() {
     this.logger.silly('Try to enter raw mode');
 
     // 3 = RAW_REPL
@@ -68,7 +68,7 @@ export default class Shell {
     }
   }
 
-  async getFreeSpace() {
+  public async getFreeSpace() {
     let command =
       'import uos, usys\r\n' +
       "_s = uos.statvfs('" +
@@ -80,7 +80,7 @@ export default class Shell {
     return await this.board.sendWait(command);
   }
 
-  async decompress(name: string) {
+  public async decompress(name: string) {
     let command =
       'import uzlib\r\n' +
       'def decompress(name):\r\n' +
@@ -96,7 +96,7 @@ export default class Shell {
     return await this.board.sendWait(command, null, 40000);
   }
 
-  async compress(filepath: string, name: string) {
+  public async compress(filepath: string, name: string) {
     let deflator = createDeflate({
       level: 2,
     });
@@ -140,7 +140,7 @@ export default class Shell {
     await this.board.sendWait(command, null, 30000);
   }
 
-  async readFile(name: string) {
+  public async readFile(name: string) {
     this.working = true;
 
     // avoid leaking file handles
@@ -258,35 +258,35 @@ export default class Shell {
     return JSON.parse(raw);
   }
 
-  async removeFile(name: string) {
+  public async removeFile(name: string) {
     let command = 'import uos\r\n' + "uos.remove('" + name + "')\r\n";
 
     await this.board.sendWait(command);
   }
 
-  async renameFile(oldName: string, newName: string) {
+  public async renameFile(oldName: string, newName: string) {
     let command =
       'import uos\r\n' + "uos.rename('" + oldName + "', '" + newName + "')\r\n";
 
     await this.board.sendWait(command);
   }
 
-  async createDir(name: string) {
+  public async createDir(name: string) {
     let command = 'import uos\r\n' + "uos.mkdir('" + name + "')\r\n";
     await this.board.sendWait(command);
   }
 
-  async changeDir(name: string) {
+  public async changeDir(name: string) {
     let command = 'import uos\r\n' + "uos.chdir('" + name + "')\r\n";
     await this.board.sendWait(command);
   }
 
-  async removeDir(name: string) {
+  public async removeDir(name: string) {
     let command = 'import uos\r\n' + "uos.rmdir('" + name + "')\r\n";
     await this.board.sendWait(command);
   }
 
-  async reset() {
+  public async reset() {
     let command = 'import machine\r\n' + 'machine.reset()\r\n';
 
     await this.board.send(command);
@@ -295,52 +295,51 @@ export default class Shell {
     await this.board.reconnect();
   }
 
-  async safebootRestart() {
+  public async safebootRestart() {
     await this.board.safeboot(4000);
     await this.board.enterRawReplNoReset();
   }
 
-  async eval(c: string, timeout: number) {
+  public async eval(c: string, timeout: number) {
     return await this.board.sendWait(c, null, timeout);
   }
 
-  async exit() {
+  public async exit() {
     await this.stopWorking();
     await this.cleanClose();
   }
 
-  async stopWorking() {
+  public async stopWorking() {
     // This is the limit that this can be async-awaitified.
     // Does rely on callbacks to work.
     // eslint-disable-next-line no-unused-vars
     return new Promise((resolve, reject) => {
-      let _this = this;
       if (this.working) {
-        _this.logger.info('Exiting shell while still working, doing interrupt');
+        this.logger.info('Exiting shell while still working, doing interrupt');
         let cbDone = false;
-        this.interruptCb = function () {
+        this.interruptCb = () => {
           cbDone = true;
-          _this.working = false;
-          _this.interrupted = false;
-          _this.interruptCb = null;
-          _this.logger.info('Interrupt done, closing');
+          this.working = false;
+          this.interrupted = false;
+          this.interruptCb = null;
+          this.logger.info('Interrupt done, closing');
           resolve(null);
         };
         this.interrupted = true;
-        setTimeout(function () {
+        setTimeout(() => {
           if (!cbDone) {
-            _this.logger.info('Interrupt timed out, continuing anyway');
+            this.logger.info('Interrupt timed out, continuing anyway');
             resolve(null);
           }
         }, 1000);
       } else {
-        _this.logger.info('Not working, continuing closing');
+        this.logger.info('Not working, continuing closing');
         resolve(null);
       }
     });
   }
 
-  async cleanClose() {
+  public async cleanClose() {
     this.logger.info('Closing shell cleanly');
 
     if (this.settings.get(SettingsKey.rebootAfterUpload)) {
@@ -360,7 +359,7 @@ export default class Shell {
     }
   }
 
-  async close() {
+  public async close() {
     this.logger.info('Closing shell cleanly');
 
     await this.board.enterFriendlyRepl();

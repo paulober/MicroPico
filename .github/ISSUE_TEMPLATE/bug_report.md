@@ -16,6 +16,7 @@ labels: 'bug'
 
 
 ## Any logs, error output, etc?
+*(To get extension logs see Terminal > Output > Protcoll (Extensionhost) and copy output concerning picowgo)*
 *(If it’s long, please paste to https://gist.github.com and insert the link here)*
 
 
@@ -24,7 +25,7 @@ labels: 'bug'
 
 ## Support info
 
-Copy this from the `Help -> Info -> Copy` option in Visual Studio Code:
+Copy this from the `Help -> Info/About -> Copy` option in Visual Studio Code:
 
 ```
 < Paste Here >

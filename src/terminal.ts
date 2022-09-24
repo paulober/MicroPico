@@ -1,79 +1,50 @@
 import * as vscode from 'vscode';
 import Logger from './logger';
 import ApiWrapper from './apiWrapper';
-import { Socket } from 'net';
 import Pyboard from './rp2/pyboard';
 import SettingsWrapper, { SettingsKey } from './settingsWrapper';
+import { c, COLORS, C_RESET, OPTIONS } from './paintBox';
 
 export default class Term {
-  private port: number;
-  private host: string;
-  public termBuffer: string;
-  private terminalName: string;
-  private shellPrompt: string;
+  public termBuffer: string = '';
+  private terminalName: string = 'Pico (W) Console';
+  /**
+   * The REPL prompt. Defaults to '>>> '.
+   */
+  private shellPrompt: string = `${c(COLORS.cyan, [OPTIONS.bold], true)}>>>${C_RESET} `;
   public board: Pyboard;
   private logger: Logger;
   private api: ApiWrapper;
   private onMessage: (message: string) => void;
-  private lastWrite: string;
+  private lastWrite: string = '';
   private settings: SettingsWrapper;
-  private connectionAttempt: number;
   public active: boolean;
-  private terminal: vscode.Terminal | null;
+  private terminal?: vscode.Terminal;
+  private writeEmitter?: vscode.EventEmitter<string>;
+  private pty?: vscode.Pseudoterminal;
   private createFailed: boolean;
-  private stream: Socket;
   public connected: boolean;
   public isWindows: boolean;
   public startY: null;
 
   constructor(board: Pyboard, settings: SettingsWrapper) {
-    // TODO: consider using ... as float to int conversion instead of .toString() -> parseInt
-    /**
-    function float2int (value) {
-      return value | 0;
-    }
-
-    float2int(3.75); //3 - always just truncates decimals
-
-    //other options
-    Math.floor( 3.75 );//3 - goes to floor , note (-3.75 = -4)
-    Math.ceil( 3.75 ); //4 - goes to ceiling, note (-3.75 = -3)
-    Math.round( 3.75 );//4 
-    */
-    // TODO: check if port is used before trying to connect
-    this.port = parseInt((Math.random() * 1000 + 1337).toString());
-    this.host = '127.0.0.1';
-    this.termBuffer = '';
-    this.terminalName = 'Pico W Console';
-    this.shellPrompt = '>>> ';
     this.board = board;
     this.logger = new Logger('Term');
     this.api = new ApiWrapper();
     this.onMessage = function () {};
-    this.lastWrite = '';
     this.settings = settings;
-    this.connectionAttempt = 1;
     this.active = true;
-    this.terminal = null;
+    this.terminal = undefined;
     this.createFailed = false;
-    this.stream = new Socket();
     this.connected = false;
     this.isWindows = process.platform === 'win32';
 
-    //dragging
+    // dragging
     this.startY = null;
-    let _this = this;
-
-    vscode.window.onDidCloseTerminal(async function (event) {
-      if (!_this.createFailed && event.name === _this.terminalName) {
-        await _this.create();
-      }
-    });
   }
 
-  public async initialize(cb: (err: Error) => void) {
-    await this.create();
-    this.connect(cb);
+  public async initialize(cb: (err?: Error) => void) {
+    await this.create(cb);
   }
 
   public show() {
@@ -86,25 +57,11 @@ export default class Term {
     this.terminal?.hide();
   }
 
-  private connectReattempt(cb: (err: Error) => void) {
-    let _this = this;
-    this.connectionAttempt += 1;
-    this.connected = false;
-    setTimeout(function () {
-      _this.connect(cb);
-    }, 200);
-  }
-
-  private async create(): Promise<void> {
+  private async create(cb: (err?: Error) => void): Promise<void> {
     this.createFailed = false;
-    // TODO: check if port is used before trying to connect
-    this.port = parseInt((Math.random() * 1000 + 1337).toString());
 
     try {
-      let termpath = this.api.getPackagePath() + '/terminalExec.py';
-      let shellpath = this.settings.detectedPythonPath;
-
-      let existingProcessId = this.settings.context
+      let existingProcessId: number | null | undefined = this.settings.context
         ? this.settings.context.get('processId')
         : null;
 
@@ -117,103 +74,78 @@ export default class Term {
         }
       }
 
-      this.terminal = vscode.window.createTerminal(
-        this.terminalName,
-        shellpath,
-        [termpath, this.port.toString()]
+      this.writeEmitter = new vscode.EventEmitter<string>();
+      this.pty = {
+        onDidWrite: this.writeEmitter.event,
+        open: () => {
+          //this.writeEmitter?.fire('Pico-W-Go console\r\n');
+          this.connected = true;
+          cb();
+        },
+        close: () => {
+          this.connected = false;
+
+          // TODO: maybe recreate
+          this.create(cb);
+        },
+        handleInput: (data: string) => {
+          if (!this.createFailed) {
+            // do not write user input to terminal
+            // because it will be written by the board
+            // this.writeEmitter?.fire(data);
+
+            // send user input to pico
+            this.userInput(data);
+          }
+        },
+      };
+
+      this.terminal = vscode.window.createTerminal({
+        name: this.terminalName,
+        pty: this.pty!,
+        isTransient: true,
+      });
+
+      console.log('Created terminal');
+
+      this.settings.context?.update(
+        'processId',
+        await this.terminal?.processId
       );
-
-      console.log("Created terminal on port: " + this.port.toString());
-
-      this.settings.context?.update('processId', await this.terminal.processId);
 
       if (this.settings.get(SettingsKey.openOnStart)) {
         this.show();
       }
     } catch (e) {
       this.createFailed = true;
+      cb(e as Error);
     }
-  }
-
-  private connect(cb: (err: Error) => void) {
-    if (this.connectionAttempt > 20) {
-      cb(
-        new Error(
-          'Unable to start the terminal. Restart VSC or file an issue on our github'
-        )
-      );
-      return;
-    }
-    let _this = this;
-    let stopped = false;
-    this.connected = false;
-    this.stream = new Socket();
-    this.stream.connect(this.port, this.host);
-    this.stream.on('connect', function (err: Error) {
-      if (err) {
-        _this.logger.info('Terminal failed to connect');
-      } else {
-        _this.logger.info('Terminal connected');
-      }
-      _this.connected = true;
-      cb(err);
-    });
-    this.stream.on('timeout', function () {
-      if (!stopped) {
-        stopped = true;
-        _this.connectReattempt(cb);
-      }
-    });
-    this.stream.on('error', function (error) {
-      _this.logger.warning('Error while connecting to term');
-      _this.logger.warning(error.message.toString());
-      if (!stopped) {
-        stopped = true;
-        _this.connectReattempt(cb);
-      }
-    });
-    this.stream.on('close', function (hadError: any) {
-      _this.logger.warning('Term connection closed');
-      _this.logger.warning(hadError.toString());
-      if (!stopped) {
-        stopped = true;
-        _this.connectReattempt(cb);
-      }
-    });
-    this.stream.on('end', function () {
-      _this.logger.warning('Term connection ended ');
-      if (!stopped) {
-        stopped = true;
-        _this.connectReattempt(cb);
-      }
-    });
-    this.stream.on('data', function (data: string) {
-      _this.userInput(data);
-    });
   }
 
   public setOnMessageListener(cb: (message: string) => void) {
     this.onMessage = cb;
   }
 
-  public writeln(mssg: string) {
-    this.stream.write(mssg + '\r\n');
-    this.lastWrite += mssg;
+  public writeln(msg: string) {
+    this.writeEmitter?.fire(msg + '\r\n');
+    //this.terminal?.sendText(mssg + '\r\n');
+    this.lastWrite += msg;
     if (this.lastWrite.length > 20) {
       this.lastWrite = this.lastWrite.substring(1);
     }
   }
 
-  public write(mssg: string) {
-    this.stream.write(mssg);
-    this.lastWrite += mssg;
+  public write(msg: string) {
+    this.writeEmitter?.fire(msg);
+    // this.terminal?.sendText(msg);
+    this.lastWrite += msg;
     if (this.lastWrite.length > 20) {
       this.lastWrite = this.lastWrite.substring(1);
     }
   }
 
-  public writelnAndPrompt(mssg: string) {
-    this.writeln(mssg + '\r\n');
+  public writelnAndPrompt(msg: string) {
+    this.writeln(msg);
     this.writePrompt();
   }
 
@@ -222,7 +154,7 @@ export default class Term {
   }
 
   public enter() {
-    this.write('\r\n');
+    this.writeEmitter?.fire('\r\n');
   }
 
   public clear() {

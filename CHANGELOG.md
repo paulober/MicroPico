@@ -5,14 +5,31 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 >_Based on structure recommendations from [Keep a Changelog](http://keepachangelog.com/)._
 
 ## Known issues
-- Sometimes if you were already connected to a board which has not been unpluged since than and you restart VS Code autoconnect does not go into REPL mode correctly
-- Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first.
+- Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
+- CtrlCOnConnect settings does no rerender "Pico Disconnect" button correctly. Also does not enter repl correctly. Not impact on functionality just UI! (since v2.1.0)
 
 ---
 
 ## [Unreleased]
 
 - Remove telnet and unix socket interfaces as they are never used and unable to connect to any plain MicroPython Raspberry Pi Pico (W) board
+
+## [2.1.0] - 2022-09-24
+
+### Added
+- Colored terminal output to some message by the extension
+
+### Changed
+- Switched to VS Code api PseudoTerminal (pty) instead of the old terminalExec.py fake REPL
+- Fixed some naming convention "errors"
+
+### Removed
+- terminalExec.py
+
+## [2.0.8] - 2022-09-18
+
+### Changed
+- Fixes if you reopen VS Code via desktop or taskbar shortcut i sometimes restores old terminal sessions with then cannot be closed because the close action will always close the now working session.
 
 ## [2.0.7] - 2022-09-12
 

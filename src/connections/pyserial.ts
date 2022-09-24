@@ -23,7 +23,7 @@ export default class PySerial implements ConnectionTarget {
   private streamFlush: Function;
   private manufacturers: string | boolean | string[] | undefined;
   private dtrSupported: boolean;
-  private onmessage: any;
+  private onmessage?: Function;
 
   constructor(address: string, params: any, settings: SettingsWrapper) {
     this.params = params;
@@ -120,7 +120,7 @@ export default class PySerial implements ConnectionTarget {
     this.stream?.on('data', function (data: any) {
       let dataStr: string = data.toString();
       data = Buffer.from(data);
-      _this.onmessage(dataStr, data);
+      _this.onmessage!(dataStr, data);
     });
   }
 
