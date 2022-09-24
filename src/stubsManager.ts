@@ -7,7 +7,7 @@ import ApiWrapper from './apiWrapper';
 import Utils from './utils';
 
 export default class StubsManager {
-  async updateStubs() {
+  public async updateStubs() {
     let configFolder = Utils.getConfigPath();
 
     if (!(await Utils.exists(configFolder))) {
