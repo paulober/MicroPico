@@ -7,6 +7,7 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 ## Known issues
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
 - CtrlCOnConnect settings does no rerender "Pico Disconnect" button correctly. Also does not enter repl correctly. Not impact on functionality just UI! (since v2.1.0)
+- Some users have problems with stubs not linking into workspace after running "Configure Project". Maybe related to permission errors for symlink creation on these systems. As a workaround you can find a PowerShell script [here](https://github.com/paulober/Pico-W-Go/files/9651807/Configure-Project.zip) or in the repository contained folder called "scripts" named "Configure-Project.ps1".
 
 ---
 
