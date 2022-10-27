@@ -33,9 +33,18 @@ export default class PanelView extends EventEmitter {
     this.statusItems = {};
   }
 
-  public async initialize(): Promise<void> {
-    let _this = this;
-
+  /**
+   * Generate extension terminal options return via callback and the load it into 
+   * handling class and at the end show if `picowgo.openOnStart` is `true`.
+   * 
+   * @param extensionPath context.extensionPath
+   * @param cb Callback for registering TerminalProvileProvider via provided options
+   * @returns {boolean} `true` if the terminal was created, `false` otherwise
+   */
+  public async initialize(
+    extensionPath: string,
+    cb: (options: vscode.ProviderResult<vscode.TerminalProfile>) => void
+  ): Promise<boolean> {
     for (let barItem of pkg.statusBar) {
       this.statusItems[barItem.key] = this.createStatusItem(
         barItem.key,
@@ -46,18 +55,27 @@ export default class PanelView extends EventEmitter {
     }
 
     this.setTitle('not connected');
-    // terminal logic
-    let onTermConnect = (err?: Error) => this.emit('term_connected', err);
 
-    _this.setProjectName(_this.api.getProjectPath());
+    // terminal logic
+    this.setProjectName(this.api.getProjectPath());
 
     // create terminal
-    this.terminal = new Term(this.board, _this.settings);
-    await this.terminal.initialize(onTermConnect);
+    this.terminal = new Term(this.board, this.settings);
 
-    this.terminal.setOnMessageListener(function (input) {
-      _this.emit('user_input', input);
+    this.terminal.setOnMessageListener((input) => {
+      this.emit('user_input', input);
     });
+
+    const onTermConnect = (err?: Error) => this.emit('term_connected', err);
+
+    const options = await this.terminal?.initializeTerminalOptionsAsync(
+      extensionPath,
+      onTermConnect
+    );
+
+    cb(options);
+
+    return await this.terminal?.loadTerminalAsync(options?.options as vscode.ExtensionTerminalOptions);
   }
 
   public showQuickPick(): void {

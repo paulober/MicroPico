@@ -14,7 +14,7 @@
         "curly": "warn",
         "eqeqeq": "warn",
         "no-throw-literal": "warn",
-        "semi": "off",
+        "semi": ["2", "always"],
         "no-mixed-requires":"error",
         "no-this-before-super": "warn",
         "no-unreachable": "warn",

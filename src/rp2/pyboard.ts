@@ -360,6 +360,7 @@ export default class Pyboard {
       this.status !== RAW_REPL &&
       this.waitFor !== null &&
       buffer.indexOf(this.waitingFor!.toString()) > -1 &&
+      // TODO: !VERY IMPORTANT! potential error here. If ps1 on pico is changed this would never be true and stuck
       buffer.indexOf('>>> ') > -1
     ) {
       return true;
@@ -470,7 +471,8 @@ export default class Pyboard {
             this.commandResponseBuffer.length +
             ' so far'
         );
-        if (this.commandResponseBuffer.length >= this.waitingFor.length) {
+        // changed this.waitingFor.length to as number as waitingFor should contain the number
+        if (this.commandResponseBuffer.length >= (this.waitingFor as number)) {
           this.stopWaitingFor(this.commandResponseBuffer);
         }
       } else if (
@@ -478,7 +480,7 @@ export default class Pyboard {
         this.isFriendlyRegexWaitMatch(this.commandResponseBuffer)
       ) {
         // this was pop(-1)
-        let trail = this.commandResponseBuffer.split(this.waitingFor).pop();
+        const trail = this.commandResponseBuffer.split(this.waitingFor).pop();
         if (trail && trail.length > 0 && this.waitForBlock && this.onmessage) {
           this.onmessage(trail);
         }

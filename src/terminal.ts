@@ -4,6 +4,7 @@ import ApiWrapper from './apiWrapper';
 import Pyboard from './rp2/pyboard';
 import SettingsWrapper, { SettingsKey } from './settingsWrapper';
 import { c, COLORS, C_RESET, OPTIONS } from './paintBox';
+import path from 'path';
 
 export default class Term {
   public termBuffer: string = '';
@@ -11,7 +12,11 @@ export default class Term {
   /**
    * The REPL prompt. Defaults to '>>> '.
    */
-  private shellPrompt: string = `${c(COLORS.cyan, [OPTIONS.bold], true)}>>>${C_RESET} `;
+  private shellPrompt: string = `${c(
+    COLORS.cyan,
+    [OPTIONS.bold],
+    true
+  )}>>>${C_RESET} `;
   public board: Pyboard;
   private logger: Logger;
   private api: ApiWrapper;
@@ -43,8 +48,8 @@ export default class Term {
     this.startY = null;
   }
 
-  public async initialize(cb: (err?: Error) => void) {
-    await this.create(cb);
+  public async initialize(cb: (err?: Error) => void, extensionPath: string) {
+    await this.create(cb, extensionPath);
   }
 
   public show() {
@@ -57,16 +62,60 @@ export default class Term {
     this.terminal?.hide();
   }
 
-  private async create(cb: (err?: Error) => void): Promise<void> {
+  private async create(
+    cb: (err?: Error) => void,
+    extensionPath: string
+  ): Promise<void> {
     this.createFailed = false;
 
     try {
-      let existingProcessId: number | null | undefined = this.settings.context
+      const disposable = vscode.window.registerTerminalProfileProvider(
+        'picowgo.terminalProfile',
+        {
+          provideTerminalProfile: (
+            token: vscode.CancellationToken
+          ): vscode.ProviderResult<vscode.TerminalProfile> => {
+            return {
+              options: {
+                name: this.terminalName,
+                iconPath: vscode.Uri.file(
+                  path.join(extensionPath, 'images', 'pico-w.png')
+                ),
+                pty: this.pty!,
+                isTransient: true,
+              },
+            };
+          },
+        }
+      );
+      vscode.window.createTerminal();
+
+      console.log('Created terminal');
+    } catch (e) {
+      this.createFailed = true;
+      cb(e as Error);
+    }
+  }
+
+  /**
+   * Initialize the terminal options and the pty.
+   *
+   * @param extensionPath context.extensionPath
+   * @returns The extension terminal options.
+   */
+  public async initializeTerminalOptionsAsync(
+    extensionPath: string,
+    cb: (err?: Error) => void
+  ): Promise<vscode.ProviderResult<vscode.TerminalProfile>> {
+    this.createFailed = false;
+
+    try {
+      const existingProcessId: number | null | undefined = this.settings.context
         ? this.settings.context.get('processId')
         : null;
 
-      for (let t of vscode.window.terminals) {
-        let p = await t.processId;
+      for (const t of vscode.window.terminals) {
+        const p = await t.processId;
 
         if (p === existingProcessId) {
           t.dispose();
@@ -86,7 +135,7 @@ export default class Term {
           this.connected = false;
 
           // TODO: maybe recreate
-          this.create(cb);
+          this.create(cb, extensionPath);
         },
         handleInput: (data: string) => {
           if (!this.createFailed) {
@@ -100,25 +149,52 @@ export default class Term {
         },
       };
 
-      this.terminal = vscode.window.createTerminal({
-        name: this.terminalName,
-        pty: this.pty!,
-        isTransient: true,
-      });
+      return {
+        options: {
+          name: this.terminalName,
+          iconPath: vscode.Uri.file(
+            path.join(extensionPath, 'images', 'pico-w.png')
+          ),
+          pty: this.pty!,
+          isTransient: true,
+          location: vscode.TerminalLocation.Panel,
+        },
+      };
+    } catch (err) {
+      this.createFailed = true;
+      cb(err as Error);
+      return null;
+    }
+  }
 
-      console.log('Created terminal');
+  /**
+   * Load terminal registered via {@link initializeTerminalOptionsAsync} and
+   * registerTerminalProfileProvider into property and show
+   * it if `openOnStart` is `true`.
+   *
+   * @returns `true` if terminal could be found, `false` otherwise.
+   */
+  public async loadTerminalAsync(options: vscode.ExtensionTerminalOptions): Promise<boolean> {
+    /*this.terminal = vscode.window.terminals.find(
+      (t) => t.name === this.terminalName
+    );*/
 
+    this.terminal = vscode.window.createTerminal(options);
+
+    if (this.terminal !== undefined) {
       this.settings.context?.update(
         'processId',
         await this.terminal?.processId
       );
 
-      if (this.settings.get(SettingsKey.openOnStart)) {
+      // open terminal if openOnStart setting is set to true
+      if (this.settings.get(SettingsKey.openOnStart) as boolean) {
         this.show();
       }
-    } catch (e) {
-      this.createFailed = true;
-      cb(e as Error);
+
+      return true;
+    } else {
+      return false;
     }
   }
 

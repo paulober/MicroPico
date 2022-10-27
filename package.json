@@ -35,7 +35,8 @@
   ],
   "activationEvents": [
     "onCommand:picowgo.initialise",
-    "workspaceContains:.picowgo"
+    "workspaceContains:.picowgo",
+    "onFileSystem:picowfs"
   ],
   "main": "./dist/extension.js",
   "compatibility": [
@@ -143,6 +144,10 @@
       {
         "command": "picowgo.listCommands",
         "title": "Pico-W-Go > List all Commands"
+      },
+      {
+        "command": "picowgo.openPicoRemoteWorkspace",
+        "title": "Pico-W-Go > Open Pico (W) Remote Workspace"
       }
     ],
     "menus": {

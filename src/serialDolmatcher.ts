@@ -17,12 +17,18 @@ import * as semver from 'semver';
 import PanelView from './panelView';
 import { c, COLORS, C_RESET, OPTIONS } from './paintBox';
 import Term from './terminal';
+import File, { unknownFile } from './picowfs/picoFile';
+import { checkFileModeBits } from './localPythonInterface';
 
 const IDLE = 0;
 const SYNCHRONIZING = 1;
 const DELETING = 2;
 const RUNNING = 3;
 const LISTENINGFTP = 4;
+/**
+ * Status for listing contents of a directory. (reading filesystem)
+ */
+const LISTING = 5;
 
 export type ServerVersion = {
   version: string | undefined;
@@ -57,10 +63,10 @@ export default class SerialDolmatcher extends EventEmitter {
     serializedState: any,
     pyboard: Pyboard,
     view: PanelView,
-    settings: SettingsWrapper
+    settings: SettingsWrapper,
+    isFirstTimeStart: boolean
   ) {
     super();
-    let _this = this;
     this.board = pyboard;
     this.synchronizeType = '';
     this.settings = settings;
@@ -92,6 +98,7 @@ export default class SerialDolmatcher extends EventEmitter {
       }
     });*/
 
+    // triggers connection to board on terminal connected (means open)
     this.view.on('term_connected', async (err?: Error) => {
       if (this.terminal === undefined) {
         this.terminal = this.view.terminal;
@@ -108,10 +115,13 @@ export default class SerialDolmatcher extends EventEmitter {
           this.logger.error(err.message);
         }
         this.api.error('Unable to start the terminal');
+      } else if (this.terminal === undefined) {
+        this.logger.error('Error loading terminal from view.');
       }
       this.logger.info('Connected trigger from view');
 
-      this.firstTimeStart = !(await this.api.settingsExist());
+      // this.firstTimeStart = !(await this.api.settingsExist());
+      this.firstTimeStart = isFirstTimeStart;
       if (this.firstTimeStart) {
         this.firstTimeStart = false;
         this.api.openSettings();
@@ -119,7 +129,7 @@ export default class SerialDolmatcher extends EventEmitter {
       }
 
       // hide panel if it was hidden after last shutdown of atom
-      let closeTerminal =
+      const closeTerminal =
         serializedState &&
         'visible' in serializedState &&
         !serializedState.visible;
@@ -142,38 +152,37 @@ export default class SerialDolmatcher extends EventEmitter {
       }
     });
 
-    // TODO !!
-    this.view.on('user_input', function (input: string) {
-      _this.board.sendUserInput(input).catch(async (err) => {
+    this.view.on('user_input', (input: string) => {
+      this.board.sendUserInput(input).catch(async (err) => {
         if (err && err.message === 'timeout') {
-          _this.logger.warning('User input timeout, disconnecting');
-          _this.logger.warning(err);
-          await _this.disconnect();
+          this.logger.warning('User input timeout, disconnecting');
+          this.logger.warning(err);
+          await this.disconnect();
         }
       });
     });
 
-    this.on('auto_connect', async function (address) {
-      if (!_this.board.connecting) {
-        _this.logger.verbose(
+    this.on('auto_connect', async (address) => {
+      if (!this.board.connecting) {
+        this.logger.verbose(
           'Autoconnect event, disconnecting and connecting again'
         );
-        await _this.connect(address);
+        await this.connect(address);
       }
     });
 
-    this.board.registerStatusListener(function (status: number) {
+    this.board.registerStatusListener((status: number) => {
       if (status === 3) {
-        _this.terminal?.enter();
+        this.terminal?.enter();
       }
     });
 
     this.settings.onChange(
       'auto_connect',
-      async function (_oldValue: SettingsType, newValue: SettingsType) {
-        _this.logger.info('autoConnect setting changed to ' + newValue);
-        await _this.stopAutoConnect();
-        await _this.startAutoConnect();
+      async (_oldValue: SettingsType, newValue: SettingsType) => {
+        this.logger.info('autoConnect setting changed to ' + newValue);
+        await this.stopAutoConnect();
+        await this.startAutoConnect();
       }
     );
   }
@@ -611,7 +620,7 @@ export default class SerialDolmatcher extends EventEmitter {
   }
 
   public async uploadFile(): Promise<void> {
-    let file = this.api.getOpenFile();
+    const file = this.api.getOpenFile();
 
     if (file !== null) {
       if (!file.path) {
@@ -621,6 +630,99 @@ export default class SerialDolmatcher extends EventEmitter {
         await this.sync('send', file.path);
       }
     }
+  }
+
+  /**
+   * 
+   * @param path Must be a path relative to the pico (w) board its root directory.
+   * @returns A list of files and directories in the given path as an array of tuples containing name and {@link vscode.FileType}.
+   */
+  public async listAllFilesAndFolders(
+    path: string
+  ): Promise<Array<[string, vscode.FileType]>> {
+    if (this.isIdle()) {
+      this.status = LISTING;
+      const command = 'import uos as os;  [(f, os.path.isfile(os.path.join('+path+', f))) for f in os.listdir('+path+')]';
+
+      try {
+        // without await cause custom Promise will board.waitFor()
+        this.board.run(command);
+        // TODO: maybe sleep in command to give time to hook up the waitFor listener
+        const waiting: Promise<string> = new Promise((resolve, reject) =>
+          this.board.waitFor(
+            ']',
+            {
+              resolve,
+              reject,
+            },
+            5000
+          )
+        );
+        const result = await waiting;
+
+        let content: Array<[string, vscode.FileType]>|undefined = undefined;
+        if (result) {
+          // /gm => global match, multiline
+          const regexGroups: RegExp = /\('(?<name>[^']*)', (?<isFile>[a-zA-Z]+)\)/gm;
+          for (const match of result.matchAll(regexGroups)) {
+            const { name, isFile } = match.groups!;
+            if (content === undefined) {
+              content = [];
+            }
+            content.push([name, isFile === 'True' ? vscode.FileType.File : vscode.FileType.Directory]);
+          }
+        }
+
+        return content ?? [];
+      } catch (err) {
+        this.logger.error('Failed to send and execute codeblock ');
+      } finally {
+        this.status = IDLE;
+      }
+    }
+    return [];
+  }
+
+  public async fileStat(path: string): Promise<File> {
+    if (this.isIdle()) {
+      this.status = LISTING;
+      const command = 'import uos as os; statinfo = os.stat(myFile); (statinfo.st_mode, statinfo.st_size, statinfo.st_mtime, statinfo.st_ctime)';
+
+      try {
+        // without await cause custom Promise will board.waitFor()
+        this.board.run(command);
+        // TODO: maybe sleep in command to give time to hook up the waitFor listener
+        const waiting: Promise<string> = new Promise((resolve, reject) =>
+          this.board.waitFor(
+            ')',
+            {
+              resolve,
+              reject,
+            },
+            5000
+          )
+        );
+        const result = await waiting;
+        const stat: number[] = result.split(',').map((s) => parseInt(s));
+        const checkedFileMode = checkFileModeBits(stat[0]);
+        if (checkedFileMode === undefined) {
+          throw new Error("Bad file mode");
+        }
+
+        const file = new File(path);
+        file.type = checkedFileMode!;
+        file.size = stat[1];
+        file.mtime = stat[2];
+        file.ctime = stat[3];
+
+        return file;
+      } catch (err) {
+        this.logger.error('Failed to send and execute codeblock and check file stat');
+      } finally {
+        this.status = IDLE;
+      }
+    }
+    return unknownFile();
   }
 
   public async deleteAllFiles(): Promise<void> {

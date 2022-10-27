@@ -6,6 +6,7 @@ import Pyboard from './rp2/pyboard';
 import PanelView from './panelView';
 import SerialDolmatcher from './serialDolmatcher';
 import * as path from 'path';
+import { PicoWFs } from './picowfs/picowfs';
 
 const pkg = vscode.extensions.getExtension('paulober.pico-w-go')?.packageJSON;
 
@@ -42,17 +43,53 @@ export default class Activator {
       return;
     }
 
-    let stubsMngr = new StubsManager();
+    const stubsMngr = new StubsManager();
     await stubsMngr.updateStubs();
 
-    let pb = new Pyboard(sw);
+    const pb = new Pyboard(sw);
 
-    let v = new PanelView(pb, sw);
-    let serialDolmatcher = new SerialDolmatcher({}, pb, v, sw);
+    const v = new PanelView(pb, sw);
+
+    const isFirstTimeStart = context.globalState
+      .keys()
+      .some((k) => k === 'picowgo.notFirstStart');
+    const serialDolmatcher = new SerialDolmatcher(
+      {},
+      pb,
+      v,
+      sw,
+      isFirstTimeStart
+    );
+    if (isFirstTimeStart) {
+      context.globalState.update('picowgo.notFirstStart', true);
+    }
+
     // do initialize PanelView after binding it to serialdolmatcher for events to trigger in sd
-    await v.initialize();
-    
-    let terminal = v.terminal;
+    const resultInitTerminal = await v.initialize(
+      context.extensionPath,
+      (options: vscode.ProviderResult<vscode.TerminalProfile>) => {
+        const disposable = vscode.window.registerTerminalProfileProvider(
+          'picowgo.terminalProfile',
+          {
+            provideTerminalProfile(
+              token: vscode.CancellationToken
+            ): vscode.ProviderResult<vscode.TerminalProfile> {
+              return options;
+            },
+          }
+        );
+        context.subscriptions.push(disposable);
+      }
+    );
+
+    if (!resultInitTerminal) {
+      vscode.window.showErrorMessage(
+        'Pico-W-Go was unable to start, could not register terminal profile provider.'
+      );
+      return;
+    }
+
+    const terminal = v.terminal;
 
     // close serial port safely to avoid permission denied
     // errors when a new connection to serial port will be created
@@ -61,6 +98,18 @@ export default class Activator {
         serialDolmatcher.disconnect();
       },
     });
+
+    const picowFs = new PicoWFs(serialDolmatcher);
+
+    // register virtual filesystem provider
+    context.subscriptions.push(
+      vscode.workspace.registerFileSystemProvider('picowfs', picowFs, {
+        isCaseSensitive: true
+        //isReadonly: false,
+      })
+    );
+
+    // register commands
 
     let disposable = vscode.commands.registerCommand(
       'picowgo.help',
@@ -87,6 +136,27 @@ export default class Activator {
       'picowgo.initialise',
       function () {
         stubsMngr.addToWorkspace();
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      'picowgo.openPicoRemoteWorkspace',
+      function () {
+        /*vscode.commands.executeCommand(
+          'vscode.openFolder',
+          vscode.Uri.parse("picowfs:///", true)
+        );*/
+
+        // check if pico is connected
+        if (pb.connected) {
+          vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0, 0, {
+            uri: vscode.Uri.parse("picowfs:/"),
+            name: "Pico (W) Remote Workspace"
+          });
+        } else {
+          vscode.window.showErrorMessage("Cannot open remote file system. No Pico (W) is connected.");
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -192,9 +262,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // TODO: replace _this with the acutall pinmap pre fetched
-    // let _this = this;
-    let pinmap = this.getPinMapHtml;
+    const pinmap = this.getPinMapHtml;
     disposable = vscode.commands.registerCommand(
       'picowgo.extra.pins',
       function () {
@@ -214,8 +282,6 @@ export default class Activator {
           path.join(context.extensionPath, 'images', 'Pico-W-Pins.svg')
         );
         const imageUrl = panel.webview.asWebviewUri(onDiskPath);
-
-        // panel.webview.html = _this.getPinMapHtml(imageUrl);
         panel.webview.html = pinmap(imageUrl.toString());
       }
     );
