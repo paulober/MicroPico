@@ -591,6 +591,7 @@ export default class Pyboard {
       // executing code delayed (20ms) to make sure _this.wait_for(">") is executed before execution is complete
       code += '\r\nimport time';
       code += '\r\ntime.sleep(0.1)';
+      // TODO: maybe add del time
 
       let response = await this.sendWait(code, null, 0);
 
@@ -647,7 +648,7 @@ export default class Pyboard {
     if (timeout && timeout > 0) {
       this.waitingForTimer = setTimeout(() => {
         if (this.promise) {
-          let temp: {
+          const temp: {
             resolve: (msg: string) => void;
             reject: (err: string | Error, arg2?: string) => void;
           } = this.promise;
@@ -686,7 +687,7 @@ export default class Pyboard {
   ): Promise<string> {
     let result: string | null = null;
 
-    if (!waitFor) {
+    if (waitFor === null) {
       waitFor = this.status === RAW_REPL ? /(\r\n)?\u0004\>/ : command;
     }
 

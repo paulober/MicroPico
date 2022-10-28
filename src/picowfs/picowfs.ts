@@ -16,23 +16,48 @@ export class PicoWFs implements vscode.FileSystemProvider {
 
   constructor(sd: SerialDolmatcher) {
     this.sd = sd;
+    this.isConnected = sd.board.connected;
+    sd.on('picoDisconnected', () => {
+      this.isConnected = false;
+    });
+    sd.on('picoConnected', () => {
+      this.isConnected = true;
+    });
   }
 
   // --- manage file metadata
 
-  stat(uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
+  /**
+   *
+   * @param uri The URI of the file.
+   * @throws {@link vscode.FileSystemError.FileNotFound} when the file doesn't exist.
+   * @returns The file's stats.
+   */
+  async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
     if (this.isConnected) {
-      return this.sd.fileStat(uri.path);
+      const result = await this.sd.fileStat(uri.path);
+      if (result !== null) {
+        return result;
+      }
     } else {
-      throw vscode.FileSystemError.FileNotFound(uri);
+      throw vscode.FileSystemError.Unavailable('Not connected to Pico');
     }
+
+    throw vscode.FileSystemError.FileNotFound(uri);
   }
 
-  async readDirectory(
-    uri: vscode.Uri
-  ): Promise<[string, vscode.FileType][]> {
-    // returns currently all files as type File (also things like SymbolicLink ...)
-    return await this.sd.listAllFilesAndFolders(uri.path);
+  async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
+    if (this.isConnected) {
+      // returns currently all files as type File (also things like SymbolicLink ...)
+      const result = await this.sd.listAllFilesAndFolders(uri.path);
+      if (result !== null) {
+        return result;
+      }
+    } else {
+      throw vscode.FileSystemError.Unavailable('Not connected to Pico');
+    }
+
+    throw vscode.FileSystemError.FileNotFound(uri);
   }
 
   // --- manage file contents
@@ -80,6 +105,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
 
     // fire changed event
     this.fireSoon({ type: vscode.FileChangeType.Changed, uri });*/
+    throw new Error('Method not implemented.');
   }
 
   // --- manage files and folders
@@ -104,6 +130,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
       { type: vscode.FileChangeType.Changed, uri: dirname },
       { type: vscode.FileChangeType.Deleted, uri }
     );*/
+    throw new Error('Method not implemented.');
   }
 
   rename(
@@ -129,6 +156,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
       { type: vscode.FileChangeType.Deleted, uri: oldUri },
       { type: vscode.FileChangeType.Created, uri: newUri }
     );*/
+    throw new Error('Method not implemented.');
   }
 
   createDirectory(uri: vscode.Uri): void | Thenable<void> {
@@ -145,6 +173,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
       { type: vscode.FileChangeType.Changed, uri: dirname },
       { type: vscode.FileChangeType.Created, uri }
     );*/
+    throw new Error('Method not implemented.');
   }
 
   // --- other

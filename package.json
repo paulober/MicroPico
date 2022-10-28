@@ -35,8 +35,7 @@
   ],
   "activationEvents": [
     "onCommand:picowgo.initialise",
-    "workspaceContains:.picowgo",
-    "onFileSystem:picowfs"
+    "workspaceContains:.picowgo"
   ],
   "main": "./dist/extension.js",
   "compatibility": [

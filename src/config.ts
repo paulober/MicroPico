@@ -19,7 +19,7 @@ export type Constants = {
 export default class Config {
   public static constants(): Constants {
     return {
-      loggingLevel: 3, // 3 = warning, 4 = error. anything higher than 5 = off. see logger.js for all levels
+      loggingLevel: 0, // 3 = warning, 4 = error. anything higher than 5 = off. see logger.js for all levels
       maxSyncSize: 350000,
       safebootVersion: 1150002, // 1.15.0.b2
       uploadBatchSize: 512,

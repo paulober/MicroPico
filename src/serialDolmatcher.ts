@@ -172,7 +172,8 @@ export default class SerialDolmatcher extends EventEmitter {
     });
 
     this.board.registerStatusListener((status: number) => {
-      if (status === 3) {
+      // TODO: maybe is this.outputHidden to drastic
+      if (status === 3 && !this.outputHidden) {
         this.terminal?.enter();
       }
     });
@@ -450,8 +451,8 @@ export default class SerialDolmatcher extends EventEmitter {
     err: string | null,
     address?: string | null
   ): Promise<void> {
-    if (err || !address) {
-      if (!err) {
+    if (err !== null || address === undefined || address === null) {
+      if (err === null) {
         err = 'onConnected to undefined address';
       }
       this.terminal?.writeln('Connection error: ' + err);
@@ -468,6 +469,8 @@ export default class SerialDolmatcher extends EventEmitter {
           clearTimeout(this.connectionTimer);
         }
       }, 10000);
+
+      this.emit('picoConnected');
     }
 
     this.view.setButtonState();
@@ -496,6 +499,7 @@ export default class SerialDolmatcher extends EventEmitter {
           message +
           '). Click the "Pico Disconnected" button (or unplug and than plug the pico back in if it still not works) to try again.'
       );
+      this.emit('picoDisconnected');
       this.view.setButtonState();
     }
   }
@@ -516,6 +520,7 @@ export default class SerialDolmatcher extends EventEmitter {
         true
       )}Connection timed out. Click the "Pico Disconnected" button to try again.${C_RESET}`
     );
+    this.emit('picoDisconnected');
     this.view.setButtonState();
   }
 
@@ -554,6 +559,7 @@ export default class SerialDolmatcher extends EventEmitter {
     this.stopOperation();
 
     await this.runner?.stop();
+    this.emit('picoDisconnected');
     this.view.setButtonState();
 
     if (showMessage) {
@@ -633,80 +639,93 @@ export default class SerialDolmatcher extends EventEmitter {
   }
 
   /**
-   * 
+   *
    * @param path Must be a path relative to the pico (w) board its root directory.
    * @returns A list of files and directories in the given path as an array of tuples containing name and {@link vscode.FileType}.
    */
   public async listAllFilesAndFolders(
     path: string
-  ): Promise<Array<[string, vscode.FileType]>> {
+  ): Promise<Array<[string, vscode.FileType]> | null> {
     if (this.isIdle()) {
       this.status = LISTING;
-      const command = 'import uos as os;  [(f, os.path.isfile(os.path.join('+path+', f))) for f in os.listdir('+path+')]';
+      // not micropython: const command = 'import uos as os;  [(f, os.path.isfile(os.path.join("'+path+'", f))) for f in os.listdir("'+path+'")]';
+      const command =
+        'import os\r\nprint([(f, os.stat("' +
+        path +
+        '/"+f)[0]) for f in os.listdir("' +
+        path +
+        '")])';
+      this.outputHidden = true;
 
       try {
-        // without await cause custom Promise will board.waitFor()
-        this.board.run(command);
-        // TODO: maybe sleep in command to give time to hook up the waitFor listener
-        const waiting: Promise<string> = new Promise((resolve, reject) =>
-          this.board.waitFor(
-            ']',
-            {
-              resolve,
-              reject,
-            },
-            5000
-          )
-        );
-        const result = await waiting;
+        const result: string | undefined = await this.board.run(command);
 
-        let content: Array<[string, vscode.FileType]>|undefined = undefined;
-        if (result) {
+        let content: Array<[string, vscode.FileType]> | undefined = undefined;
+        if (result !== undefined && result !== '') {
           // /gm => global match, multiline
-          const regexGroups: RegExp = /\('(?<name>[^']*)', (?<isFile>[a-zA-Z]+)\)/gm;
+          // old for not micropython: const regexGroups: RegExp = /\('(?<name>[^']*)', (?<isFile>[a-zA-Z]+)\)/gm;
+          const regexGroups: RegExp =
+            /\('(?<name>[^']*)', (?<fileMode>[0-9]+)\)/gm;
           for (const match of result.matchAll(regexGroups)) {
-            const { name, isFile } = match.groups!;
+            const { name, fileMode } = match.groups!;
             if (content === undefined) {
               content = [];
             }
-            content.push([name, isFile === 'True' ? vscode.FileType.File : vscode.FileType.Directory]);
+            let fileType: vscode.FileType | undefined = await checkFileModeBits(
+              parseInt(fileMode)
+            );
+            if (fileType === undefined) {
+              fileType = vscode.FileType.Unknown;
+            }
+            content.push([name, fileType]);
           }
         }
 
         return content ?? [];
       } catch (err) {
         this.logger.error('Failed to send and execute codeblock ');
+        this.status = IDLE;
+        return null;
       } finally {
+        this.outputHidden = false;
         this.status = IDLE;
       }
     }
     return [];
   }
 
-  public async fileStat(path: string): Promise<File> {
+  public async fileStat(path: string): Promise<File | null> {
     if (this.isIdle()) {
       this.status = LISTING;
-      const command = 'import uos as os; statinfo = os.stat(myFile); (statinfo.st_mode, statinfo.st_size, statinfo.st_mtime, statinfo.st_ctime)';
+      //const command = 'import uos as os; statinfo = os.stat(myFile); (statinfo.st_mode, statinfo.st_size, statinfo.st_mtime, statinfo.st_ctime)';
+      let command =
+        'import uos as os\r\n' +
+        'try:\r\n' +
+        // on pico os.stat returns a tuple no named values (dict)
+        `  statinfo = os.stat("${path}")\r\n` +
+        // statinfo.st_mode, statinfo.st_size, statinfo.st_mtime, statinfo.st_ctime
+        '  print((statinfo[0], statinfo[6], statinfo[8], statinfo[9]))\r\n' +
+        'except OSError:\r\n' +
+        '  print(("Err"))';
+      this.outputHidden = true;
 
       try {
-        // without await cause custom Promise will board.waitFor()
-        this.board.run(command);
-        // TODO: maybe sleep in command to give time to hook up the waitFor listener
-        const waiting: Promise<string> = new Promise((resolve, reject) =>
-          this.board.waitFor(
-            ')',
-            {
-              resolve,
-              reject,
-            },
-            5000
-          )
-        );
-        const result = await waiting;
-        const stat: number[] = result.split(',').map((s) => parseInt(s));
-        const checkedFileMode = checkFileModeBits(stat[0]);
+        const result = await this.board.run(command);
+
+        if (result === undefined || result.includes('Err')) {
+          return null;
+        }
+
+        const stat: number[] = result
+          .trim()
+          .replace('(', '')
+          .replace(')', '')
+          .split(',')
+          .map((s) => parseInt(s));
+        const checkedFileMode: vscode.FileType | undefined =
+          await checkFileModeBits(stat[0]);
         if (checkedFileMode === undefined) {
-          throw new Error("Bad file mode");
+          throw new Error('Bad file mode');
         }
 
         const file = new File(path);
@@ -717,12 +736,15 @@ export default class SerialDolmatcher extends EventEmitter {
 
         return file;
       } catch (err) {
-        this.logger.error('Failed to send and execute codeblock and check file stat');
+        this.logger.error(
+          'Failed to send and execute codeblock and check file stat'
+        );
       } finally {
+        this.outputHidden = false;
         this.status = IDLE;
       }
     }
-    return unknownFile();
+    return null;
   }
 
   public async deleteAllFiles(): Promise<void> {

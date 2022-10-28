@@ -1,7 +1,7 @@
 import Config from './config';
 
-let LOG_LEVEL = Config.constants().loggingLevel;
-let LEVELS = ['silly', 'verbose', 'info', 'warning', 'error', 'critical'];
+const LOG_LEVEL = Config.constants().loggingLevel;
+const LEVELS = ['silly', 'verbose', 'info', 'warning', 'error', 'critical'];
 
 export default class Logger {
   className: string;
