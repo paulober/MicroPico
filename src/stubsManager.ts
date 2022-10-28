@@ -90,7 +90,7 @@ export default class StubsManager {
       await fsp.symlink(
         path.resolve(path.join(configFolder, 'Pico-W-Stub')),
         path.join(vsc, 'Pico-W-Stub'),
-        'dir'
+        'junction'
       );
     }
   }
