@@ -78,6 +78,21 @@ export default class PanelView extends EventEmitter {
     return await this.terminal?.loadTerminalAsync(options?.options as vscode.ExtensionTerminalOptions);
   }
 
+  public showRemoteWorkspaceControls() {
+    //const barItem = _.find(pkg.statusBar, { key: 'refreshPicoRemoteWorkspace' });
+    /*this.statusItems[barItem.key] = this.createStatusItem(
+      barItem.key,
+      barItem.name,
+      barItem.command,
+      barItem.tooltip
+    );*/
+    this.statusItems['refreshPicoRemoteWorkspace'].show();
+  }
+
+  public hideRemoteWorkspaceControls() {
+    this.statusItems['refreshPicoRemoteWorkspace'].hide();
+  }
+
   public showQuickPick(): void {
     let items = [];
 
@@ -159,11 +174,11 @@ export default class PanelView extends EventEmitter {
 
   private setTitle(status: string): void {
     let icon = 'chrome-close';
-    let title = 'Pico W Disconnected';
+    let title = 'Pico (W) Disconnected';
 
     if (status === 'connected') {
       icon = 'check';
-      title = 'Pico W Connected';
+      title = 'Pico (W) Connected';
     }
 
     this.setButton('status', icon, title);

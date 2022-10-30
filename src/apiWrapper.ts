@@ -30,6 +30,7 @@ export default class ApiWrapper {
   }
 
   public getProjectPath(): string | null {
+    // rootPath is deprecated
     return this.rootPath();
   }
 

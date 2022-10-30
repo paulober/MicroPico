@@ -19,6 +19,8 @@ import { c, COLORS, C_RESET, OPTIONS } from './paintBox';
 import Term from './terminal';
 import File, { unknownFile } from './picowfs/picoFile';
 import { checkFileModeBits } from './localPythonInterface';
+import { Entry } from './picowfs/picowfs';
+import Directory from './picowfs/picoDirectory';
 
 const IDLE = 0;
 const SYNCHRONIZING = 1;
@@ -29,6 +31,10 @@ const LISTENINGFTP = 4;
  * Status for listing contents of a directory. (reading filesystem)
  */
 const LISTING = 5;
+/**
+ * Status for listening to the serialport pico remote filesystem.
+ */
+const LISTENINGRW = 6;
 
 export type ServerVersion = {
   version: string | undefined;
@@ -694,7 +700,7 @@ export default class SerialDolmatcher extends EventEmitter {
     return [];
   }
 
-  public async fileStat(path: string): Promise<File | null> {
+  public async fileStat(path: string): Promise<Entry | null> {
     if (this.isIdle()) {
       this.status = LISTING;
       //const command = 'import uos as os; statinfo = os.stat(myFile); (statinfo.st_mode, statinfo.st_size, statinfo.st_mtime, statinfo.st_ctime)';
@@ -728,13 +734,23 @@ export default class SerialDolmatcher extends EventEmitter {
           throw new Error('Bad file mode');
         }
 
-        const file = new File(path);
-        file.type = checkedFileMode!;
-        file.size = stat[1];
-        file.mtime = stat[2];
-        file.ctime = stat[3];
+        let entry: Entry;
 
-        return file;
+        // TODO (!IMPORTANT!): maybe mix the classes so that it defines it structure via the parsed vscode.FileType
+        if (checkedFileMode === vscode.FileType.File) {
+          entry = new File(path);
+        } else if (checkedFileMode === vscode.FileType.Directory) {
+          entry = new Directory(path);
+        } else {
+          // symlinks aren't currently supported
+          throw new Error('Unsupported file mode');
+        }
+
+        entry.size = stat[1];
+        entry.mtime = stat[2];
+        entry.ctime = stat[3];
+
+        return entry;
       } catch (err) {
         this.logger.error(
           'Failed to send and execute codeblock and check file stat'
@@ -906,7 +922,7 @@ export default class SerialDolmatcher extends EventEmitter {
     }
   }
 
-  public async ftpStart(): Promise<void> {
+  private async ftpStart(): Promise<void> {
     if (!this.board.connected) {
       this.terminal?.writeln('Please connect your device');
       return;
@@ -916,7 +932,7 @@ export default class SerialDolmatcher extends EventEmitter {
 
     this.ftpServer = new FtpSrv({
       url: 'ftp://127.0.0.1:2121',
-      greeting: 'Pico FTP - welcome!',
+      greeting: 'Pico (W) FTP - welcome!',
       blacklist: ['SITE'],
     });
 
@@ -952,7 +968,7 @@ export default class SerialDolmatcher extends EventEmitter {
     this.terminal?.writeln('Started FTP server: ftp://pico@127.0.0.1:2121');
   }
 
-  public async ftpStop() {
+  private async ftpStop() {
     if (this.ftpServer !== undefined) {
       this.ftpServer.close();
 
@@ -1007,6 +1023,52 @@ export default class SerialDolmatcher extends EventEmitter {
     } finally {
       this.terminal?.writePrompt();
     }
+  }
+
+  public async toggleRemoteWorkspace(): Promise<void> {
+    if (this.isIdle()) {
+      await this.remoteWorkspaceStart();
+    } else if (this.isListeningPicoRemoteWorkspace()) {
+      await this.remoteWorkspaceStop();
+    }
+  }
+
+  private remoteWorkspaceStart(): void {
+    if (!this.board.connected) {
+      this.terminal?.writeln('Please connect your device');
+      vscode.window.showErrorMessage("Cannot open remote file system. No Pico (W) is connected.");
+      return;
+    }
+
+    /*vscode.commands.executeCommand(
+      'vscode.openFolder',
+      vscode.Uri.parse("picowfs:///", true)
+    );*/
+    vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0, null, {
+      uri: vscode.Uri.parse("picowfs:/"),
+      name: "Pico (W) Remote Workspace"
+    });
+    this.view.showRemoteWorkspaceControls();
+
+    this.outputHidden = true;
+    this.startOperation('picowgo.remoteWorkspace', LISTENINGRW);
+  
+    this.terminal?.enter();
+    this.terminal?.writeln('Started remote workspace: picowfs:///');
+  }
+
+  private async remoteWorkspaceStop() {
+    // check if remote workspace with given scheme is open
+    const idx = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse("picowfs:/"))?.index;
+    if (idx !== undefined) {
+      // unmount remote workspace
+      vscode.workspace.updateWorkspaceFolders(idx, 1);
+
+      this.terminal?.writeln('Stopped remote workspace.');
+      this.outputHidden = false;
+    }   
+
+    this.stopOperation();
   }
 
   public async getBoardVersion(): Promise<
@@ -1121,5 +1183,9 @@ export default class SerialDolmatcher extends EventEmitter {
 
   public isListeningFtp(): boolean {
     return this.status === LISTENINGFTP;
+  }
+
+  public isListeningPicoRemoteWorkspace(): boolean {
+    return this.status === LISTENINGRW;
   }
 }

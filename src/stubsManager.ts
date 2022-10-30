@@ -49,7 +49,7 @@ export default class StubsManager {
 
   public async addToWorkspace() {
     // let settings = new SettingsWrapper();
-    let api = new ApiWrapper();
+    const api = new ApiWrapper();
     let workspace = api.getProjectPath();
 
     // no folfer opened in vscode

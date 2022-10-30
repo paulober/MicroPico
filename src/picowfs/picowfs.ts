@@ -4,6 +4,13 @@ import Directory from './picoDirectory';
 import File from './picoFile';
 
 export type Entry = File | Directory;
+/**
+ * Enables cache functionality for the PicoWFS. Requires `refreshCache` to be
+ * called for the cache to be updated.
+ *
+ * Only enable if running remote system without shell blocking.
+ */
+const cacheEnabled: boolean = false;
 
 /**
  * Raspberry Pi Pico (W) remote fs integration of {@link vscode.FileSystemProvider}.
@@ -13,6 +20,7 @@ export type Entry = File | Directory;
 export class PicoWFs implements vscode.FileSystemProvider {
   private isConnected = false;
   private sd: SerialDolmatcher;
+  private cache: Map<string, Entry> = new Map();
 
   constructor(sd: SerialDolmatcher) {
     this.sd = sd;
@@ -25,6 +33,26 @@ export class PicoWFs implements vscode.FileSystemProvider {
     });
   }
 
+  public async refreshCache(): Promise<void> {
+    if (cacheEnabled) {
+      // refresh cache
+      for (const [key, _] of this.cache) {
+        const result: Entry | null = await this.sd.fileStat(key);
+        if (result !== null) {
+          this.cache.set(key, result);
+        } else {
+          this.cache.delete(key);
+        }
+      }
+    }
+  }
+
+  public clearCache(): void {
+    if (cacheEnabled) {
+      this.cache.clear();
+    }
+  }
+
   // --- manage file metadata
 
   /**
@@ -33,10 +61,21 @@ export class PicoWFs implements vscode.FileSystemProvider {
    * @throws {@link vscode.FileSystemError.FileNotFound} when the file doesn't exist.
    * @returns The file's stats.
    */
-  async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
+  public async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
     if (this.isConnected) {
-      const result = await this.sd.fileStat(uri.path);
+      if (cacheEnabled) {
+        // try to get entry stats from cache
+        if (this.cache.has(uri.path)) {
+          return this.cache.get(uri.path)!;
+        }
+      }
+
+      const result: Entry | null = await this.sd.fileStat(uri.path);
       if (result !== null) {
+        if (cacheEnabled) {
+          // save copy to cache
+          this.cache.set(uri.path, result);
+        }
         return result;
       }
     } else {
@@ -46,7 +85,9 @@ export class PicoWFs implements vscode.FileSystemProvider {
     throw vscode.FileSystemError.FileNotFound(uri);
   }
 
-  async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
+  public async readDirectory(
+    uri: vscode.Uri
+  ): Promise<[string, vscode.FileType][]> {
     if (this.isConnected) {
       // returns currently all files as type File (also things like SymbolicLink ...)
       const result = await this.sd.listAllFilesAndFolders(uri.path);
@@ -62,7 +103,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
 
   // --- manage file contents
 
-  readFile(uri: vscode.Uri): Uint8Array | Thenable<Uint8Array> {
+  public readFile(uri: vscode.Uri): Uint8Array | Thenable<Uint8Array> {
     /*const data = this.lookupAsFile(uri, false).data;
     if (data) {
       return data;
@@ -70,7 +111,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
     throw vscode.FileSystemError.FileNotFound(uri);
   }
 
-  writeFile(
+  public writeFile(
     uri: vscode.Uri,
     content: Uint8Array,
     options: { readonly create: boolean; readonly overwrite: boolean }
@@ -110,7 +151,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
 
   // --- manage files and folders
 
-  delete(
+  public delete(
     uri: vscode.Uri,
     options: { readonly recursive: boolean }
   ): void | Thenable<void> {
@@ -133,7 +174,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
     throw new Error('Method not implemented.');
   }
 
-  rename(
+  public rename(
     oldUri: vscode.Uri,
     newUri: vscode.Uri,
     options: { readonly overwrite: boolean }
@@ -159,7 +200,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
     throw new Error('Method not implemented.');
   }
 
-  createDirectory(uri: vscode.Uri): void | Thenable<void> {
+  public createDirectory(uri: vscode.Uri): void | Thenable<void> {
     /*const basename = path.posix.basename(uri.path);
     const dirname = uri.with({ path: path.posix.dirname(uri.path) });
     const parent = this.lookupAsDirectory(dirname, false);
@@ -196,7 +237,7 @@ export class PicoWFs implements vscode.FileSystemProvider {
   public onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
     this.emitter.event;
 
-  watch(
+  public watch(
     uri: vscode.Uri,
     options: {
       readonly recursive: boolean;

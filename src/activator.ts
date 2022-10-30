@@ -104,12 +104,12 @@ export default class Activator {
     // register virtual filesystem provider
     context.subscriptions.push(
       vscode.workspace.registerFileSystemProvider('picowfs', picowFs, {
-        isCaseSensitive: true
-        //isReadonly: false,
+        isCaseSensitive: true,
+        isReadonly: false
       })
     );
 
-    // register commands
+    // ========= register commands =========
 
     let disposable = vscode.commands.registerCommand(
       'picowgo.help',
@@ -141,22 +141,28 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      'picowgo.openPicoRemoteWorkspace',
-      function () {
-        /*vscode.commands.executeCommand(
-          'vscode.openFolder',
-          vscode.Uri.parse("picowfs:///", true)
-        );*/
-
-        // check if pico is connected
-        if (pb.connected) {
-          vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0, 0, {
-            uri: vscode.Uri.parse("picowfs:/"),
-            name: "Pico (W) Remote Workspace"
-          });
-        } else {
-          vscode.window.showErrorMessage("Cannot open remote file system. No Pico (W) is connected.");
+      'picowgo.picoRemoteWorkspace',
+      async function () {
+        if (!serialDolmatcher.board.connected) {
+          terminal?.show();
         }
+        await serialDolmatcher.toggleRemoteWorkspace();
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.workspace.onDidChangeWorkspaceFolders((e) => {
+      // hideRemoteWorkspaceControls if workspace is removed
+      if (e.removed.length > 0 && e.removed[0].uri.scheme === "picowfs") {
+        v.hideRemoteWorkspaceControls();
+      }
+    });
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      'picowgo.refreshPicoRemoteWorkspace',
+      async function () {
+        await picowFs.refreshCache();
       }
     );
     context.subscriptions.push(disposable);

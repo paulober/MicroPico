@@ -145,8 +145,12 @@
         "title": "Pico-W-Go > List all Commands"
       },
       {
-        "command": "picowgo.openPicoRemoteWorkspace",
-        "title": "Pico-W-Go > Open Pico (W) Remote Workspace"
+        "command": "picowgo.picoRemoteWorkspace",
+        "title": "Pico-W-Go > Open/Close Pico (W) Remote Workspace"
+      },
+      {
+        "command": "picowgo.refreshPicoRemoteWorkspace",
+        "title": "Pico-W-Go > Refresh Pico (W) Remote Workspace"
       }
     ],
     "menus": {
@@ -396,6 +400,12 @@
       "name": "$(references) FTP",
       "command": "picowgo.ftp",
       "tooltip": "Start FTP server"
+    },
+    {
+      "key": "refreshPicoRemoteWorkspace",
+      "name": "$(refresh) Refresh Pico Workspace",
+      "command": "picowgo.refreshPicoRemoteWorkspace",
+      "tooltip": "Refresh files list in Pico Remote Workspace"
     }
   ],
   "scripts": {
