@@ -30,7 +30,7 @@ class WLAN():
         """
         ...
 
-    def config(self, parameter:str="config('ssid') for example", mac: bytes|None = None, ssid: str|None =None, channel: int|None =None, hidden: bool|None=None, security: int|None=None, key: str|None=None, hostname: str|None=None, reconnects: int|None=None, txpower: int|float|None =None) -> None:
+    def config(self, parameter:str="config('ssid') for example", mac: bytes|None = None, essid: str|None =None, ssid: str|None=None, channel: int|None =None, security: int|None=None, key: str|None=None, password: str|None=None, txpower: int|float|None =None) -> None:
         """DOT NOT USE config(paramter=...) this is just for config('...') to work
 
         Get or set general network interface parameters. 
@@ -52,25 +52,19 @@ class WLAN():
         print(ap.config('ssid')) ; print(ap.config('channel'))
         Following are commonly supported parameters (availability of a specific parameter depends on network technology type, driver, and MicroPython port).
 
-        Parameter  | Description
+        Parameter       | Description
 
-        mac        | MAC address (bytes)
+        mac             | MAC address (bytes)
 
-        ssid       | WiFi access point name (string)
+        essid/ssid      | WiFi access point name (string)
 
-        channel    | WiFi channel (integer)
+        channel         | WiFi channel (integer)
 
-        hidden     | Whether SSID is hidden (boolean)
+        security        | Security protocol supported (enumeration, see module constants)
 
-        security   | Security protocol supported (enumeration, see module constants)
+        key / password  | Access key (string)
 
-        key        | Access key (string)
-
-        hostname   | The hostname that will be sent to DHCP (STA interfaces) and mDNS (if supported, both STA and AP)
-
-        reconnects | Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
-
-        txpower    | Maximum transmit power in dBm (integer or float)
+        txpower         | Maximum transmit power in dBm (integer or float)
         """
         ...
 
