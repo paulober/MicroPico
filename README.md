@@ -7,11 +7,11 @@ Pico-W-Go provides code auto-completion and allows you to communicate with your 
 This software is originally based on [Pico-Go](https://github.com/cpwood/Pico-Go) by cpwood.
 
 Works with:
-| Platform | Architectures |
-|----------|:-------------:|
-| Windows  | x64           |
-| macOS    | x64, arm64    |
-| Linux    | x64, arm64    |
+| Platform |   Architectures   |
+|----------|:-----------------:|
+| Windows  | x64               |
+| macOS    | x64, arm64        |
+| Linux    | x64, arm64, armv7 |
 
 ## Features
 
