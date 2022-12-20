@@ -190,12 +190,12 @@ export default class Sync {
     await this.startSync(oncomplete, 'send', files);
   }
 
-  public async startReceive(oncomplete: Function, files: string) {
+  public async startReceive(oncomplete: Function, files?: string) {
     await this.settings.refresh();
     await this.startSync(oncomplete, 'receive', files);
   }
 
-  private async startSync(oncomplete: Function, method: string, files: string) {
+  private async startSync(oncomplete: Function, method: string, files?: string) {
     this.logger.info('Start sync method ' + method);
     this.fails = 0;
     this.method = method;

@@ -48,7 +48,7 @@ export default class SerialDolmatcher extends EventEmitter {
   private outputHidden: boolean;
   private status: number;
   private _fileSystems: any;
-  private syncObj: any;
+  private syncObj?: Sync;
   private ftpServer?: FtpSrv;
   private _fs?: FtpFileSystem;
   private firstTimeStart?: boolean;
@@ -479,7 +479,7 @@ export default class SerialDolmatcher extends EventEmitter {
       if (this.isSynchronizing()) {
         this.terminal?.writeln('An error occurred: ' + message);
         this.logger.warning('Synchronizing, stopping sync');
-        await this.syncObj.stop();
+        await this.syncObj?.stop();
       }
     } else {
       this.terminal?.writeln(
@@ -712,7 +712,7 @@ export default class SerialDolmatcher extends EventEmitter {
         await this.syncObj.startReceive(cb);
       } else {
         try {
-          await this.syncObj.startSend(cb, files);
+          await this.syncObj?.startSend(cb, files);
         } catch (e) {
           console.log(e);
         }
@@ -753,7 +753,7 @@ export default class SerialDolmatcher extends EventEmitter {
       let type = this.synchronizeType === 'receive' ? 'download' : 'upload';
       this.terminal?.writeln('Stopping ' + type + '....');
 
-      await this.syncObj.stop();
+      await this.syncObj?.stop();
       this.stopOperation();
     }
   }

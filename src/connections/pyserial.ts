@@ -125,7 +125,7 @@ export default class PySerial implements ConnectionTarget {
   }
 
   public async send(mssg: string, drain: boolean = true): Promise<void> {
-    let data = Buffer.from(mssg, 'binary');
+    let data = Buffer.from(mssg, 'utf8');
 
     await this.streamWrite(data);
 
