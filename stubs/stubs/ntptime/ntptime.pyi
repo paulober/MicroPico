@@ -1,14 +1,15 @@
 """
-Module: 'ntptime' on micropython-v1.19.1-rp2
+Module: 'ntptime'
 """
-# MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
 
 def time() -> int:
     """Retrieve time from NTP server and return it expressed in seconds since the Epoch."""
     ...
 
+timeout = 1 # type: int
 host = 'pool.ntp.org' # type: str
 """host constant set as default on micropython raspberry pi pico w firmware"""
+
 def settime() -> None:
     """Get time from ``ntptime.time()`` and parse it into ``machine.RTC().datetime()`` module.
     

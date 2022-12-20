@@ -69,7 +69,7 @@ stdin : Any ## <class 'FileIO'> = <io.FileIO 0>
 """Standard input ``stream``."""
 stdout : Any ## <class 'FileIO'> = <io.FileIO 1>
 """Standard output ``stream``."""
-version = '3.4.0; MicroPython v1.19.1 on 2022-10-27' # type: str
+version = '3.4.0; MicroPython v1.19.1-780-g439298be1 on 2022-12-20' # type: str
 """Python language version that this implementation conforms to, as a string."""
 version_info = () # type: tuple
 """Python language version that this implementation conforms to, as a tuple of ints."""
