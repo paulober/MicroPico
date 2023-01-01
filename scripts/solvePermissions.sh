@@ -10,7 +10,7 @@ else
 fi
 
 echo "You are ${THEUSER}..."
-# !INFO! change /dev/ttyACM0 to your serial port if it is different for you Pico
+# !INFO! change /dev/ttyACM0 to your serial port if it is different for your Pico
 GROUP=$(stat -c '%G' /dev/ttyACM0)
 echo "And get the '${GROUP}' group..."
 
