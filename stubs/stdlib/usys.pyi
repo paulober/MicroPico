@@ -1,7 +1,6 @@
 """
 Module: 'usys' on micropython-v1.19.1-rp2
 """
-# MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
 from typing import Any
 
 argv = [] # type: list
@@ -69,7 +68,7 @@ stdin : Any ## <class 'FileIO'> = <io.FileIO 0>
 """Standard input ``stream``."""
 stdout : Any ## <class 'FileIO'> = <io.FileIO 1>
 """Standard output ``stream``."""
-version = '3.4.0; MicroPython v1.19.1-780-g439298be1 on 2022-12-20' # type: str
+version = '3.4.0; MicroPython v1.19.1-796-gf4811b0b4 on 2023-01-13' # type: str
 """Python language version that this implementation conforms to, as a string."""
 version_info = () # type: tuple
 """Python language version that this implementation conforms to, as a tuple of ints."""
