@@ -17,8 +17,8 @@ Works with:
 
 - Auto-completion and docs
 - Console integration for communication with MicroPython REPL on the pico (w) board
-- Runing/Transfering files to/from your board
-- Built in FTP-Server for transfering files to and from the pico.
+- Running/Transferring files to/from your board
+- Built-in FTP-Server for transferring files to and from the pico.
 
 ![Terminal](images/autocomplete.gif)
 
