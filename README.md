@@ -17,8 +17,8 @@ Works with:
 
 - Auto-completion and docs
 - Console integration for communication with MicroPython REPL on the pico (w) board
-- Runing/Transfering files to/from your board
-- Built in FTP-Server for transfering files to and from the pico.
+- Running/Transferring files to/from your board
+- Built-in FTP-Server for transferring files to and from the pico.
 
 ![Terminal](images/autocomplete.gif)
 
@@ -93,4 +93,4 @@ This extension contributes the following settings:
 ### Note
 
 + _Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2022 Damien P. George, Paul Sokolovsky, and contributors._
-+ For licensing purposes: As of version 2.0.0 i copletly moved to project to a Typescript codebase, removed unused code, rewrote many parts to work with new dependencies or just to confirm Typescript code-style. I also altered many dependencies and removed unused or duplicate code. In the future many other parts which are more or less copied from the fork base (cpwood/Pico-Go and it's base project) will be replaced step by step.
++ For licensing purposes: As of version 2.0.0 i completely moved to project to a Typescript codebase, removed unused code, rewrote many parts to work with new dependencies or just to confirm Typescript code-style. I also altered many dependencies and removed unused or duplicate code. In the future many other parts which are more or less copied from the fork base (cpwood/Pico-Go and it's base project) will be replaced step by step.
