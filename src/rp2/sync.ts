@@ -185,9 +185,9 @@ export default class Sync {
     }
   }
 
-  public async startSend(oncomplete: Function, files: string) {
+  public async startSend(onComplete: Function, files: string) {
     await this.settings.refresh();
-    await this.startSync(oncomplete, 'send', files);
+    await this.startSync(onComplete, 'send', files);
   }
 
   public async startReceive(oncomplete: Function, files?: string) {

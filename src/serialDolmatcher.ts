@@ -721,7 +721,7 @@ export default class SerialDolmatcher extends EventEmitter {
   }
 
   public async resetSoft() {
-    this.board.softResetNoFollow();
+    await this.board.softResetNoFollow();
   }
 
   public async resetHard(): Promise<void> {

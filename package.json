@@ -246,7 +246,7 @@
         "picowgo.ctrlCOnConnect": {
           "type": "boolean",
           "default": false,
-          "title": "Ctrl-c on connect",
+          "title": "Ctrl-C on connect",
           "description": "Stops all running programs when connecting to the board",
           "order": 8
         },

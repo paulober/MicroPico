@@ -20,10 +20,10 @@ var uv = (process.versions.uv || '').split('.')[0]
 module.exports = load
 
 function load (dir) {
-  return runtimeRequire(load.path(dir))
+  return runtimeRequire(load.resolve(dir))
 }
 
-load.path = function (dir) {
+load.resolve = function (dir) {
   dir = path.resolve(dir || '.')
 
   try {
