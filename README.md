@@ -94,3 +94,14 @@ This extension contributes the following settings:
 
 + _Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2022 Damien P. George, Paul Sokolovsky, and contributors._
 + For licensing purposes: As of version 2.0.0 i completely moved to project to a Typescript codebase, removed unused code, rewrote many parts to work with new dependencies or just to confirm Typescript code-style. I also altered many dependencies and removed unused or duplicate code. In the future many other parts which are more or less copied from the fork base (cpwood/Pico-Go and it's base project) will be replaced step by step.
+
+The project is based on github.com/cpwood/Pico-Go which is a derivative product of Pymakr by Pycom Limited:
+
+https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr
+
+Original software is Copyright (c) 2017, Pycom Limited.
+
+This software is licensed under the GNU GPL version 3 or any
+later version, with permitted additional terms. For more information
+see the Pycom Licence v1.0 document supplied with this file, or
+available at https://www.pycom.io/opensource/licensing
