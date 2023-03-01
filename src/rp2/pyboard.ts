@@ -160,12 +160,12 @@ export default class Pyboard {
     await this.send(CTRL_B);
   }
 
-  private async softReset(timeout: number): Promise<unknown> {
+  public async softReset(timeout: number): Promise<unknown> {
     if (!timeout) {
       timeout = 5000;
     }
     this.logger.info('Soft reset');
-    let waitFor = this.status === RAW_REPL ? '>' : 'OK';
+    let waitFor = this.status === RAW_REPL ? '>' : '>>>';
     return await this.sendWait(CTRL_D, waitFor, timeout);
   }
 
