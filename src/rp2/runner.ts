@@ -39,7 +39,7 @@ export default class Runner {
       return;
     }
 
-    await this.board.softResetNoFollow();
+    await this.board.softReset(5000);
 
     this.terminal.writeln('Running ' + currentFile.filename);
     this.busy = true;
