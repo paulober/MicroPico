@@ -72,14 +72,154 @@ class Pin:
     digital logic level. For analog control of a pin, see the ADC class.
     """
 
-    ALT = 3
-    IN = 0
-    IRQ_FALLING = 4
-    IRQ_RISING = 8
-    OPEN_DRAIN = 2
-    OUT = 1
-    PULL_DOWN = 2
-    PULL_UP = 1
+    ALT = 3 # type: int
+    ALT_GPCK = 8 # type: int
+    ALT_I2C = 3 # type: int
+    ALT_PIO0 = 6 # type: int
+    ALT_PIO1 = 7 # type: int
+    ALT_PWM = 4 # type: int
+    ALT_SIO = 5 # type: int
+    ALT_SPI = 1 # type: int
+    ALT_UART = 2 # type: int
+    ALT_USB = 9 # type: int
+    IN = 0 # type: int
+    IRQ_FALLING = 4 # type: int
+    IRQ_RISING = 8 # type: int
+    OPEN_DRAIN = 2 # type: int
+    OUT = 1 # type: int
+    PULL_DOWN = 2 # type: int
+    PULL_UP = 1 # type: int
+
+    class board():
+        GP0 : Pin 
+        """ <class 'Pin'> = Pin(GPIO0, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP1 : Pin 
+        """ <class 'Pin'> = Pin(GPIO1, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP10 : Pin 
+        """ <class 'Pin'> = Pin(GPIO10, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP11 : Pin 
+        """ <class 'Pin'> = Pin(GPIO11, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP12 : Pin 
+        """ <class 'Pin'> = Pin(GPIO12, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP13 : Pin 
+        """ <class 'Pin'> = Pin(GPIO13, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP14 : Pin 
+        """ <class 'Pin'> = Pin(GPIO14, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP15 : Pin 
+        """ <class 'Pin'> = Pin(GPIO15, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP16 : Pin 
+        """ <class 'Pin'> = Pin(GPIO16, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP17 : Pin 
+        """ <class 'Pin'> = Pin(GPIO17, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP18 : Pin 
+        """ <class 'Pin'> = Pin(GPIO18, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP19 : Pin 
+        """ <class 'Pin'> = Pin(GPIO19, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP2 : Pin 
+        """ <class 'Pin'> = Pin(GPIO2, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP20 : Pin 
+        """ <class 'Pin'> = Pin(GPIO20, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP21 : Pin 
+        """ <class 'Pin'> = Pin(GPIO21, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP22 : Pin 
+        """ <class 'Pin'> = Pin(GPIO22, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP26 : Pin 
+        """ <class 'Pin'> = Pin(GPIO26, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP27 : Pin 
+        """ <class 'Pin'> = Pin(GPIO27, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP28 : Pin 
+        """ <class 'Pin'> = Pin(GPIO28, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP3 : Pin 
+        """ <class 'Pin'> = Pin(GPIO3, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP4 : Pin 
+        """ <class 'Pin'> = Pin(GPIO4, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP5 : Pin 
+        """ <class 'Pin'> = Pin(GPIO5, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP6 : Pin 
+        """ <class 'Pin'> = Pin(GPIO6, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP7 : Pin 
+        """ <class 'Pin'> = Pin(GPIO7, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP8 : Pin 
+        """ <class 'Pin'> = Pin(GPIO8, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GP9 : Pin 
+        """ <class 'Pin'> = Pin(GPIO9, mode=ALT, pull=PULL_DOWN, alt=31) """
+        LED : Pin 
+        """ <class 'Pin'> = Pin(EXT_GPIO0, mode=IN) """
+        WL_GPIO0 : Pin 
+        """ <class 'Pin'> = Pin(EXT_GPIO0, mode=IN) """
+        WL_GPIO1 : Pin 
+        """ <class 'Pin'> = Pin(EXT_GPIO1, mode=IN) """
+        WL_GPIO2 : Pin 
+        """ <class 'Pin'> = Pin(EXT_GPIO2, mode=IN) """
+
+    class cpu():
+        
+        EXT_GPIO0 : Pin
+        """ <class 'Pin'> = Pin(EXT_GPIO0, mode=IN) """
+        EXT_GPIO1 : Pin
+        """ <class 'Pin'> = Pin(EXT_GPIO1, mode=IN) """
+        EXT_GPIO2 : Pin 
+        """ <class 'Pin'> = Pin(EXT_GPIO2, mode=IN) """
+        GPIO0 : Pin 
+        """ <class 'Pin'> = Pin(GPIO0, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO1 : Pin 
+        """ <class 'Pin'> = Pin(GPIO1, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO10 : Pin 
+        """ <class 'Pin'> = Pin(GPIO10, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO11 : Pin 
+        """ <class 'Pin'> = Pin(GPIO11, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO12 : Pin 
+        """ <class 'Pin'> = Pin(GPIO12, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO13 : Pin 
+        """ <class 'Pin'> = Pin(GPIO13, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO14 : Pin 
+        """ <class 'Pin'> = Pin(GPIO14, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO15 : Pin 
+        """ <class 'Pin'> = Pin(GPIO15, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO16 : Pin 
+        """ <class 'Pin'> = Pin(GPIO16, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO17 : Pin 
+        """ <class 'Pin'> = Pin(GPIO17, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO18 : Pin 
+        """ <class 'Pin'> = Pin(GPIO18, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO19 : Pin 
+        """ <class 'Pin'> = Pin(GPIO19, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO2 : Pin 
+        """ <class 'Pin'> = Pin(GPIO2, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO20 : Pin 
+        """ <class 'Pin'> = Pin(GPIO20, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO21 : Pin 
+        """ <class 'Pin'> = Pin(GPIO21, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO22 : Pin 
+        """ <class 'Pin'> = Pin(GPIO22, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO23 : Pin 
+        """ <class 'Pin'> = Pin(GPIO23, mode=ALT, alt=31) """
+        GPIO24 : Pin 
+        """ <class 'Pin'> = Pin(GPIO24, mode=ALT, alt=31) """
+        GPIO25 : Pin 
+        """ <class 'Pin'> = Pin(GPIO25, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO26 : Pin 
+        """ <class 'Pin'> = Pin(GPIO26, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO27 : Pin 
+        """ <class 'Pin'> = Pin(GPIO27, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO28 : Pin 
+        """ <class 'Pin'> = Pin(GPIO28, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO29 : Pin 
+        """ <class 'Pin'> = Pin(GPIO29, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO3 : Pin 
+        """ <class 'Pin'> = Pin(GPIO3, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO4 : Pin 
+        """ <class 'Pin'> = Pin(GPIO4, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO5 : Pin 
+        """ <class 'Pin'> = Pin(GPIO5, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO6 : Pin 
+        """ <class 'Pin'> = Pin(GPIO6, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO7 : Pin 
+        """ <class 'Pin'> = Pin(GPIO7, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO8 : Pin 
+        """ <class 'Pin'> = Pin(GPIO8, mode=ALT, pull=PULL_DOWN, alt=31) """
+        GPIO9 : Pin 
+        """ <class 'Pin'> = Pin(GPIO9, mode=ALT, pull=PULL_DOWN, alt=31) """
 
     def __init__(self, id: int|str, /, mode: int = IN, pull: int = PULL_UP, af: str|int = -1):
         """

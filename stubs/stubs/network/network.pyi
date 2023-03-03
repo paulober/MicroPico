@@ -1,7 +1,6 @@
 """
 Module: 'network' on micropython-v1.19.1-rp2
 """
-# MCU: {'ver': 'v1.19.1', 'build': '', 'sysname': 'rp2', 'platform': 'rp2', 'version': '1.19.1', 'release': '1.19.1', 'port': 'rp2', 'family': 'micropython', 'name': 'micropython', 'machine': 'Raspberry Pi Pico W with RP2040', 'nodename': 'rp2'}
 
 AP_IF: int = 1 # type: int
 STAT_CONNECTING: int = 1 # type: int
@@ -163,5 +162,36 @@ parameter to retrieve. Supported parameters in WiFI STA mode are: ``'rssi'``.
         """
         ...
 
-def route(*args, **kwargs) -> ...:
+def country(code: str = "") -> str:
+    """
+    Get or set the two-letter ISO 3166-1 Alpha-2 country code to be used for radio compliance.
+
+    If the code parameter is provided, the country will be set to this value. If the function is called without parameters, it returns the current country.
+
+    The default code `XX` represents the “worldwide” region.
+    """
+    ...
+
+def hostname(name: str = "") -> str:
+    """
+    Get or set the hostname that will identify this 
+    device on the network. It is applied to all 
+    interfaces.
+
+    This hostname is used for:
+    - Sending to the DHCP server in the client 
+    request. (If using DHCP)
+
+    - Broadcasting via mDNS. (If enabled)
+
+    If the name parameter is provided, the hostname 
+    will be set to this value. If the function is 
+    called without parameters, it returns the 
+    current hostname.
+
+    The default hostname is typically the name of the board.
+    """
+    ...
+
+def route() -> list:
     ...
