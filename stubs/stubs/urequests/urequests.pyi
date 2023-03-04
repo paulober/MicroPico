@@ -17,17 +17,38 @@ class Response():
 
     def close(self) -> None:
         ...
+    
+    @property
+    def status_code(self) -> int | None:
+        """The status code of the response. Defaults to `None`"""
+        ...
+
+    @property
+    def encoding(self) -> str | None:
+        """The encoding of the response content. Defaults to `utf-8`"""
+        ...
+
+    @property
+    def reason(self) -> bytes | None:
+        """Like string representation of the status_code in bytes form. Defaults to `None`"""
+        ...
+
+    @property
+    def headers(self) -> dict[str, str] | None:
+        """The response headers. Defaults to `None`"""
+        ...
 
     @property
     def text(self) -> str|None:
         ...
     
     def json(self) -> str|None:
-        """requires ujson module"""
+        """requires `ujson` module"""
         ...
 
     @property
-    def content(self) -> Any:
+    def content(self) -> bytes | None:
+        """The response content in bytes. Defaults to `None`"""
         ...
 
 def request(

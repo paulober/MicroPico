@@ -16,6 +16,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 - Remove telnet and unix socket interfaces as they are never used and unable to connect to any plain MicroPython Raspberry Pi Pico (W) board
 - Mounting the MicroPython filesystem into VS Code as a remote workspace.
 
+## [2.1.8] - 2023-03-04
+
+# Changed
+- Improved `urequests.Response` class stubs to reflect runtime added fields (v1.19.1-915-1)
+
 ## [2.1.7] - 2023-03-03
 
 # Changed
