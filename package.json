@@ -140,6 +140,10 @@
       {
         "command": "picowgo.listCommands",
         "title": "Pico-W-Go > List all Commands"
+      },
+      {
+        "command": "picowgo.toggleFileSystem",
+        "title": "Pico-W-Go > Toggle Virtual File System"
       }
     ],
     "menus": {
@@ -222,7 +226,7 @@
         },
         "picowgo.pyIgnore": {
           "title": "Pyignore list",
-          "description": "Comma separated list of files and folders to ignore when uploading (no wildcard or regular expressions supported)",
+          "description": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported)",
           "type": "array",
           "items": {
             "type": "string"
@@ -325,7 +329,7 @@
       "key": "download",
       "name": "$(triangle-down) Download",
       "command": "picowgo.download",
-      "tooltip": "Download project from your board"
+      "tooltip": "Download project from your board. This will overwrite all files in the sync folder."
     },
     {
       "key": "disconnect",
@@ -371,7 +375,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.1",
-    "@types/glob": "^8.1.0",
+    "@types/glob": "^8.0.1",
     "@types/lodash": "^4.14.192",
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.x",
@@ -383,7 +387,8 @@
     "@typescript-eslint/parser": "^5.57.1",
     "@vscode/test-electron": "^2.3.0",
     "eslint": "^8.37.0",
-    "glob": "^9.3.4",
+    "eslint-config-prettier": "^8.8.0",
+    "glob": "^8.1.0",
     "mocha": "^10.2.0",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.3",
@@ -391,7 +396,7 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.3.1",
+    "@paulober/pyboard-serial-com": "^1.3.2",
     "async-mutex": "^0.4.0",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
