@@ -14,7 +14,6 @@ webpack.config.js
 **/*.ts
 
 .github/**
-patches/**
 scripts/**
 
 # instance files
