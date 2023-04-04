@@ -18,7 +18,7 @@ Works with:
 - Auto-completion and docs
 - Console integration for communication with MicroPython REPL on the pico (w) board
 - Running/Transferring files to/from your board
-- Built-in FTP-Server for transferring files to and from the pico.
+- Built-in remote FileSystem provider (coming soon)
 
 ![Terminal](images/autocomplete.gif)
 
@@ -30,9 +30,9 @@ Works with:
 * [Python 3.9 or newer](https://www.python.org/downloads/) installed on your system and in your PATH.
 
 Visual Studio Code extensions:
-* [ms-python.python](vscode:extension/ms-python.python)
-* [visualstudioexptteam.vscodeintellicode](vscode:extension/visualstudioexptteam.vscodeintellicode)
-* [ms-python.vscode-pylance](vscode:extension/ms-python.vscode-pylance)
+* [ms-python.python](vscode://extension/ms-python.python)
+* [visualstudioexptteam.vscodeintellicode](vscode://extension/visualstudioexptteam.vscodeintellicode)
+* [ms-python.vscode-pylance](vscode://extension/ms-python.vscode-pylance)
 
 Environment:
 
@@ -84,15 +84,13 @@ This extension contributes the following settings:
 * `picowgo.safeBootOnUpload`: [Only works with firmware v1.16.0.b1 and up.] Safe boots the board before uploading to prevent running out of memory while uploading. But adds about 2 seconds to the upload procedure.
 * `picowgo.rebootAfterUpload`: Reboots your board after any upload or download action. Usefull if you are developing with `main.py` or `boot.py`.
 * `picowgo.fastUpload`: Uploads files in bigger chunks (multiplies the upload chunk size by a constant multiplier, see config.ts for values). This can speed up the upload process, but can also cause problems with some boards ('memory overflow'). If you experience problems with uploading, try disabling this option.
-* `picowgo.autoconnectComportManufacturers`: List of all the comport manufacturers supported for the autoconnect feature. Defaults to `MicroPython` and `Microsoft`.
-* `picowgo.ftpPassword`: Password for FTP authentication. The username is 'pico'.
 * `picowgo.pythonPath`: Path to the Python interpreter. Defaults to null so it will try to auto-detect a suitable python installation.
 
 ---
 
 ### Note
 
-+ _Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2022 Damien P. George, Paul Sokolovsky, and contributors._
++ _Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2023 Damien P. George, Paul Sokolovsky, and contributors._
 + For licensing purposes: As of version 2.0.0 i completely moved to project to a Typescript codebase, removed unused code, rewrote many parts to work with new dependencies or just to confirm Typescript code-style. I also altered many dependencies and removed unused or duplicate code. In the future many other parts which are more or less copied from the fork base (cpwood/Pico-Go and it's base project) will be replaced step by step.
 
 The project is based on github.com/cpwood/Pico-Go which is a derivative product of Pymakr by Pycom Limited:
