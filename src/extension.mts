@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import Activator from "./activator";
-import UI from "./ui";
+import Activator from "./activator.mjs";
+import UI from "./ui.mjs";
 
 let view: UI | undefined;
 

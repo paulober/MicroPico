@@ -1,16 +1,16 @@
-import path from "path";
+import { commands, window } from "vscode";
+import { join, resolve } from "path";
 import {
   getProjectPath,
   getVsCodeUserPath,
   recommendedExtensions,
   shouldRecommendExtensions,
-} from "./api";
+} from "./api.mjs";
 import { mkdir, readFile, symlink } from "fs/promises";
-import { pathExists, readJsonFile, writeJsonFile } from "./osHelper";
+import { pathExists, readJsonFile, writeJsonFile } from "./osHelper.mjs";
 import { copy, emptyDir } from "fs-extra";
-import Logger from "./logger";
+import Logger from "./logger.mjs";
 import _ from "lodash";
-import { commands, window } from "vscode";
 
 export default class Stubs {
   private logger: Logger;
@@ -21,14 +21,14 @@ export default class Stubs {
 
   public async update(): Promise<void> {
     const configFolder = getVsCodeUserPath();
-    const stubsFolder = path.join(configFolder, "Pico-W-Stubs");
+    const stubsFolder = join(configFolder, "Pico-W-Stubs");
 
     // ensure config folder exists
     await mkdir(configFolder, { recursive: true });
 
-    const existingVersionFile = path.join(stubsFolder, "version.txt");
-    const currentVersionFile = path.resolve(
-      path.join(__dirname, "..", "stubs", "version.json")
+    const existingVersionFile = join(stubsFolder, "version.txt");
+    const currentVersionFile = resolve(
+      join(__dirname, "..", "stubs", "version.json")
     );
 
     const currentVersion = JSON.parse(
@@ -49,7 +49,7 @@ export default class Stubs {
     try {
       // update stubs folder
       await emptyDir(stubsFolder);
-      await copy(path.join(__dirname, "..", "stubs"), stubsFolder);
+      await copy(join(__dirname, "..", "stubs"), stubsFolder);
     } catch (error) {
       const msg: string =
         typeof error === "string" ? error : (error as Error).message;
@@ -70,7 +70,7 @@ export default class Stubs {
     }
 
     // the path to the .vscode folder in the project folder
-    let vsc = path.join(workspace, ".vscode");
+    let vsc = join(workspace, ".vscode");
 
     // check if .vscode folder exists if not create it
     if (!(await pathExists(vsc))) {
@@ -97,11 +97,11 @@ export default class Stubs {
    * @param vsc The path to the vscode config folder in current workspace
    */
   private async addStubs(vsc: string) {
-    const stubsPath = path.join(vsc, "Pico-W-Stub");
+    const stubsPath = join(vsc, "Pico-W-Stub");
     if (!(await pathExists(stubsPath))) {
       const configFolder = getVsCodeUserPath();
       await symlink(
-        path.resolve(path.join(configFolder, "Pico-W-Stub")),
+        resolve(join(configFolder, "Pico-W-Stub")),
         stubsPath,
         "junction"
       );
@@ -109,7 +109,7 @@ export default class Stubs {
   }
 
   private async addExtensions(vsc: string): Promise<void> {
-    const extensionsFilePath = path.join(vsc, "extensions.json");
+    const extensionsFilePath = join(vsc, "extensions.json");
 
     // Option for adding recommended extensions in a included extensions.json file
     let extensions = (await readJsonFile(extensionsFilePath)) || {};
@@ -121,8 +121,8 @@ export default class Stubs {
   }
 
   private async addSettings(vsc: string): Promise<void> {
-    const settingsFilePath = path.join(vsc, "settings.json");
-    const stubsPath = path.join(".vscode", "Pico-W-Stub");
+    const settingsFilePath = join(vsc, "settings.json");
+    const stubsPath = join(".vscode", "Pico-W-Stub");
     const defaultSettings = {
       "python.linting.enabled": true,
       "python.languageServer": "Pylance",
@@ -140,14 +140,14 @@ export default class Stubs {
     );
     settings["python.analysis.extraPaths"] = _.union(
       settings["python.analysis.extraPaths"] || [],
-      [path.join(stubsPath, "stubs")]
+      [join(stubsPath, "stubs")]
     );
 
     await writeJsonFile(settingsFilePath, settings);
   }
 
   private async addProjectFile(workspace: string): Promise<void> {
-    const localProjectFile = path.join(workspace, ".picowgo");
+    const localProjectFile = join(workspace, ".picowgo");
 
     if (!(await pathExists(localProjectFile))) {
       await writeJsonFile(localProjectFile, {

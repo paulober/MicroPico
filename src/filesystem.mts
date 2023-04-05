@@ -14,9 +14,9 @@ import type {
   PyOutListContents,
   PyOutFsOps,
 } from "@paulober/pyboard-serial-com";
-import Logger from "./logger";
+import Logger from "./logger.mjs";
 import { v4 as uuidv4 } from "uuid";
-import path from "path";
+import { basename, dirname, join } from "path";
 import { tmpdir } from "os";
 import { mkdir, readFile, rmdir, unlink, writeFile } from "fs/promises";
 
@@ -92,7 +92,7 @@ export class PicoWFs implements FileSystemProvider {
 
   public async readFile(uri: Uri): Promise<Uint8Array> {
     // create path to temporary file
-    const tmpFilePath = path.join(tmpdir(), uuidv4() + ".tmp");
+    const tmpFilePath = join(tmpdir(), uuidv4() + ".tmp");
     const result = await this.pyb.downloadFiles([uri.path], tmpFilePath);
 
     if (result.type === PyOutType.fsOps) {
@@ -118,15 +118,15 @@ export class PicoWFs implements FileSystemProvider {
     content: Uint8Array,
     options: { readonly create: boolean; readonly overwrite: boolean }
   ): Promise<void> {
-    const tempDir = path.join(tmpdir(), uuidv4());
+    const tempDir = join(tmpdir(), uuidv4());
     await mkdir(tempDir);
 
-    const tmpFilePath = path.join(tempDir, path.basename(uri.fsPath));
+    const tmpFilePath = join(tempDir, basename(uri.fsPath));
     // write
     await writeFile(tmpFilePath, content);
 
     // upload
-    await this.pyb.uploadFiles([tmpFilePath], path.dirname(uri.fsPath));
+    await this.pyb.uploadFiles([tmpFilePath], dirname(uri.fsPath));
 
     // clean-up temp
     unlink(tmpFilePath);

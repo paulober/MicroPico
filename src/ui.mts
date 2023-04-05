@@ -7,8 +7,8 @@ import {
   extensions,
   window,
 } from "vscode";
-import Logger from "./logger";
-import Settings, { SettingsKey } from "./settings";
+import Logger from "./logger.mjs";
+import Settings, { SettingsKey } from "./settings.mjs";
 
 const pkg: {
   statusBar: { key: string; name: string; command: string; tooltip: string }[];

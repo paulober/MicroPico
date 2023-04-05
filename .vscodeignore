@@ -1,5 +1,6 @@
 .vscode/**
 .vscode-test/**
+.idea/**
 out/**
 # have to include node_modules because of external webpackmodules to
 # be added by vsce package --dependencies

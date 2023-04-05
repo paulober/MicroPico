@@ -1,8 +1,6 @@
 import * as path from "path";
-// * as Mocha without esModuleInterop
-import Mocha from "mocha";
-// * as glob without esModuleInterop
-import glob from "glob";
+import * as Mocha from "mocha";
+import { glob } from "glob";
 
 export function run(): Promise<void> {
   // Create the mocha test

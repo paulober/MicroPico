@@ -1,7 +1,7 @@
 import { Memento, WorkspaceConfiguration, workspace } from "vscode";
 import { PyboardRunner } from "@paulober/pyboard-serial-com";
-import { getProjectPath } from "./api";
-import path from "path";
+import { getProjectPath } from "./api.mjs";
+import { join } from "path";
 
 export enum SettingsKey {
   autoConnect = "autoConnect",
@@ -64,9 +64,14 @@ export default class Settings {
   public async getComDevice(): Promise<string | undefined> {
     // manual com device undefined if this.getBoolean(SettingsKey.autoConnect) is true or if manualComDevice is undefined
     if (this.getBoolean(SettingsKey.autoConnect) == true) {
-      const ports = await PyboardRunner.getPorts(this.pythonExecutable);
-      if (ports.ports.length > 0) {
-        return ports.ports[0];
+      try {
+        process.env.NODE_ENV = "production";
+        const ports = await PyboardRunner.getPorts(this.pythonExecutable);
+        if (ports.ports.length > 0) {
+          return ports.ports[0];
+        }
+      } catch (e) {
+        console.error(e);
       }
     }
 
@@ -91,7 +96,7 @@ export default class Settings {
       return undefined;
     }
 
-    return path.join(projectDir, syncDir);
+    return join(projectDir, syncDir);
   }
 
   /**

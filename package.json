@@ -36,7 +36,7 @@
   "activationEvents": [
     "workspaceContains:.picowgo"
   ],
-  "main": "./dist/extension.js",
+  "main": "./dist/extension.cjs",
   "compatibility": [
     {
       "platform": "win32",
@@ -364,9 +364,9 @@
   ],
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile": "rollup -c",
+    "watch": "rollup -cw",
+    "package": "rollup -c --environment BUILD:production --sourcemap hidden",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -374,6 +374,10 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^11.1.0",
     "@types/fs-extra": "^11.0.1",
     "@types/glob": "^8.0.1",
     "@types/lodash": "^4.14.192",
@@ -390,13 +394,12 @@
     "eslint-config-prettier": "^8.8.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
-    "ts-loader": "^9.4.2",
-    "typescript": "^5.0.3",
-    "webpack": "^5.77.0",
-    "webpack-cli": "^5.0.1"
+    "rollup": "^3.20.2",
+    "rollup-plugin-copy": "^3.4.0",
+    "typescript": "^5.0.3"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.3.2",
+    "@paulober/pyboard-serial-com": "^1.4.3",
     "async-mutex": "^0.4.0",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",

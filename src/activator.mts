@@ -1,24 +1,23 @@
 import * as vscode from "vscode";
-import { getPythonCommand } from "./osHelper";
-import UI from "./ui";
+import { getPythonCommand } from "./osHelper.mjs";
+import UI from "./ui.mjs";
 import {
   getFocusedFile,
-  getProjectPath,
   getSelectedCodeOrLine,
   openSettings,
   writeIntoClipboard,
-} from "./api";
-import Stubs from "./stubs";
-import Settings, { SettingsKey } from "./settings";
+} from "./api.mjs";
+import Stubs from "./stubs.mjs";
+import Settings, { SettingsKey } from "./settings.mjs";
 import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
 import type {
   PyOut,
   PyOutCommandResult,
   PyOutFsOps,
 } from "@paulober/pyboard-serial-com";
-import Logger from "./logger";
-import path from "path";
-import { PicoWFs } from "./filesystem";
+import Logger from "./logger.mjs";
+import { join } from "path";
+import { PicoWFs } from "./filesystem.mjs";
 
 const pkg = vscode.extensions.getExtension("paulober.pico-w-go")?.packageJSON;
 
@@ -385,13 +384,13 @@ export default class Activator {
             enableScripts: false,
             // Only allow the webview to access resources in our extension's media directory
             localResourceRoots: [
-              vscode.Uri.file(path.join(context.extensionPath, "images")),
+              vscode.Uri.file(join(context.extensionPath, "images")),
             ],
           }
         );
 
         const onDiskPath = vscode.Uri.file(
-          path.join(context.extensionPath, "images", "Pico-W-Pins.svg")
+          join(context.extensionPath, "images", "Pico-W-Pins.svg")
         );
         const imageUrl = panel.webview.asWebviewUri(onDiskPath);
 

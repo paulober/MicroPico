@@ -1,5 +1,5 @@
 import { homedir } from "os";
-import path from "path";
+import { join } from "path";
 import {
   commands,
   extensions,
@@ -45,19 +45,19 @@ export function getVsCodeUserPath(): string {
 
   switch (process.platform) {
     case "win32":
-      folder = process.env.APPDATA || path.join(homeDir, "AppData", "Roaming");
+      folder = process.env.APPDATA || join(homeDir, "AppData", "Roaming");
       break;
     case "darwin":
-      folder = path.join(homeDir, "Library", "Application Support");
+      folder = join(homeDir, "Library", "Application Support");
       break;
     case "linux":
-      folder = path.join(homeDir, ".config");
+      folder = join(homeDir, ".config");
       break;
     default:
       folder = "/var/local";
   }
 
-  return path.join(folder, "Code", "User");
+  return join(folder, "Code", "User");
 }
 
 /**
