@@ -11,6 +11,7 @@ const DEL = (count: number) => `\x1b[${count}D\x1b[0K`;
 export class Terminal implements Pseudoterminal {
   private writeEmitter = new EventEmitter<string>();
   private closeEmitter = new EventEmitter<void | number>();
+  private submitEmitter = new EventEmitter<string>();
   private isOpen = false;
   private buffer = "";
   private multilineMode = false;
@@ -18,6 +19,7 @@ export class Terminal implements Pseudoterminal {
 
   onDidWrite: Event<string> = this.writeEmitter.event;
   onDidClose: Event<void | number> = this.closeEmitter.event;
+  onDidSubmit: Event<string> = this.submitEmitter.event;
 
   constructor() {}
 
@@ -117,18 +119,27 @@ export class Terminal implements Pseudoterminal {
   }
 
   private processInput(input: string): void {
-    if (input === "exit") {
+    /*if (input === "exit") {
       this.writeEmitter.fire("\r\nExiting...\r\n");
       this.closeEmitter.fire(0);
-    } else {
-      this.writeEmitter.fire(`\r\nYou entered: \x1b[1;33m${input}\x1b[0m\r\n`);
-      this.writeEmitter.fire(PROMPT);
-    }
+    }*/
+    //this.writeEmitter.fire(`\r\nYou entered: \x1b[1;33m${input}\x1b[0m\r\n`);
+    this.writeEmitter.fire("\r\n");
+    this.submitEmitter.fire(input);
   }
 
   private processMultilineInput(): void {
-    this.writeEmitter.fire("\nMultiline input submitted\r\n");
+    //this.writeEmitter.fire("\nMultiline input submitted\r\n");
     this.indentation = 0;
-    this.writeEmitter.fire(PROMPT);
+    this.writeEmitter.fire("\r\n");
+    this.submitEmitter.fire(this.buffer);
+  }
+
+  public write(data: string): void {
+    this.writeEmitter.fire(data);
+  }
+
+  public prompt(): void {
+    this.writeEmitter.fire("\r\n" + PROMPT);
   }
 }

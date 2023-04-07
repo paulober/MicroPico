@@ -59,12 +59,14 @@ export default class Activator {
     this.stubs = new Stubs();
     await this.stubs.update();
 
-    const comDevice = await settings.getComDevice();
-
     this.ui = new UI(settings);
     this.ui.init();
 
+    let comDevice = await settings.getComDevice();
+
     if (comDevice === undefined || comDevice === "") {
+      comDevice = undefined;
+
       const choice = await vscode.window.showErrorMessage(
         "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect.",
         "Open Settings"
@@ -73,18 +75,22 @@ export default class Activator {
       if (choice === "Open Settings") {
         openSettings();
       }
-
-      return;
     }
 
     this.pyb = new PyboardRunner(
-      comDevice,
+      comDevice ?? "default",
       this.pyboardOnError.bind(this),
       this.pyboardOnExit.bind(this),
       pyCommand
     );
 
     this.terminal = new Terminal();
+    this.terminal.onDidSubmit(async (cmd: string) => {
+      await this.pyb?.executeFriendlyCommand(cmd, (data: string) => {
+        this.terminal?.write(data);
+      });
+      this.terminal?.prompt();
+    });
 
     // register terminal profile provider
     context.subscriptions.push(
@@ -150,9 +156,15 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     // [Command] Connect
-    disposable = vscode.commands.registerCommand("picowgo.connect", () => {
-      this.pyb?.switchDevice(comDevice);
-    });
+    disposable = vscode.commands.registerCommand(
+      "picowgo.connect",
+      async () => {
+        comDevice = await settings.getComDevice();
+        if (comDevice !== undefined) {
+          this.pyb?.switchDevice(comDevice);
+        }
+      }
+    );
     context.subscriptions.push(disposable);
 
     // [Command] Disconnect
@@ -377,7 +389,12 @@ export default class Activator {
         if (this.pyb?.isPipeConnected()) {
           await this.pyb?.disconnect();
         } else {
-          this.pyb?.switchDevice(comDevice);
+          comDevice = await settings.getComDevice();
+          if (comDevice === undefined) {
+            vscode.window.showErrorMessage("No COM device found!");
+          } else {
+            this.pyb?.switchDevice(comDevice);
+          }
         }
       }
     );
@@ -569,7 +586,7 @@ export default class Activator {
     </head>
     <body>
         <img src="${imageUrl}" />
-        <p style="color: #fff; font-size: 12px; margin-top: 10px;">Image from <a href="https://www.raspberrypi.org/documentation/rp2040/getting-started/" style="color: #fff; text-decoration: none;">© 2023 Copytight Raspberry Pi Foundation</a></p>
+        <p style="color: #fff; font-size: 12px; margin-top: 10px;">Image from <a href="https://www.raspberrypi.org/documentation/rp2040/getting-started/" style="color: #fff; text-decoration: none;">© ${new Date().getFullYear()} Copyright Raspberry Pi Foundation</a></p>
     </body>
     </html>`;
   }
