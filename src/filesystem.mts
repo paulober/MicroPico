@@ -22,6 +22,8 @@ import { tmpdir } from "os";
 import { mkdir, readFile, rmdir, unlink, writeFile } from "fs/promises";
 import { randomBytes } from "crypto";
 
+const forbiddenFolders = [".vscode", ".git"];
+
 export class PicoWFs implements FileSystemProvider {
   private logger: Logger;
 
@@ -101,6 +103,11 @@ export class PicoWFs implements FileSystemProvider {
   }
 
   public async createDirectory(uri: Uri): Promise<void> {
+    if (forbiddenFolders.includes(basename(uri.path))) {
+      this.logger.error("createDirectory: forbidden folder");
+      throw FileSystemError.NoPermissions(uri);
+    }
+
     const result = await this.pyb.createFolders([uri.path]);
     if (result.type === PyOutType.status) {
       const status = (result as PyOutStatus).status;
