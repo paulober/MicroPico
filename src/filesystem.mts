@@ -57,6 +57,11 @@ export class PicoWFs implements FileSystemProvider {
   }
 
   public async stat(uri: Uri): Promise<FileStat> {
+    if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
+      this.logger.debug("stat: (inside) forbidden folder: " + uri.path);
+      throw FileSystemError.FileNotFound(uri);
+    }
+
     const result = await this.pyb.getItemStat(uri.path);
 
     if (result.type !== PyOutType.getItemStat) {
@@ -104,7 +109,7 @@ export class PicoWFs implements FileSystemProvider {
 
   public async createDirectory(uri: Uri): Promise<void> {
     if (forbiddenFolders.includes(basename(uri.path))) {
-      this.logger.error("createDirectory: forbidden folder");
+      this.logger.debug("createDirectory: forbidden folder");
       throw FileSystemError.NoPermissions(uri);
     }
 
@@ -123,6 +128,11 @@ export class PicoWFs implements FileSystemProvider {
   }
 
   public async readFile(uri: Uri): Promise<Uint8Array> {
+    if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
+      this.logger.debug("readFile: file in forbidden folder");
+      throw FileSystemError.FileNotFound(uri);
+    }
+
     // create path to temporary file
     const tmpFilePath = join(tmpdir(), uuidv4({ random: _v4Bytes() }) + ".tmp");
     const result = await this.pyb.downloadFiles([uri.path], tmpFilePath);
@@ -150,6 +160,11 @@ export class PicoWFs implements FileSystemProvider {
     content: Uint8Array,
     options: { readonly create: boolean; readonly overwrite: boolean }
   ): Promise<void> {
+    if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
+      this.logger.error("writeFile: file destination in forbidden folder");
+      throw FileSystemError.FileNotFound(uri);
+    }
+
     const tempDir = join(tmpdir(), uuidv4({ random: _v4Bytes() }));
     await mkdir(tempDir);
 
