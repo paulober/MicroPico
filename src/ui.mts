@@ -85,7 +85,12 @@ export default class UI {
     );
   }
 
-  public refreshState(): void {
+  public refreshState(force?: boolean): void {
+    if (force !== undefined) {
+      this.setState(force);
+      return;
+    }
+
     // TODO: if board is connected setState(true) else setState(false)
     throw new Error("Method not implemented.");
   }

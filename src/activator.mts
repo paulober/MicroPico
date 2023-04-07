@@ -16,13 +16,20 @@ import type {
   PyOutStatus,
 } from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
-import { join } from "path";
+import { basename, dirname, join } from "path";
 import { PicoWFs } from "./filesystem.mjs";
+import { Terminal } from "./terminal.mjs";
+import { fileURLToPath } from "url";
 
 const pkg = vscode.extensions.getExtension("paulober.pico-w-go")?.packageJSON;
 
 export default class Activator {
   private logger: Logger;
+  private pyb?: PyboardRunner;
+  private ui?: UI;
+  private stubs?: Stubs;
+  private picoFs?: PicoWFs;
+  private terminal?: Terminal;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -49,10 +56,13 @@ export default class Activator {
       return;
     }
 
-    const stubs = new Stubs();
-    await stubs.update();
+    this.stubs = new Stubs();
+    await this.stubs.update();
 
     const comDevice = await settings.getComDevice();
+
+    this.ui = new UI(settings);
+    this.ui.init();
 
     if (comDevice === undefined || comDevice === "") {
       const choice = await vscode.window.showErrorMessage(
@@ -67,27 +77,50 @@ export default class Activator {
       return;
     }
 
-    const pyb = new PyboardRunner(
+    this.pyb = new PyboardRunner(
       comDevice,
-      this.pyboardOnError,
-      this.pyboardOnExit,
+      this.pyboardOnError.bind(this),
+      this.pyboardOnExit.bind(this),
       pyCommand
     );
 
-    // register fs provider as early as possible
-    const picowFs = new PicoWFs(pyb);
+    this.terminal = new Terminal();
+
+    // register terminal profile provider
     context.subscriptions.push(
-      vscode.workspace.registerFileSystemProvider("pico", picowFs, {
+      vscode.window.registerTerminalProfileProvider("picowgo.vrepl", {
+        provideTerminalProfile: () => {
+          return new vscode.TerminalProfile({
+            name: "Pico (W) vREPL",
+            iconPath: vscode.Uri.file(
+              join(
+                dirname(fileURLToPath(import.meta.url)),
+                "..",
+                "images",
+                "logo.png"
+              )
+            ),
+            isTransient: true,
+            pty: this.terminal,
+            hideFromUser: false,
+            location: vscode.TerminalLocation.Panel,
+          });
+        },
+      })
+    );
+
+    // register fs provider as early as possible
+    this.picoFs = new PicoWFs(this.pyb);
+    context.subscriptions.push(
+      vscode.workspace.registerFileSystemProvider("pico", this.picoFs, {
         isCaseSensitive: true,
         isReadonly: false,
       })
     );
 
-    const ui = new UI(settings);
-
     context.subscriptions.push({
-      dispose: () => {
-        pyb.disconnect();
+      dispose: async () => {
+        await this.pyb?.disconnect();
       },
     });
 
@@ -106,31 +139,34 @@ export default class Activator {
 
     // [Command] List Commands
     disposable = vscode.commands.registerCommand("picowgo.listCommands", () => {
-      ui.showQuickPick();
+      this.ui?.showQuickPick();
     });
     context.subscriptions.push(disposable);
 
     // [Command] Initialise
     disposable = vscode.commands.registerCommand("picowgo.initialise", () => {
-      stubs.addToWorkspace();
+      this.stubs?.addToWorkspace();
     });
     context.subscriptions.push(disposable);
 
     // [Command] Connect
     disposable = vscode.commands.registerCommand("picowgo.connect", () => {
-      pyb.switchDevice(comDevice);
+      this.pyb?.switchDevice(comDevice);
     });
     context.subscriptions.push(disposable);
 
     // [Command] Disconnect
-    disposable = vscode.commands.registerCommand("picowgo.disconnect", () => {
-      pyb.disconnect();
-    });
+    disposable = vscode.commands.registerCommand(
+      "picowgo.disconnect",
+      async () => {
+        await this.pyb?.disconnect();
+      }
+    );
     context.subscriptions.push(disposable);
 
     // [Command] Run File
     disposable = vscode.commands.registerCommand("picowgo.run", () => {
-      if (!pyb.isPipeConnected()) {
+      if (!this.pyb?.isPipeConnected()) {
         vscode.window.showWarningMessage("Please connect to the Pico first.");
         return;
       }
@@ -142,7 +178,7 @@ export default class Activator {
         return;
       }
 
-      pyb
+      this.pyb
         .runFile(file, (data: string) => {
           // TODO: print output into terminal and reflect running operation in status bar
         })
@@ -159,7 +195,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.runselection",
       async () => {
-        if (!pyb.isPipeConnected()) {
+        if (!this.pyb?.isPipeConnected()) {
           vscode.window.showWarningMessage("Please connect to the Pico first.");
           return;
         }
@@ -170,7 +206,7 @@ export default class Activator {
           vscode.window.showWarningMessage("No code selected.");
           return;
         } else {
-          pyb
+          this.pyb
             .executeCommand(code, (data: string) => {
               // TODO: print output into terminal and reflect running operation in status bar
             })
@@ -187,7 +223,7 @@ export default class Activator {
 
     // [Command] Upload project
     disposable = vscode.commands.registerCommand("picowgo.upload", async () => {
-      if (!pyb.isPipeConnected()) {
+      if (!this.pyb?.isPipeConnected()) {
         vscode.window.showWarningMessage("Please connect to the Pico first.");
         return;
       }
@@ -199,7 +235,7 @@ export default class Activator {
         return;
       }
 
-      pyb
+      this.pyb
         .startUploadingProject(
           syncDir,
           settings.getSyncFileTypes(),
@@ -223,9 +259,9 @@ export default class Activator {
 
     // [Command] Upload file
     disposable = vscode.commands.registerCommand(
-      "picowgo.uploadfile",
+      "picowgo.uploadFile",
       async () => {
-        if (!pyb.isPipeConnected()) {
+        if (!this.pyb?.isPipeConnected()) {
           vscode.window.showWarningMessage("Please connect to the Pico first.");
           return;
         }
@@ -238,7 +274,7 @@ export default class Activator {
         }
 
         // TODO: maybe upload relative to project root like uploadProject does with files
-        pyb
+        this.pyb
           .uploadFiles([file], "/", undefined, (data: string) => {
             // follow progress
           })
@@ -246,6 +282,13 @@ export default class Activator {
             if (data.type === PyOutType.status) {
               const result = data as PyOutStatus;
               if (result.status) {
+                this.picoFs?.fileChanged(
+                  vscode.FileChangeType.Created,
+                  vscode.Uri.from({
+                    scheme: "pico",
+                    path: "/" + basename(file),
+                  })
+                );
                 vscode.window.showInformationMessage("File uploaded.");
               } else {
                 vscode.window.showErrorMessage("File upload failed.");
@@ -261,7 +304,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.download",
       async () => {
-        if (!pyb.isPipeConnected()) {
+        if (!this.pyb?.isPipeConnected()) {
           vscode.window.showWarningMessage("Please connect to the Pico first.");
           return;
         }
@@ -275,7 +318,7 @@ export default class Activator {
           return;
         }
 
-        pyb
+        this.pyb
           .downloadProject(syncDir, (data: string) => {
             // follow progress
           })
@@ -297,12 +340,12 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.deleteAllFiles",
       async () => {
-        if (!pyb.isPipeConnected()) {
+        if (!this.pyb?.isPipeConnected()) {
           vscode.window.showWarningMessage("Please connect to the Pico first.");
           return;
         }
 
-        pyb.deleteFolderRecursive("/").then((data: PyOut) => {
+        this.pyb.deleteFolderRecursive("/").then((data: PyOut) => {
           if (data.type === PyOutType.status) {
             const result = data as PyOutStatus;
             if (result.status) {
@@ -331,10 +374,10 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.toggleConnect",
       async () => {
-        if (pyb.isPipeConnected()) {
-          pyb.disconnect();
+        if (this.pyb?.isPipeConnected()) {
+          await this.pyb?.disconnect();
         } else {
-          pyb.switchDevice(comDevice);
+          this.pyb?.switchDevice(comDevice);
         }
       }
     );
@@ -353,7 +396,7 @@ export default class Activator {
           return;
         }
 
-        if (!pyb.isPipeConnected()) {
+        if (!this.pyb?.isPipeConnected()) {
           vscode.window.showWarningMessage("Please connect to the Pico first.");
           return;
         }
@@ -425,12 +468,12 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.extra.soft",
       async () => {
-        if (!pyb.isPipeConnected()) {
+        if (!this.pyb?.isPipeConnected()) {
           vscode.window.showWarningMessage("Please connect to the Pico first.");
           return;
         }
 
-        const result = await pyb.softReset();
+        const result = await this.pyb?.softReset();
         if (result.type === PyOutType.commandResult) {
           const fsOps = result as PyOutCommandResult;
           if (fsOps.result) {
@@ -447,12 +490,12 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.extra.hard",
       async () => {
-        if (!pyb.isPipeConnected()) {
+        if (!this.pyb?.isPipeConnected()) {
           vscode.window.showWarningMessage("Please connect to the Pico first.");
           return;
         }
 
-        const result = await pyb.hardReset();
+        const result = await this.pyb?.hardReset();
         if (result.type === PyOutType.commandResult) {
           const fsOps = result as PyOutCommandResult;
           if (fsOps.result) {
@@ -486,12 +529,14 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    return ui;
+    return this.ui;
   }
 
   private pyboardOnError(data: Buffer | undefined) {
     if (data === undefined) {
+      this.ui?.refreshState(true);
       this.logger.info("Connection to Pico successfully established");
+
       return;
     } else {
       vscode.window.showErrorMessage(data.toString("utf-8"));
@@ -499,7 +544,14 @@ export default class Activator {
   }
 
   private pyboardOnExit(code: number | null) {
-    vscode.window.showErrorMessage(`Pyboard exited with code ${code}`);
+    this.ui?.refreshState(false);
+    if (code === 0 || code === null) {
+      this.logger.info(`Pyboard exited with code ${code}`);
+      vscode.window.showInformationMessage("Disconnected from Pico");
+    } else {
+      this.logger.error(`Pyboard exited with code ${code}`);
+      vscode.window.showErrorMessage("Connection to Pico lost");
+    }
   }
 
   private getPinMapHtml(imageUrl: string) {

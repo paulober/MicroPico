@@ -3,6 +3,7 @@ import {
   Event,
   EventEmitter,
   FileChangeEvent,
+  FileChangeType,
   FileStat,
   FileSystemError,
   FileSystemProvider,
@@ -41,9 +42,8 @@ export class PicoWFs implements FileSystemProvider {
     this.pyb = pyboardRunner;
   }
 
-  // TODO: add refresh button to filesystem view
-  public async refreshCache(path: string = "/"): Promise<void> {
-    // refresh cache
+  public fileChanged(type: FileChangeType, uri: Uri): void {
+    this._emitter.fire([{ type, uri }]);
   }
 
   public watch(
@@ -140,7 +140,7 @@ export class PicoWFs implements FileSystemProvider {
     if (result.type === PyOutType.status) {
       const status = (result as PyOutStatus).status;
       if (!status) {
-        this.logger.error("readFile: unexpected result type");
+        this.logger.error("readFile: File not found");
         throw FileSystemError.FileNotFound(uri);
       } else {
         const content: Uint8Array = new Uint8Array(await readFile(tmpFilePath));
