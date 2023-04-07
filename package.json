@@ -102,6 +102,10 @@
         "title": "Pico-W-Go > Run current file"
       },
       {
+        "command": "picowgo.remote.run",
+        "title": "Pico-W-Go > Remote > Run current file"
+      },
+      {
         "command": "picowgo.runselection",
         "title": "Pico-W-Go > Run current selection"
       },
@@ -150,21 +154,30 @@
       "explorer/context": [
         {
           "command": "picowgo.upload",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         },
         {
           "command": "picowgo.run",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
+        },
+        {
+          "command": "picowgo.remote.run",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
         }
       ],
       "editor/context": [
         {
-          "command": "picowgo.connect",
-          "group": "picowgo"
+          "command": "picowgo.run",
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         },
         {
-          "command": "picowgo.run",
-          "group": "picowgo"
+          "command": "picowgo.remote.run",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
         },
         {
           "command": "picowgo.runselection",
@@ -172,17 +185,25 @@
         },
         {
           "command": "picowgo.upload",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         }
       ],
       "editor/title": [
         {
           "command": "picowgo.run",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
+        },
+        {
+          "command": "picowgo.remote.run",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
         },
         {
           "command": "picowgo.upload",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         }
       ]
     },
@@ -399,7 +420,7 @@
     "typescript": "^5.0.3"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.4.3",
+    "@paulober/pyboard-serial-com": "^1.4.4",
     "async-mutex": "^0.4.0",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",

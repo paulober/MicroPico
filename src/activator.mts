@@ -13,7 +13,7 @@ import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
 import type {
   PyOut,
   PyOutCommandResult,
-  PyOutFsOps,
+  PyOutStatus,
 } from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
 import { join } from "path";
@@ -54,7 +54,7 @@ export default class Activator {
 
     const comDevice = await settings.getComDevice();
 
-    if (comDevice === undefined) {
+    if (comDevice === undefined || comDevice === "") {
       const choice = await vscode.window.showErrorMessage(
         "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect.",
         "Open Settings"
@@ -72,6 +72,15 @@ export default class Activator {
       this.pyboardOnError,
       this.pyboardOnExit,
       pyCommand
+    );
+
+    // register fs provider as early as possible
+    const picowFs = new PicoWFs(pyb);
+    context.subscriptions.push(
+      vscode.workspace.registerFileSystemProvider("pico", picowFs, {
+        isCaseSensitive: true,
+        isReadonly: false,
+      })
     );
 
     const ui = new UI(settings);
@@ -200,8 +209,8 @@ export default class Activator {
           }
         )
         .then((data: PyOut) => {
-          if (data.type === PyOutType.fsOps) {
-            const result = data as PyOutFsOps;
+          if (data.type === PyOutType.status) {
+            const result = data as PyOutStatus;
             if (result.status) {
               vscode.window.showInformationMessage("Project uploaded.");
             } else {
@@ -234,8 +243,8 @@ export default class Activator {
             // follow progress
           })
           .then((data: PyOut) => {
-            if (data.type === PyOutType.fsOps) {
-              const result = data as PyOutFsOps;
+            if (data.type === PyOutType.status) {
+              const result = data as PyOutStatus;
               if (result.status) {
                 vscode.window.showInformationMessage("File uploaded.");
               } else {
@@ -271,8 +280,8 @@ export default class Activator {
             // follow progress
           })
           .then((data: PyOut) => {
-            if (data.type === PyOutType.fsOps) {
-              const result = data as PyOutFsOps;
+            if (data.type === PyOutType.status) {
+              const result = data as PyOutStatus;
               if (result.status) {
                 vscode.window.showInformationMessage("Project downloaded.");
               } else {
@@ -294,8 +303,8 @@ export default class Activator {
         }
 
         pyb.deleteFolderRecursive("/").then((data: PyOut) => {
-          if (data.type === PyOutType.fsOps) {
-            const result = data as PyOutFsOps;
+          if (data.type === PyOutType.status) {
+            const result = data as PyOutStatus;
             if (result.status) {
               vscode.window.showInformationMessage(
                 "All files on Pico were deleted."
@@ -331,21 +340,12 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    const picowFs = new PicoWFs(pyb);
-
-    context.subscriptions.push(
-      vscode.workspace.registerFileSystemProvider("picowfs", picowFs, {
-        isCaseSensitive: true,
-        isReadonly: false,
-      })
-    );
-
     // [Command] Toggle virutal file-system
     disposable = vscode.commands.registerCommand(
       "picowgo.toggleFileSystem",
       async () => {
         const findWorkspace = vscode.workspace.workspaceFolders?.find(
-          folder => folder.uri.scheme === "picowfs"
+          folder => folder.uri.scheme === "pico"
         );
         if (findWorkspace !== undefined) {
           // remove findWorkspace
@@ -364,7 +364,7 @@ export default class Activator {
             : 0,
           null,
           {
-            uri: vscode.Uri.parse("picowfs:/"),
+            uri: vscode.Uri.parse("pico://"),
             name: "Pico (W) Remote Workspace",
           }
         );
