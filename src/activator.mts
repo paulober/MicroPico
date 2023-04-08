@@ -13,6 +13,7 @@ import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
 import type {
   PyOut,
   PyOutCommandResult,
+  PyOutCommandWithResponse,
   PyOutStatus,
 } from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
@@ -84,11 +85,41 @@ export default class Activator {
       pyCommand
     );
 
-    this.terminal = new Terminal();
+    this.terminal = new Terminal(async () => {
+      if (this.pyb?.isPipeConnected()) {
+        const result = await this.pyb?.executeCommand(
+          "\rfrom usys import implementation, version; print(version.split('; ')[1] + '; ' + implementation._machine)"
+        );
+        if (result.type === PyOutType.commandWithResponse) {
+          return (
+            "\x1b[1;32m" +
+            (result as PyOutCommandWithResponse).response +
+            "\x1b[0m" +
+            'Type "help()" for more information or .cls/.clear to clear the terminal.' +
+            "\r\n".repeat(2)
+          );
+        }
+      }
+
+      return "No connection to Pico (W) REPL";
+    });
+    let commandExecuting = false;
     this.terminal.onDidSubmit(async (cmd: string) => {
+      if (commandExecuting) {
+        this.pyb?.writeToPyboard(cmd);
+        return;
+      }
+
+      commandExecuting = true;
       await this.pyb?.executeFriendlyCommand(cmd, (data: string) => {
+        if (data === "!!JSONDecodeError!!" || data === "!!ERR!!") {
+          // write red text into terminal
+          this.terminal?.write("\x1b[31mException occured\x1b[0m");
+          return;
+        }
         this.terminal?.write(data);
       });
+      commandExecuting = false;
       this.terminal?.prompt();
     });
 
