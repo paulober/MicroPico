@@ -22,11 +22,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16.14.x"
+          registry-url: "https://npm.pkg.github.com"
 
       - name: Install Dependencies
         shell: bash
-        run: |
-          npm install --no-audit
+        run: npm ci --no-audit
 
       - name: Package Extension
         run: npx vsce package --no-yarn --dependencies -o picowgo-${{ github.sha }}.vsix
