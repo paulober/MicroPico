@@ -221,15 +221,19 @@ export default class Activator {
         return;
       }
 
+      this.terminal?.freeze();
+      this.terminal?.write("\r\n");
       this.pyb
         .runFile(file, (data: string) => {
-          // TODO: print output into terminal and reflect running operation in status bar
+          this.terminal?.write(data);
         })
         .then((data: PyOut) => {
           if (data.type === PyOutType.commandResult) {
             const result = data as PyOutCommandResult;
-            // TODO: reflect result.result in status bar
+            // TODO: reflect result.result somehow
           }
+          this.terminal?.melt();
+          this.terminal?.prompt();
         });
     });
     context.subscriptions.push(disposable);
@@ -249,15 +253,19 @@ export default class Activator {
           vscode.window.showWarningMessage("No code selected.");
           return;
         } else {
+          this.terminal?.freeze();
+          this.terminal?.write("\r\n");
           this.pyb
             .executeCommand(code, (data: string) => {
-              // TODO: print output into terminal and reflect running operation in status bar
+              this.terminal?.write(data);
             })
             .then((data: PyOut) => {
               if (data.type === PyOutType.commandResult) {
                 const result = data as PyOutCommandResult;
                 // TODO: reflect result.result in status bar
               }
+              this.terminal?.melt();
+              this.terminal?.prompt();
             });
         }
       }
