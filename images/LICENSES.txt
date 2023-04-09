@@ -1,0 +1,1 @@
+pico-pinout.svg, picow-pinout.svg, Pico-R3-A4-Pinout.png, PicoW-A4-Pinout.png are from https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html
