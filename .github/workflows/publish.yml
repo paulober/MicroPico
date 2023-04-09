@@ -25,7 +25,7 @@ jobs:
       - name: NPM install
         shell: bash
         run: |
-          sed -i -e "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" .npmrc
+          sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
           npm ci --no-audit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
