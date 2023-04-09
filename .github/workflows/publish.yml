@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  deployments: write
+  packages: read
+
 jobs:
   release:
     runs-on: ubuntu-22.04
@@ -13,14 +18,20 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '16.14.x'
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@paulober"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: npm install
+      - run: npm ci --no-audit
+        shell: bash
         name: NPM install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package
-        run: npx vsce package --no-yarn --dependencies
+        run: npx @vscode/vsce package --no-yarn
 
-      - run: npx vsce publish --no-yarn --dependencies --target win32-x64 linux-x64 linux-arm64 linux-armhf darwin-x64 darwin-arm64
+      - run: npx @vscode/vsce publish --no-yarn --target win32-x64 win32-arm64 linux-x64 linux-arm64 linux-armhf darwin-x64 darwin-arm64
         name: Publish
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}

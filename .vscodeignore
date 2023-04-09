@@ -6,7 +6,7 @@ node_modules/**
 src/**
 .gitignore
 .yarnrc
-webpack.config.js
+rollup.config.mjs
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
@@ -24,3 +24,4 @@ azure-pipelines.yml
 
 !dist/*.cjs
 !dist/scripts/*.py
+dist/scripts/__pycache__

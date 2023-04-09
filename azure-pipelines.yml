@@ -1,5 +1,5 @@
-# Node.js with webpack
-# Build a Node.js project using the webpack CLI.
+# Node.js with rollup
+# Build a Node.js project using the rollup CLI.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
@@ -12,11 +12,14 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '16.x'
+    versionSpec: '16.14.x'
   displayName: 'Install Node.js'
 
-- script: |
-    npm install -g npx
-    npm install
-    npx vsce package --no-yarn
-  displayName: 'npm install, run vsce package'
+- task: Npm@1
+  inputs:
+    command: 'ci'
+    customEndpoint: "GitHubPackages"
+  displayName: 'NPM Install'
+
+- script: npx @vscode/vsce package --no-yarn
+  displayName: 'VSCE package'

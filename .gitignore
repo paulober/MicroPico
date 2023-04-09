@@ -1,6 +1,6 @@
 # no compiled
-out
-dist
+out/
+dist/
 # no dependencies
 node_modules
 .vscode-test/
