@@ -1,14 +1,19 @@
 import * as vscode from "vscode";
-import { getPythonCommand } from "./osHelper.mjs";
+import {
+  getPythonCommand,
+  installPyserial,
+  isPyserialInstalled,
+} from "./osHelper.mjs";
 import UI from "./ui.mjs";
 import {
+  focusTerminal,
   getFocusedFile,
   getSelectedCodeOrLine,
   openSettings,
   writeIntoClipboard,
 } from "./api.mjs";
 import Stubs from "./stubs.mjs";
-import Settings, { SettingsKey } from "./settings.mjs";
+import Settings, { SettingsKey, TERMINAL_NAME } from "./settings.mjs";
 import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
 import type {
   PyOut,
@@ -32,6 +37,9 @@ export default class Activator {
   private ui?: UI;
   private stubs?: Stubs;
   private picoFs?: PicoWFs;
+  private terminalOptions:
+    | vscode.ExtensionTerminalOptions
+    | vscode.TerminalOptions = {};
   private terminal?: Terminal;
 
   constructor() {
@@ -57,6 +65,30 @@ export default class Activator {
       }
 
       return;
+    }
+
+    if (!isPyserialInstalled(pyCommand)) {
+      const response = await vscode.window.showQuickPick(
+        ["Install pyserial (required)", "Stop Pico-W-Go"],
+        {
+          canPickMany: false,
+          placeHolder: "pyserial pip package is not installed",
+          ignoreFocusOut: true,
+        }
+      );
+      if (response === undefined || response === "Stop Pico-W-Go") {
+        throw new Error("Required pip package pyserial is not installed");
+      }
+      installPyserial(pyCommand);
+      if (isPyserialInstalled(pyCommand)) {
+        vscode.window.showInformationMessage(
+          "pyserial pip package installed successfully!"
+        );
+      } else {
+        throw new Error(
+          "Faild to install pyserial pip package. Manual install required!"
+        );
+      }
     }
 
     this.stubs = new Stubs();
@@ -125,25 +157,27 @@ export default class Activator {
       this.terminal?.prompt();
     });
 
+    this.terminalOptions = {
+      name: TERMINAL_NAME,
+      iconPath: vscode.Uri.file(
+        join(
+          dirname(fileURLToPath(import.meta.url)),
+          "..",
+          "images",
+          "logo.png"
+        )
+      ),
+      isTransient: true,
+      pty: this.terminal,
+      hideFromUser: false,
+      location: vscode.TerminalLocation.Panel,
+    };
+
     // register terminal profile provider
     context.subscriptions.push(
       vscode.window.registerTerminalProfileProvider("picowgo.vrepl", {
         provideTerminalProfile: () => {
-          return new vscode.TerminalProfile({
-            name: "Pico (W) vREPL",
-            iconPath: vscode.Uri.file(
-              join(
-                dirname(fileURLToPath(import.meta.url)),
-                "..",
-                "images",
-                "logo.png"
-              )
-            ),
-            isTransient: true,
-            pty: this.terminal,
-            hideFromUser: false,
-            location: vscode.TerminalLocation.Panel,
-          });
+          return new vscode.TerminalProfile(this.terminalOptions);
         },
       })
     );
@@ -162,6 +196,10 @@ export default class Activator {
         await this.pyb?.disconnect();
       },
     });
+
+    if (settings.getBoolean(SettingsKey.openOnStart)) {
+      await focusTerminal(this.terminalOptions);
+    }
 
     // [Command] help
     let disposable = vscode.commands.registerCommand(
@@ -212,13 +250,13 @@ export default class Activator {
     // [Command] Run File
     // TODO: !IMPORTANT! sometimes not all is run or shown to the terminal
     // TODO: open terminal on freeze in UI
-    disposable = vscode.commands.registerCommand("picowgo.run", () => {
+    disposable = vscode.commands.registerCommand("picowgo.run", async () => {
       if (!this.pyb?.isPipeConnected()) {
         vscode.window.showWarningMessage("Please connect to the Pico first.");
         return;
       }
 
-      const file = getFocusedFile();
+      const file = await getFocusedFile();
 
       if (file === undefined) {
         vscode.window.showWarningMessage("No file open and focused.");
@@ -226,25 +264,23 @@ export default class Activator {
       }
 
       let frozen = false;
-      this.pyb
-        .runFile(file, (data: string) => {
-          // only freeze after operation has started
-          if (!frozen) {
-            this.terminal?.freeze();
-            this.terminal?.write("\r\n");
-            frozen = true;
-          }
-          this.terminal?.write(data);
-        })
-        .then((data: PyOut) => {
-          if (data.type === PyOutType.commandResult) {
-            const result = data as PyOutCommandResult;
-            // TODO: reflect result.result somehow
-          }
-          this.terminal?.melt();
+      await focusTerminal(this.terminalOptions);
+      const data = await this.pyb.runFile(file, (data: string) => {
+        // only freeze after operation has started
+        if (!frozen) {
+          this.terminal?.freeze();
           this.terminal?.write("\r\n");
-          this.terminal?.prompt();
-        });
+          frozen = true;
+        }
+        this.terminal?.write(data);
+      });
+      if (data.type === PyOutType.commandResult) {
+        const result = data as PyOutCommandResult;
+        // TODO: reflect result.result somehow
+      }
+      this.terminal?.melt();
+      this.terminal?.write("\r\n");
+      this.terminal?.prompt();
     });
     context.subscriptions.push(disposable);
 
@@ -256,7 +292,7 @@ export default class Activator {
           return;
         }
 
-        const file = getFocusedFile(true);
+        const file = await getFocusedFile(true);
 
         if (file === undefined) {
           vscode.window.showWarningMessage("No remote file open and focused.");
@@ -264,6 +300,7 @@ export default class Activator {
         }
 
         let frozen = false;
+        await focusTerminal(this.terminalOptions);
         await this.pyb.executeCommand(
           "import uos; " +
             "__pico_dir=uos.getcwd(); " +
@@ -304,6 +341,7 @@ export default class Activator {
           return;
         } else {
           let frozen = false;
+          await focusTerminal(this.terminalOptions);
           this.pyb
             .executeCommand(code, (data: string) => {
               // only freeze after operation has started
@@ -341,7 +379,12 @@ export default class Activator {
         return;
       }
 
-      // also dont upload .picowgo file by default!!
+      if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
+        // TODO: maybe do soft reboot instead of gc for bigger impact
+        await this.pyb?.executeCommand(
+          "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
+        );
+      }
       vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
@@ -351,30 +394,31 @@ export default class Activator {
         async (progress, token) => {
           token.onCancellationRequested(() => {});
 
-          return this.pyb
-            ?.startUploadingProject(
-              syncDir,
-              settings.getSyncFileTypes(),
-              settings.getIngoredSyncItems().concat([".picowgo"]),
-              (data: string) => {
-                //progress.report({ message: data });
-              }
-            )
-            .then((data: unknown) => {
-              // check if data is PyOut
-              if (data === undefined) {
-                return;
-              }
+          const data = await this.pyb?.startUploadingProject(
+            syncDir,
+            settings.getSyncFileTypes(),
+            settings.getIngoredSyncItems().concat([".picowgo"]),
+            (data: string) => {
+              //progress.report({ message: data });
+            }
+          );
 
-              if ((data as PyOut).type === PyOutType.status) {
-                const result = data as PyOutStatus;
-                if (result.status) {
-                  vscode.window.showInformationMessage("Project uploaded.");
-                } else {
-                  vscode.window.showErrorMessage("Project upload failed.");
-                }
+          // check if data is PyOut
+          if (data === undefined) {
+            return;
+          }
+
+          if ((data as PyOut).type === PyOutType.status) {
+            const result = data as PyOutStatus;
+            if (result.status) {
+              vscode.window.showInformationMessage("Project uploaded.");
+              if (settings.getBoolean(SettingsKey.rebootAfterUpload)) {
+                await this.pyb?.softReset();
               }
-            });
+            } else {
+              vscode.window.showErrorMessage("Project upload failed.");
+            }
+          }
         }
       );
     });
@@ -389,7 +433,7 @@ export default class Activator {
           return;
         }
 
-        const file = getFocusedFile();
+        const file = await getFocusedFile();
 
         if (file === undefined) {
           vscode.window.showWarningMessage("No file open.");
@@ -399,6 +443,11 @@ export default class Activator {
         // TODO: maybe upload relative to project root like uploadProject does with files
         let pastProgress = 0;
 
+        if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
+          await this.pyb?.executeCommand(
+            "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
+          );
+        }
         vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
@@ -433,7 +482,9 @@ export default class Activator {
                     path: "/" + basename(file),
                   })
                 );
-                //vscode.window.showInformationMessage("File uploaded.");
+                if (settings.getBoolean(SettingsKey.rebootAfterUpload)) {
+                  await this.pyb?.softReset();
+                }
               } else {
                 vscode.window.showErrorMessage("File upload failed.");
               }
@@ -637,6 +688,34 @@ export default class Activator {
           );
         } else {
           vscode.window.showWarningMessage("No connected Pico found.");
+        }
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    // [Command] Switch Pico
+    disposable = vscode.commands.registerCommand(
+      "picowgo.switchPico",
+      async () => {
+        if (this.pyb?.isPipeConnected()) {
+          await this.pyb?.disconnect();
+        }
+
+        const ports = await PyboardRunner.getPorts(settings.pythonExecutable);
+        if (ports.ports.length === 0) {
+          vscode.window.showErrorMessage("No connected Pico found!");
+        }
+
+        const port = await vscode.window.showQuickPick(ports.ports, {
+          canPickMany: false,
+          placeHolder:
+            "Select your the COM port of the Pico you want to connect to",
+          ignoreFocusOut: false,
+        });
+
+        if (port !== undefined) {
+          comDevice = port;
+          this.pyb?.switchDevice(comDevice);
         }
       }
     );

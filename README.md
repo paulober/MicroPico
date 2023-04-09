@@ -4,14 +4,12 @@ Pico-W-Go provides code auto-completion and allows you to communicate with your 
 
 > __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20230302-unstable-v1.19.1-915-g2bcd88d55.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20230302-unstable-v1.19.1-915-g2bcd88d55.uf2)__
 
-This software is originally based on [Pico-Go](https://github.com/cpwood/Pico-Go) by cpwood.
-
 Works with:
-| Platform |   Architectures   |
-|----------|:-----------------:|
-| Windows  | x64               |
-| macOS    | x64, arm64        |
-| Linux    | x64, arm64, armv7 |
+| Platform |    Architectures   |
+|----------|:------------------:|
+| Windows  | x64, arm64         |
+| macOS    | x64, arm64         |
+| Linux    | x64, arm64, armvhf |
 
 ## Features
 
@@ -28,6 +26,7 @@ Works with:
     - See [raspberry pi docs](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython) for help.
 
 * [Python 3.9 or newer](https://www.python.org/downloads/) installed on your system and in your PATH.
+* [pyserial pip package](https://pypi.org/project/pyserial/): `pip install pyserial`
 
 Visual Studio Code extensions:
 * [ms-python.python](vscode://extension/ms-python.python)
@@ -73,17 +72,15 @@ while True:
 This extension contributes the following settings:
 
 * `picowgo.autoConnect`: Ignores any 'device address' setting and automatically connects to the top item in the serialport list.
-* `picowgo.manualComDevice`: If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified.
+* `picowgo.manualComDevice`: If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here.
 * `picowgo.syncFolder`: This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash.
 * `picowgo.syncAllFileTypes`: If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored.
 * `picowgo.syncFileTypes`: All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action.
 * `picowgo.pyIgnore`: Comma separated list of files and folders to ignore when uploading (no wildcard or regular expressions supported).
-* `picowgo.ctrlCOnConnect`: Stops all running programs when connecting to the board.
 * `picowgo.openOnStart`: Automatically open the Pico-W-Go console and connect to the board after starting VS Code.
 * `picowgo.statusbarButtons`: Select which buttons to show in the statusbar (DO NOT CHANGE, unless you know what you are doing)
-* `picowgo.safeBootOnUpload`: [Only works with firmware v1.16.0.b1 and up.] Safe boots the board before uploading to prevent running out of memory while uploading. But adds about 2 seconds to the upload procedure.
-* `picowgo.rebootAfterUpload`: Reboots your board after any upload or download action. Usefull if you are developing with `main.py` or `boot.py`.
-* `picowgo.fastUpload`: Uploads files in bigger chunks (multiplies the upload chunk size by a constant multiplier, see config.ts for values). This can speed up the upload process, but can also cause problems with some boards ('memory overflow'). If you experience problems with uploading, try disabling this option.
+* `picowgo.gcBeforeUpload`: [Only works with firmware v1.16.0.b1 and up.] Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
+* `picowgo.rebootAfterUpload`: Reboots your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
 * `picowgo.pythonPath`: Path to the Python interpreter. Defaults to null so it will try to auto-detect a suitable python installation.
 
 ---
@@ -91,15 +88,4 @@ This extension contributes the following settings:
 ### Note
 
 + _Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2023 Damien P. George, Paul Sokolovsky, and contributors._
-+ For licensing purposes: As of version 2.0.0 i completely moved to project to a Typescript codebase, removed unused code, rewrote many parts to work with new dependencies or just to confirm Typescript code-style. I also altered many dependencies and removed unused or duplicate code. In the future many other parts which are more or less copied from the fork base (cpwood/Pico-Go and it's base project) will be replaced step by step.
-
-The project is based on github.com/cpwood/Pico-Go which is a derivative product of Pymakr by Pycom Limited:
-
-https://marketplace.visualstudio.com/items?itemName=pycom.Pymakr
-
-Original software is Copyright (c) 2017, Pycom Limited.
-
-This software is licensed under the GNU GPL version 3 or any
-later version, with permitted additional terms. For more information
-see the Pycom Licence v1.0 document supplied with this file, or
-available at https://www.pycom.io/opensource/licensing
++ For licensing purposes: Prior to version v3.0.0 of this extension the codebase was a fork of github.com/cpwood/Pico-Go which is a derivative product of Pymakr by Pycom Limited.

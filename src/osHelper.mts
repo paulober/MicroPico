@@ -1,10 +1,5 @@
-import { exec } from "child_process";
-import {
-  access,
-  constants as fsConstants,
-  readFile,
-  writeFile,
-} from "fs/promises";
+import { exec, execSync } from "child_process";
+import { readFile, stat, writeFile } from "fs/promises";
 import { platform } from "os";
 
 const pythonCommands = {
@@ -38,7 +33,7 @@ export async function getPythonCommand(): Promise<string | undefined> {
 
 export async function pathExists(path: string): Promise<boolean> {
   try {
-    await access(path, fsConstants.F_OK);
+    await stat(path);
     return true;
   } catch (error) {
     return false;
@@ -49,7 +44,7 @@ export async function readJsonFile(path: string): Promise<any> {
   try {
     const content = await readFile(path, {
       encoding: "utf8",
-      flag: fsConstants.O_RDONLY,
+      flag: "r",
     });
 
     return JSON.parse(content);
@@ -62,6 +57,29 @@ export async function writeJsonFile(path: string, content: any): Promise<void> {
   try {
     const json = JSON.stringify(content, null, 4);
 
-    writeFile(path, json, { encoding: "utf8", flag: fsConstants.O_CREAT });
-  } catch (error) {}
+    await writeFile(path, json, {
+      encoding: "utf8",
+      flag: "w",
+    });
+  } catch (error) {
+    console.error(`[Pico-W-Go] [OSHelper] Error writing to ${path}: ${error}`);
+  }
+}
+
+export function isPyserialInstalled(pyCommand: string): boolean {
+  try {
+    const output = execSync(`${pyCommand} -m pip show pyserial`);
+    return output.toString().includes("Name: pyserial");
+  } catch (error) {
+    return false;
+  }
+}
+
+export function installPyserial(pyCommand: string): void {
+  try {
+    execSync(`${pyCommand} -m pip install pyserial`);
+    console.log("[Pico-W-Go] pyserial installed successfully");
+  } catch (error) {
+    console.error("[Pico-W-Go] Failed to install pyserial", error);
+  }
 }

@@ -3,6 +3,8 @@ import { PyboardRunner } from "@paulober/pyboard-serial-com";
 import { getProjectPath } from "./api.mjs";
 import { join } from "path";
 
+export const TERMINAL_NAME = "Pico (W) vREPL";
+
 export enum SettingsKey {
   autoConnect = "autoConnect",
   manualComDevice = "manualComDevice",
@@ -10,15 +12,14 @@ export enum SettingsKey {
   syncAllFileTypes = "syncAllFileTypes",
   syncFileTypes = "syncFileTypes",
   pyIgnore = "pyIgnore",
-  ctrlCOnConnect = "ctrlCOnConnect",
   openOnStart = "openOnStart",
   statusbarButtons = "statusbarButtons",
-  safeBootOnUpload = "safeBootOnUpload",
+  gcBeforeUpload = "gcBeforeUpload",
   rebootAfterUpload = "rebootAfterUpload",
   pythonPath = "pythonPath",
 }
 
-export type Setting = string | boolean | string[] | undefined;
+export type Setting = string | boolean | string[] | null | undefined;
 
 export default class Settings {
   private config: WorkspaceConfiguration;

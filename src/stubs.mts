@@ -21,12 +21,12 @@ export default class Stubs {
 
   public async update(): Promise<void> {
     const configFolder = getVsCodeUserPath();
-    const stubsFolder = join(configFolder, "Pico-W-Stubs");
+    const stubsFolder = join(configFolder, "Pico-W-Stub");
 
     // ensure config folder exists
     await mkdir(configFolder, { recursive: true });
 
-    const existingVersionFile = join(stubsFolder, "version.txt");
+    const existingVersionFile = join(stubsFolder, "version.json");
     const currentVersionFile = resolve(
       join(__dirname, "..", "stubs", "version.json")
     );

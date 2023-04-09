@@ -9,6 +9,8 @@ import {
   env as vscodeEnv,
   Uri,
 } from "vscode";
+import type { ExtensionTerminalOptions, TerminalOptions } from "vscode";
+import { TERMINAL_NAME } from "./settings.mjs";
 
 export const extName = "pico-w-go";
 export const extId = "paulober.pico-w-go";
@@ -85,13 +87,15 @@ export function getProjectPath(): string | undefined {
  * is file is will return fsPath,
  * if scheme is pico it will return path, otherwise undefined
  */
-export function getFocusedFile(
+export async function getFocusedFile(
   remotePosix: boolean = false
-): string | undefined {
+): Promise<string | undefined> {
   const editor = window.activeTextEditor;
   if (editor === undefined) {
     return undefined;
   }
+  // ensure the file is saved before sending it to the Pico or running it on the Pico
+  await editor.document.save();
 
   const uri = editor.document.uri;
 
@@ -164,5 +168,30 @@ export async function getTypeshedPicoWStubPath(): Promise<
     return null;
   } catch (err) {
     return null;
+  }
+}
+
+export async function focusTerminal(
+  terminalOptions: ExtensionTerminalOptions | TerminalOptions
+): Promise<void> {
+  const openTerminals = window.terminals;
+
+  const picoRepl = openTerminals.find(term => {
+    return term.creationOptions.name === TERMINAL_NAME;
+  });
+
+  if (picoRepl) {
+    // focus the terminal
+    picoRepl.show(false);
+  } else {
+    // create new with profile
+    /*await commands.executeCommand("workbench.action.terminal.newWithProfile", {
+      id: "picowgo.vrepl",
+      profileName: TERMINAL_NAME,
+    } as Object);*/
+
+    window.createTerminal(terminalOptions).show();
+    // wait for terminal to open
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 }

@@ -4,7 +4,7 @@
   "description": "Autocompletion, remote Workspace and a REPL console for the Raspberry Pi Pico (W).",
   "version": "2.1.8",
   "publisher": "paulober",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
   "bugs": {
     "url": "https://github.com/paulober/Pico-W-Go/issues"
@@ -163,6 +163,10 @@
       {
         "command": "picowgo.toggleFileSystem",
         "title": "Pico-W-Go > Toggle Virtual File System"
+      },
+      {
+        "command": "picowgo.switchPico",
+        "title": "Pico-W-Go > Switch Pico"
       }
     ],
     "menus": {
@@ -229,14 +233,14 @@
           "type": "boolean",
           "default": true,
           "title": "Autoconnect on USB",
-          "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list",
+          "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
           "order": 2
         },
         "picowgo.manualComDevice": {
           "type": "string",
           "default": "",
           "title": "Manual COM device",
-          "description": "If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here",
+          "description": "If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here.",
           "order": 3
         },
         "picowgo.syncFolder": {
@@ -254,8 +258,18 @@
           "order": 5
         },
         "picowgo.syncFileTypes": {
-          "type": "string",
-          "default": "py,txt,log,json,xml,html,js,css,mpy",
+          "type": "array",
+          "default": [
+            "py",
+            "txt",
+            "log",
+            "json",
+            "xml",
+            "html",
+            "js",
+            "css",
+            "mpy"
+          ],
           "title": "Upload file types",
           "description": "All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action",
           "order": 6
@@ -278,19 +292,12 @@
           ],
           "order": 7
         },
-        "picowgo.ctrlCOnConnect": {
-          "type": "boolean",
-          "default": true,
-          "title": "Ctrl-C on connect",
-          "description": "Stops all running programs when connecting to the board",
-          "order": 8
-        },
         "picowgo.openOnStart": {
           "type": "boolean",
           "default": false,
           "title": "Open on start",
-          "description": "Automatically open the Pico-W-Go console and connect to the board after starting VS Code",
-          "order": 9
+          "description": "Automatically open the Pico-W-Go console after starting VS Code",
+          "order": 8
         },
         "picowgo.statusbarButtons": {
           "type": "array",
@@ -304,35 +311,35 @@
             "run",
             "softreset"
           ],
-          "order": 10
+          "order": 9
         },
-        "picowgo.safeBootOnUpload": {
+        "picowgo.gcBeforeUpload": {
           "type": "boolean",
           "default": false,
-          "title": "Safe-boot before upload",
-          "description": "[Only works with firmware v1.16.0.b1 and up.] Safe boots the board before uploading to prevent running out of memory while uploading. But adds about 2 seconds to the upload procedure",
-          "order": 11
+          "title": "Garbage collection before upload",
+          "description": "[Only works with firmware v1.16.0.b1 and up.] Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
+          "order": 10
         },
         "picowgo.rebootAfterUpload": {
           "type": "boolean",
           "default": true,
           "title": "Reboot after upload",
-          "description": "Reboots your board after any upload or download action",
-          "order": 12
+          "description": "Reboots your board after any upload action.",
+          "order": 11
         },
         "picowgo.pythonPath": {
           "type": "string",
           "default": null,
           "title": "Python Path",
           "description": "Path to the Python interpreter. Defaults to null.",
-          "order": 13
+          "order": 12
         }
       }
     },
     "terminal": {
       "profiles": [
         {
-          "title": "Pico-W-Go vREPL",
+          "title": "Pico (W) vREPL",
           "id": "picowgo.vrepl"
         }
       ]
