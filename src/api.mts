@@ -1,11 +1,13 @@
 import { homedir } from "os";
 import { join } from "path";
+import { TextDecoder } from "util";
 import {
   commands,
   extensions,
   window,
   workspace,
   env as vscodeEnv,
+  Uri,
 } from "vscode";
 
 export const extName = "pico-w-go";
@@ -75,9 +77,17 @@ export function getProjectPath(): string | undefined {
 /**
  * Returns the path to the currently focused file in the editor
  *
- * @returns the path to the currently selected file in the editor
+ * @param remotePosix if true it returns for remote files (scheme pico) the
+ * path in posix format and undefined for local file or if no file is selected.
+ * If false it will return if focused file is local (scheme file) fsPath
+ * and undefined for remote file and if no file is focused.  (@default false)
+ * @returns the path to the currently selected file in the editor if scheme
+ * is file is will return fsPath,
+ * if scheme is pico it will return path, otherwise undefined
  */
-export function getFocusedFile(): string | undefined {
+export function getFocusedFile(
+  remotePosix: boolean = false
+): string | undefined {
   const editor = window.activeTextEditor;
   if (editor === undefined) {
     return undefined;
@@ -85,7 +95,13 @@ export function getFocusedFile(): string | undefined {
 
   const uri = editor.document.uri;
 
-  return uri.scheme === "file" ? uri.fsPath : undefined;
+  if (uri.scheme === "file" && !remotePosix) {
+    return uri.fsPath;
+  } else if (uri.scheme === "pico" && remotePosix) {
+    return uri.path;
+  }
+
+  return undefined;
 }
 
 /**
@@ -110,4 +126,43 @@ export function getSelectedCodeOrLine(): string | undefined {
 
 export function writeIntoClipboard(text: string): void {
   vscodeEnv.clipboard.writeText(text);
+}
+
+/**
+ * Returns the path to the typeshed Pico-W-Stub the workspaceFolder name or null
+ *
+ * @returns the path to the typeshed Pico-W-Stub folder if it exists, the workspaceFolder name
+ */
+export async function getTypeshedPicoWStubPath(): Promise<
+  [string, string] | null
+> {
+  const workspaceFolderUri = workspace.workspaceFolders?.[0].uri;
+
+  if (!workspaceFolderUri) return null;
+
+  const settingsUri = workspaceFolderUri.with({
+    path: Uri.joinPath(workspaceFolderUri, ".vscode/settings.json").path,
+  });
+
+  try {
+    // Read the contents of the settings.json file
+    const settingsData = await workspace.fs.readFile(settingsUri);
+    // Parse the settings data as a JSON object
+    const settingsObject = JSON.parse(new TextDecoder().decode(settingsData));
+    // Check if the typeshedPaths property includes "Pico-W-Stub"
+    const typeshedPaths: Array<string> =
+      settingsObject["python.analysis.typeshedPaths"];
+    if (typeshedPaths) {
+      const stubPath = typeshedPaths.find(path => path.includes("Pico-W-Stub"));
+      if (stubPath !== undefined) {
+        return [
+          stubPath.replaceAll("\\", "/"),
+          workspace.workspaceFolders![0].name,
+        ];
+      }
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
 }

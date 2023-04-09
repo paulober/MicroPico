@@ -4,6 +4,7 @@ import {
   EventEmitter,
   FileChangeEvent,
   FileChangeType,
+  FilePermission,
   FileStat,
   FileSystemError,
   FileSystemProvider,
@@ -22,13 +23,20 @@ import { basename, dirname, join } from "path";
 import { tmpdir } from "os";
 import { mkdir, readFile, rmdir, unlink, writeFile } from "fs/promises";
 import { randomBytes } from "crypto";
+import remoteConfigFs from "./remoteConfig.mjs";
+import { getTypeshedPicoWStubPath } from "./api.mjs";
 
+// TODO: maybe use startsWidth instead of includes to avoid false positives in child folders
 const forbiddenFolders = [".vscode", ".git"];
+
+// disabled because the Python and Pylance extensions don't currently support virtual workspaces
+const picoWFsVscodeConfiguration = false;
 
 export class PicoWFs implements FileSystemProvider {
   private logger: Logger;
 
   private cache: Map<string, any> = new Map();
+  private remoteConfigFs = remoteConfigFs;
 
   private pyb: PyboardRunner;
   private cacheEnabled: boolean = false;
@@ -40,6 +48,19 @@ export class PicoWFs implements FileSystemProvider {
   constructor(pyboardRunner: PyboardRunner) {
     this.logger = new Logger("PicoWFs");
     this.pyb = pyboardRunner;
+
+    if (picoWFsVscodeConfiguration) {
+      getTypeshedPicoWStubPath().then(path => {
+        if (path === null) {
+          return;
+        }
+
+        this.remoteConfigFs[".vscode"].children["settings.json"].setContent(
+          path[1],
+          path[0]
+        );
+      });
+    }
   }
 
   public fileChanged(type: FileChangeType, uri: Uri): void {
@@ -58,6 +79,34 @@ export class PicoWFs implements FileSystemProvider {
 
   public async stat(uri: Uri): Promise<FileStat> {
     if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
+      if (picoWFsVscodeConfiguration && uri.path.includes("/.vscode")) {
+        switch (basename(uri.path)) {
+          case "settings.json":
+            return {
+              type: FileType.File,
+              ctime:
+                this.remoteConfigFs[".vscode"].children["settings.json"]
+                  .created,
+              mtime:
+                this.remoteConfigFs[".vscode"].children["settings.json"]
+                  .modified,
+              size: this.remoteConfigFs[".vscode"].children["settings.json"]
+                .size,
+              permissions: FilePermission.Readonly,
+            };
+          case ".vscode":
+            return {
+              type: FileType.Directory,
+              ctime: this.remoteConfigFs[".vscode"].created,
+              mtime: this.remoteConfigFs[".vscode"].modified,
+              size: this.remoteConfigFs[".vscode"].size,
+              permissions: FilePermission.Readonly,
+            };
+          default:
+            break;
+        }
+      }
+
       this.logger.debug("stat: (inside) forbidden folder: " + uri.path);
       throw FileSystemError.FileNotFound(uri);
     }
@@ -89,6 +138,17 @@ export class PicoWFs implements FileSystemProvider {
   }
 
   public async readDirectory(uri: Uri): Promise<[string, FileType][]> {
+    if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
+      if (picoWFsVscodeConfiguration && basename(uri.path) === ".vscode") {
+        return Object.keys(this.remoteConfigFs[".vscode"].children).map(
+          file => [file, FileType.File]
+        );
+      }
+
+      this.logger.debug("readDirectory: forbidden folder: " + uri.path);
+      throw FileSystemError.FileNotFound(uri);
+    }
+
     const result = await this.pyb.listContents(uri.path);
 
     if (result.type === PyOutType.none) {
@@ -101,10 +161,14 @@ export class PicoWFs implements FileSystemProvider {
 
     const items = (result as PyOutListContents).response;
 
-    return items.map(item => [
+    const children: [string, FileType][] = items.map(item => [
       item.path,
       item.isDir ? FileType.Directory : FileType.File,
     ]);
+    if (picoWFsVscodeConfiguration && uri.path === "/") {
+      children.push([".vscode", FileType.Directory]);
+    }
+    return children;
   }
 
   public async createDirectory(uri: Uri): Promise<void> {
@@ -129,6 +193,13 @@ export class PicoWFs implements FileSystemProvider {
 
   public async readFile(uri: Uri): Promise<Uint8Array> {
     if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
+      if (
+        uri.path.includes("/.vscode") &&
+        basename(uri.path) === "settings.json"
+      ) {
+        return this.remoteConfigFs[".vscode"].children["settings.json"].content;
+      }
+
       this.logger.debug("readFile: file in forbidden folder");
       throw FileSystemError.FileNotFound(uri);
     }
@@ -162,7 +233,7 @@ export class PicoWFs implements FileSystemProvider {
   ): Promise<void> {
     if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
       this.logger.error("writeFile: file destination in forbidden folder");
-      throw FileSystemError.FileNotFound(uri);
+      throw FileSystemError.NoPermissions(uri);
     }
 
     const tempDir = join(tmpdir(), uuidv4({ random: _v4Bytes() }));
@@ -195,8 +266,16 @@ export class PicoWFs implements FileSystemProvider {
     uri: Uri,
     options: { readonly recursive: boolean }
   ): Promise<void> {
+    if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
+      this.logger.error("delete: file destination in forbidden folder");
+      throw FileSystemError.NoPermissions(uri);
+    }
+
     if (options.recursive) {
-      const result = await this.pyb.deleteFolderRecursive(uri.path);
+      const result = await this.pyb.deleteFileOrFolder(
+        uri.path,
+        options.recursive
+      );
       if (result.type === PyOutType.status) {
         const status = (result as PyOutStatus).status;
         if (!status) {
@@ -204,20 +283,15 @@ export class PicoWFs implements FileSystemProvider {
         }
       }
     } else {
-      // assume it is a file
-      let result = await this.pyb.deleteFiles([uri.path]);
+      let result = await this.pyb.deleteFileOrFolder(
+        uri.path,
+        options.recursive
+      );
       if (result.type === PyOutType.status) {
         let status = (result as PyOutStatus).status;
         if (!status) {
-          // assumption seems to be wrong, try to delete as folder
-          result = await this.pyb.deleteFolders([uri.path]);
-          if (result.type === PyOutType.status) {
-            status = (result as PyOutStatus).status;
-            if (!status) {
-              // both failed, so most likely the fs item does not exist
-              throw FileSystemError.FileNotFound(uri);
-            }
-          }
+          // both failed, so most likely the fs item does not exist
+          throw FileSystemError.FileNotFound(uri);
         }
       }
     }
@@ -229,6 +303,11 @@ export class PicoWFs implements FileSystemProvider {
     // does always overwrite
     options: { readonly overwrite: boolean }
   ): Promise<void> {
+    if (forbiddenFolders.some(folder => oldUri.path.includes(folder))) {
+      this.logger.error("rename: file destination in forbidden folder");
+      throw FileSystemError.NoPermissions(oldUri);
+    }
+
     const result = await this.pyb.renameItem(oldUri.path, newUri.path);
 
     if (result.type === PyOutType.status) {

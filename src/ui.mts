@@ -43,7 +43,7 @@ export default class UI {
   }
 
   public showQuickPick(): void {
-    const items: QuickPickItem[] = pkg.contributes.commands
+    /*const items: QuickPickItem[] = pkg.contributes.commands
       .filter(item => item.command !== "pico-w-go.listCommands")
       .map(item => ({
         label: item.title,
@@ -62,7 +62,8 @@ export default class UI {
             (selected as { cmd: string } & QuickPickItem).cmd
           );
         }
-      });
+      });*/
+    commands.executeCommand("workbench.action.quickOpen", "> Pico-W-Go > ");
   }
 
   public async show() {
