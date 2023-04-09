@@ -33,6 +33,16 @@
   "categories": [
     "Other"
   ],
+  "capabilities": {
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "Pico-W-Go does not support as first workspace a virtual one but contributes a virtual workspace for the Pico (W)."
+    },
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Why would you want to use Pico-W-Go in an untrusted workspace?"
+    }
+  },
   "activationEvents": [
     "workspaceContains:.picowgo",
     "onFileSystem:pico"
@@ -92,7 +102,8 @@
       },
       {
         "command": "picowgo.uploadFile",
-        "title": "Pico-W-Go > Upload current file only"
+        "title": "Pico-W-Go > Upload current file",
+        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
       },
       {
         "command": "picowgo.download",
@@ -100,15 +111,18 @@
       },
       {
         "command": "picowgo.run",
-        "title": "Pico-W-Go > Run current file"
+        "title": "Pico-W-Go > Run current file",
+        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
       },
       {
         "command": "picowgo.remote.run",
-        "title": "Pico-W-Go > Remote > Run current file"
+        "title": "Pico-W-Go > Remote > Run current file",
+        "enablement": "resourceScheme == pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
       },
       {
         "command": "picowgo.runselection",
-        "title": "Pico-W-Go > Run current selection"
+        "title": "Pico-W-Go > Run current selection",
+        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python && resourceExtname == .py"
       },
       {
         "command": "picowgo.deleteAllFiles",
@@ -159,14 +173,14 @@
           "when": "resourceScheme != pico"
         },
         {
+          "command": "picowgo.download",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
+        },
+        {
           "command": "picowgo.run",
           "group": "picowgo",
           "when": "resourceScheme != pico"
-        },
-        {
-          "command": "picowgo.remote.run",
-          "group": "picowgo",
-          "when": "resourceScheme == pico"
         }
       ],
       "editor/context": [
@@ -185,7 +199,7 @@
           "group": "picowgo"
         },
         {
-          "command": "picowgo.upload",
+          "command": "picowgo.uploadFile",
           "group": "picowgo",
           "when": "resourceScheme != pico"
         }
@@ -409,12 +423,9 @@
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^11.1.0",
     "@types/fs-extra": "^11.0.1",
-    "@types/glob": "^8.0.1",
     "@types/lodash": "^4.14.192",
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.x",
-    "@types/node-fetch": "^2.6.3",
-    "@types/semver": "^7.3.13",
     "@types/uuid": "^9.0.1",
     "@types/vscode": "^1.77.0",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
@@ -422,20 +433,16 @@
     "@vscode/test-electron": "^2.3.0",
     "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.8.0",
-    "glob": "^8.1.0",
+    "glob": "^9.3.4",
     "mocha": "^10.2.0",
     "rollup": "^3.20.2",
     "rollup-plugin-copy": "^3.4.0",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.4.10",
-    "async-mutex": "^0.4.0",
+    "@paulober/pyboard-serial-com": "^1.4.12",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
-    "node-fetch": "^3.3.1",
-    "rimraf": "^4.4.1",
-    "semver": "^7.3.8",
     "uuid": "^9.0.0"
   }
 }
