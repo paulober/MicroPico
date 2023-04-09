@@ -22,9 +22,11 @@ jobs:
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: npm ci --no-audit
+      - name: NPM install
         shell: bash
-        name: NPM install
+        run: |
+          sed -i -e "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" .npmrc
+          npm ci --no-audit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

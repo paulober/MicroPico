@@ -36,7 +36,9 @@ jobs:
 
       - name: Install Dependencies
         shell: bash
-        run: npm ci --no-audit
+        run: |
+          sed -i -e "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" .npmrc
+          npm ci --no-audit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
