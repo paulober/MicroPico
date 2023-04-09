@@ -6,6 +6,7 @@ import {
 } from "./osHelper.mjs";
 import UI from "./ui.mjs";
 import {
+  TERMINAL_NAME,
   focusTerminal,
   getFocusedFile,
   getSelectedCodeOrLine,
@@ -13,7 +14,7 @@ import {
   writeIntoClipboard,
 } from "./api.mjs";
 import Stubs from "./stubs.mjs";
-import Settings, { SettingsKey, TERMINAL_NAME } from "./settings.mjs";
+import Settings, { SettingsKey } from "./settings.mjs";
 import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
 import type {
   PyOut,
@@ -22,7 +23,7 @@ import type {
   PyOutStatus,
 } from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
-import { basename, dirname, join, posix, resolve } from "path";
+import { basename, dirname, join } from "path";
 import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";

@@ -3,8 +3,6 @@ import { PyboardRunner } from "@paulober/pyboard-serial-com";
 import { getProjectPath } from "./api.mjs";
 import { join } from "path";
 
-export const TERMINAL_NAME = "Pico (W) vREPL";
-
 export enum SettingsKey {
   autoConnect = "autoConnect",
   manualComDevice = "manualComDevice",

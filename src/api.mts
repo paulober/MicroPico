@@ -10,10 +10,10 @@ import {
   Uri,
 } from "vscode";
 import type { ExtensionTerminalOptions, TerminalOptions } from "vscode";
-import { TERMINAL_NAME } from "./settings.mjs";
 
 export const extName = "pico-w-go";
 export const extId = "paulober.pico-w-go";
+export const TERMINAL_NAME = "Pico (W) vREPL";
 
 export const recommendedExtensions = [
   "ms-python.python",
