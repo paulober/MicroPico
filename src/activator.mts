@@ -289,18 +289,23 @@ export default class Activator {
 
     // [Command] Run File
     // TODO: !IMPORTANT! sometimes not all is run or shown to the terminal
-    // TODO: open terminal on freeze in UI
     disposable = vscode.commands.registerCommand("picowgo.run", async () => {
       if (!this.pyb?.isPipeConnected()) {
         vscode.window.showWarningMessage("Please connect to the Pico first.");
         return;
       }
 
-      const file = await getFocusedFile();
+      let file = await getFocusedFile();
 
       if (file === undefined) {
-        vscode.window.showWarningMessage("No file open and focused.");
-        return;
+        file = await getFocusedFile(true);
+        if (file === undefined) {
+          vscode.window.showWarningMessage("No file open and focused.");
+          return;
+        } else {
+          vscode.commands.executeCommand("picowgo.remote.run");
+          return;
+        }
       }
 
       let frozen = false;
@@ -310,10 +315,12 @@ export default class Activator {
         if (!frozen) {
           terminal?.freeze();
           terminal?.write("\r\n");
+          this.ui?.userOperationStarted();
           frozen = true;
         }
         terminal?.write(data);
       });
+      this.ui?.userOperationStopped();
       if (data.type === PyOutType.commandResult) {
         const result = data as PyOutCommandResult;
         // TODO: reflect result.result somehow
@@ -353,11 +360,14 @@ export default class Activator {
             if (!frozen) {
               terminal?.freeze();
               terminal?.write("\r\n");
+              this.ui?.userOperationStarted();
               frozen = true;
             }
             terminal?.write(data);
-          }
+          },
+          true
         );
+        this.ui?.userOperationStopped();
         terminal?.melt();
         terminal?.write("\r\n");
         terminal?.prompt();
@@ -382,24 +392,27 @@ export default class Activator {
         } else {
           let frozen = false;
           await focusTerminal();
-          this.pyb
-            .executeCommand(code, (data: string) => {
+          const data = await this.pyb.executeCommand(
+            code,
+            (data: string) => {
               // only freeze after operation has started
               if (!frozen) {
                 terminal?.freeze();
                 terminal?.write("\r\n");
+                this.ui?.userOperationStarted();
                 frozen = true;
               }
               terminal?.write(data);
-            })
-            .then((data: PyOut) => {
-              if (data.type === PyOutType.commandResult) {
-                const result = data as PyOutCommandResult;
-                // TODO: reflect result.result in status bar
-              }
-              terminal?.melt();
-              terminal?.prompt();
-            });
+            },
+            true
+          );
+          this.ui?.userOperationStopped();
+          if (data.type === PyOutType.commandResult) {
+            const result = data as PyOutCommandResult;
+            // TODO: reflect result.result in status bar
+          }
+          terminal?.melt();
+          terminal?.prompt();
         }
       }
     );
@@ -805,6 +818,25 @@ export default class Activator {
       }
     );
     context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      "picowgo.universalStop",
+      async () => {
+        if (
+          !this.pyb?.isPipeConnected() ||
+          !this.ui?.isUserOperationOngoing()
+        ) {
+          vscode.window.showInformationMessage("Nothing to stop.");
+          return;
+        }
+
+        // double ctrl+c to stop any running program
+        await this.pyb?.writeToPyboard("\x03\x03\n");
+
+        // wait for the program to stop
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    );
 
     // [Command] Check for firmware updates
     disposable = vscode.commands.registerCommand(
