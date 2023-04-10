@@ -1261,47 +1261,23 @@ class SoftI2C:
     Software I2C is implemented by bit-banging and can be used on any pin but is not
     as efficient.  These classes have the same methods available and differ primarily
     in the way they are constructed.
-
-    Example usage::
-
-        from machine import I2C
-
-        # create I2C peripheral at frequency of 400kHz
-        i2c = I2C(freq=400000)
-                                        # depending on the port, extra parameters may be required
-                                        # to select the peripheral and/or pins to use
-
-        i2c.scan()                      # scan for slaves, returning a list of 7-bit addresses
-
-        # write 3 bytes to slave with 7-bit address 42
-        i2c.writeto(42, b'123')
-        # read 4 bytes from slave with 7-bit address 42
-        i2c.readfrom(42, 4)
-
-        i2c.readfrom_mem(42, 8, 3)      # read 3 bytes from memory of slave 42,
-                                        #   starting at memory-address 8 in the slave
-        i2c.writeto_mem(42, 2, b'\x10') # write 1 byte to memory of slave 42
-                                        #   starting at address 2 in the slave
     """
 
-    def __init__(self, id: int, /, *, scl: Pin, sda: Pin, freq: int = 400_000):
+    def __init__(self, scl: Pin, sda: Pin, *, freq: int = 400_000, timeout: int = 50_000):
         """
-        Construct and return a new I2C object using the following parameters:
+        Construct and return a new software I2C object using the following parameters:
 
-           - *id* identifies a particular I2C peripheral.  Allowed values for
-             depend on the particular port/board
            - *scl* should be a pin object specifying the pin to use for SCL.
            - *sda* should be a pin object specifying the pin to use for SDA.
            - *freq* should be an integer which sets the maximum frequency
              for SCL.
-
-        Note that some ports/boards will have default values of *scl* and *sda*
-        that can be changed in this constructor.  Others will have fixed values
-        of *scl* and *sda* that cannot be changed.
+           - *timeout* is the maximum time in microseconds to wait for clock 
+             stretching (SCL held low by another device on the bus), 
+             after which an `OSError(ETIMEDOUT)` exception is raised.
         """
         ...
 
-    def init(self, *, scl: Pin, sda: Pin, freq: int = 400_000) -> None:
+    def init(self, scl: Pin, sda: Pin, *, freq: int = 400_000, timeout: int = 50_000) -> None:
         """
        Initialise the I2C bus with the given arguments:
 
@@ -1817,7 +1793,7 @@ def deepsleep(time_ms: int|None = None) -> None:
     ...
 
 
-def lightleep(time_ms: int|None = None) -> None:
+def lightsleep(time_ms: int|None = None) -> None:
     """
     Stops execution in an attempt to enter a low power state.
 
@@ -1872,11 +1848,31 @@ def idle():
     """
     ...
 
+class mem:
+    """Don't use this class/type! It's only for type annotations. And does not exist at runtime!"""
+    def __getitem__(self, address: int) -> int: ...
+    def __setitem__(self, address: int, value: int) -> None: ...
 
-mem16 = None
-mem32 = None
-mem8 = None
+mem16: mem
+"""Read/write 16 bits of memory.
 
+Use subscript notation `[...]` to index these objects with the address of interest. 
+Note that the address is the byte address, regardless of the size of memory being accessed.
+"""
+
+mem32: mem
+"""Read/write 32 bits of memory.
+
+Use subscript notation `[...]` to index these objects with the address of interest. 
+Note that the address is the byte address, regardless of the size of memory being accessed.
+"""
+
+mem8: mem
+"""Read/write 8 bits of memory.
+
+Use subscript notation `[...]` to index these objects with the address of interest. 
+Note that the address is the byte address, regardless of the size of memory being accessed.
+"""
 
 def reset():
     """

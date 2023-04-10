@@ -1,10 +1,10 @@
 {
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
-  "description": "Autocompletion and a REPL console for the Raspberry Pi Pico (W).",
-  "version": "2.1.8",
+  "description": "Autocompletion, remote Workspace and a REPL console for the Raspberry Pi Pico (W).",
+  "version": "3.0.0",
   "publisher": "paulober",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
   "bugs": {
     "url": "https://github.com/paulober/Pico-W-Go/issues"
@@ -19,8 +19,8 @@
     "theme": "light"
   },
   "engines": {
-    "vscode": "^1.70.0",
-    "node": ">=15.14.0"
+    "vscode": "^1.77.0",
+    "node": ">=16.14.2"
   },
   "keywords": [
     "raspberry",
@@ -33,34 +33,21 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:picowgo.initialise",
-    "workspaceContains:.picowgo"
-  ],
-  "main": "./dist/extension.js",
-  "compatibility": [
-    {
-      "platform": "win32",
-      "arch": [
-        "x64"
-      ]
+  "capabilities": {
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "Pico-W-Go does not support as first workspace a virtual one but contributes a virtual workspace for the Pico (W)."
     },
-    {
-      "platform": "darwin",
-      "arch": [
-        "x64",
-        "arm64"
-      ]
-    },
-    {
-      "platform": "linux",
-      "arch": [
-        "x64",
-        "arm64",
-        "arm"
-      ]
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Why would you want to use Pico-W-Go in an untrusted workspace?"
     }
+  },
+  "activationEvents": [
+    "workspaceContains:.picowgo",
+    "onFileSystem:pico"
   ],
+  "main": "./dist/extension.cjs",
   "os": [
     "win32",
     "darwin",
@@ -71,7 +58,7 @@
     "arm64",
     "arm"
   ],
-  "minimumNodeVersion": 15,
+  "minimumNodeVersion": 16,
   "contributes": {
     "commands": [
       {
@@ -92,7 +79,8 @@
       },
       {
         "command": "picowgo.uploadFile",
-        "title": "Pico-W-Go > Upload current file only"
+        "title": "Pico-W-Go > Upload current file",
+        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
       },
       {
         "command": "picowgo.download",
@@ -100,19 +88,22 @@
       },
       {
         "command": "picowgo.run",
-        "title": "Pico-W-Go > Run current file"
+        "title": "Pico-W-Go > Run current file",
+        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+      },
+      {
+        "command": "picowgo.remote.run",
+        "title": "Pico-W-Go > Remote > Run current file",
+        "enablement": "resourceScheme == pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
       },
       {
         "command": "picowgo.runselection",
-        "title": "Pico-W-Go > Run current selection"
+        "title": "Pico-W-Go > Run current selection",
+        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python && resourceExtname == .py"
       },
       {
         "command": "picowgo.deleteAllFiles",
         "title": "Pico-W-Go > Delete all files from board"
-      },
-      {
-        "command": "picowgo.ftp",
-        "title": "Pico-W-Go > Start FTP server"
       },
       {
         "command": "picowgo.globalSettings",
@@ -145,45 +136,70 @@
       {
         "command": "picowgo.listCommands",
         "title": "Pico-W-Go > List all Commands"
+      },
+      {
+        "command": "picowgo.toggleFileSystem",
+        "title": "Pico-W-Go > Toggle Virtual File System (closes existing vREPLs)"
+      },
+      {
+        "command": "picowgo.switchPico",
+        "title": "Pico-W-Go > Switch Pico"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "picowgo.upload",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
+        },
+        {
+          "command": "picowgo.download",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
         },
         {
           "command": "picowgo.run",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         }
       ],
       "editor/context": [
         {
-          "command": "picowgo.connect",
-          "group": "picowgo"
+          "command": "picowgo.run",
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         },
         {
-          "command": "picowgo.run",
-          "group": "picowgo"
+          "command": "picowgo.remote.run",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
         },
         {
           "command": "picowgo.runselection",
           "group": "picowgo"
         },
         {
-          "command": "picowgo.upload",
-          "group": "picowgo"
+          "command": "picowgo.uploadFile",
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         }
       ],
       "editor/title": [
         {
           "command": "picowgo.run",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
+        },
+        {
+          "command": "picowgo.remote.run",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
         },
         {
           "command": "picowgo.upload",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "resourceScheme != pico"
         }
       ]
     },
@@ -194,14 +210,14 @@
           "type": "boolean",
           "default": true,
           "title": "Autoconnect on USB",
-          "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list",
+          "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
           "order": 2
         },
         "picowgo.manualComDevice": {
           "type": "string",
           "default": "",
           "title": "Manual COM device",
-          "description": "If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here",
+          "description": "If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here.",
           "order": 3
         },
         "picowgo.syncFolder": {
@@ -219,15 +235,25 @@
           "order": 5
         },
         "picowgo.syncFileTypes": {
-          "type": "string",
-          "default": "py,txt,log,json,xml,html,js,css,mpy",
+          "type": "array",
+          "default": [
+            "py",
+            "txt",
+            "log",
+            "json",
+            "xml",
+            "html",
+            "js",
+            "css",
+            "mpy"
+          ],
           "title": "Upload file types",
           "description": "All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action",
           "order": 6
         },
         "picowgo.pyIgnore": {
           "title": "Pyignore list",
-          "description": "Comma separated list of files and folders to ignore when uploading (no wildcard or regular expressions supported)",
+          "description": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported)",
           "type": "array",
           "items": {
             "type": "string"
@@ -243,19 +269,12 @@
           ],
           "order": 7
         },
-        "picowgo.ctrlCOnConnect": {
-          "type": "boolean",
-          "default": false,
-          "title": "Ctrl-C on connect",
-          "description": "Stops all running programs when connecting to the board",
-          "order": 8
-        },
         "picowgo.openOnStart": {
           "type": "boolean",
           "default": false,
           "title": "Open on start",
-          "description": "Automatically open the Pico-W-Go console and connect to the board after starting VS Code",
-          "order": 9
+          "description": "Automatically open the Pico-W-Go console after starting VS Code. Could cause random terminal freezes on Linux.",
+          "order": 8
         },
         "picowgo.statusbarButtons": {
           "type": "array",
@@ -269,57 +288,38 @@
             "run",
             "softreset"
           ],
-          "order": 10
+          "order": 9
         },
-        "picowgo.safeBootOnUpload": {
+        "picowgo.gcBeforeUpload": {
           "type": "boolean",
           "default": false,
-          "title": "Safe-boot before upload",
-          "description": "[Only works with firmware v1.16.0.b1 and up.] Safe boots the board before uploading to prevent running out of memory while uploading. But adds about 2 seconds to the upload procedure",
-          "order": 11
+          "title": "Garbage collection before upload",
+          "description": "[Only works with firmware v1.16.0.b1 and up.] Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
+          "order": 10
         },
         "picowgo.rebootAfterUpload": {
           "type": "boolean",
           "default": true,
           "title": "Reboot after upload",
-          "description": "Reboots your board after any upload or download action",
-          "order": 12
-        },
-        "picowgo.fastUpload": {
-          "type": "boolean",
-          "default": false,
-          "title": "Reboot after upload",
-          "description": "Uploads files in bigger chunks. This can speed up the upload process, but can also cause problems with some boards ('memory overflow'). If you experience problems with uploading, try disabling this option",
-          "order": 13
-        },
-        "picowgo.autoconnectComportManufacturers": {
-          "title": "Autoconnect comport manufacturers",
-          "description": "List of all the comport manufacturers supported for the autoconnect feature. Defaults to all possible manufacturers that pycom boards can return.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "MicroPython",
-            "Microsoft"
-          ],
-          "order": 14
-        },
-        "picowgo.ftpPassword": {
-          "type": "string",
-          "default": "pico",
-          "title": "FTP Password",
-          "description": "Password for FTP authentication. The username is 'pico'.",
-          "order": 15
+          "description": "Reboots your board after any upload action.",
+          "order": 11
         },
         "picowgo.pythonPath": {
           "type": "string",
           "default": null,
           "title": "Python Path",
           "description": "Path to the Python interpreter. Defaults to null.",
-          "order": 16
+          "order": 12
         }
       }
+    },
+    "terminal": {
+      "profiles": [
+        {
+          "title": "Pico (W) vREPL",
+          "id": "picowgo.vrepl"
+        }
+      ]
     }
   },
   "statusBar": [
@@ -357,7 +357,7 @@
       "key": "download",
       "name": "$(triangle-down) Download",
       "command": "picowgo.download",
-      "tooltip": "Download project from your board"
+      "tooltip": "Download project from your board. This will overwrite all files in the sync folder."
     },
     {
       "key": "disconnect",
@@ -388,20 +388,13 @@
       "name": "$(list-unordered) All commands",
       "command": "picowgo.listCommands",
       "tooltip": "List all available Pico-W-Go commands"
-    },
-    {
-      "key": "ftp",
-      "name": "$(references) FTP",
-      "command": "picowgo.ftp",
-      "tooltip": "Start FTP server"
     }
   ],
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "postinstall": "node ./scripts/applyPatches.js",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile": "rollup -c",
+    "watch": "rollup -cw",
+    "package": "rollup -c --environment BUILD:production --sourcemap hidden",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -409,39 +402,31 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
-    "@types/glob": "^8.0.1",
-    "@types/lodash": "^4.14.191",
-    "@types/memorystream": "^0.3.0",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "@types/fs-extra": "^11.0.1",
+    "@types/lodash": "^4.14.192",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^16",
-    "@types/node-fetch": "^2.6.2",
-    "@types/rimraf": "^3.0.2",
-    "@types/semver": "^7.3.13",
-    "@types/serialport": "^8.0.2",
+    "@types/node": "^16.x",
     "@types/uuid": "^9.0.1",
-    "@types/vscode": "^1.70.0",
-    "@typescript-eslint/eslint-plugin": "^5.49.0",
-    "@typescript-eslint/parser": "^5.49.0",
-    "@vscode/test-electron": "^2.2.2",
-    "eslint": "^8.32.0",
-    "glob": "^8.1.0",
+    "@types/vscode": "^1.77.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.57.1",
+    "@vscode/test-electron": "^2.3.0",
+    "eslint": "^8.37.0",
+    "eslint-config-prettier": "^8.8.0",
+    "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "ts-loader": "^9.4.2",
-    "typescript": "^4.9.5",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^4.10.0"
+    "rollup": "^3.20.2",
+    "rollup-plugin-copy": "^3.4.0",
+    "typescript": "^5.0.4"
   },
   "dependencies": {
-    "async-mutex": "^0.4.0",
-    "fs-extra": "^10.1.0",
-    "ftp-srv": "^4.6.2",
+    "@paulober/pyboard-serial-com": "^1.4.15",
+    "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
-    "memorystream": "^0.3.1",
-    "node-fetch": "^3.2.10",
-    "rimraf": "^3.0.2",
-    "semver": "^7.3.8",
-    "serialport": "^10.5.0",
     "uuid": "^9.0.0"
   }
 }

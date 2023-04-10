@@ -6,15 +6,37 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ## Known issues
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
-- CtrlCOnConnect settings does no rerender "Pico Disconnect" button correctly. Also does not enter repl correctly. Not impact on functionality just UI! (since v2.1.0)
-- Some users have problems with stubs not linking into workspace after running "Configure Project". Maybe related to permission errors for symlink creation on these systems. As a workaround you can find a PowerShell script [here](https://github.com/paulober/Pico-W-Go/files/9651807/Configure-Project.zip) or in the repository contained folder called "scripts" named "Configure-Project.ps1". As an alternative often it does fix the issue by just running VS Code as an administrator (just to run the initial configure project command).
+- Mounting virtual workspace causes existing vREPLs to freeze so they need to be disposed manually for some reason. (maybe cauaused by vscode)
 
 ---
 
-## [Unreleased]
+## [3.0.0] - 2023-04-10
 
-- Remove telnet and unix socket interfaces as they are never used and unable to connect to any plain MicroPython Raspberry Pi Pico (W) board
-- Mounting the MicroPython filesystem into VS Code as a remote workspace.
+# Added
+- Remote filesystem/workspace integration of the Pico (W) filesystem.
+- A contributed/integrated __terminal profile__ for the Pico (W) REPL (open and closing does not affect the connection as long as you don't duplicated or open multiple vREPLs)
+
+- `picowgo.switchPico` command to be able to chose between ports without having to deal with any config
+- `picowgo.gcBeforeUpload` runs garbage collector before uploading files to free some memory for more stable uploads
+
+# Changed
+- `picowgo.syncFileTypes` settings datatype changed to `array`
+- `picowgo.safeBootOnUpload` was renamed to `picowgo.gcBeforeUpload`
+- NEW REQUIREMENT: [`pyserial`Python Pip package](https://pypi.org/project/pyserial/)
+- Terminal behaviour is now a virtual REPL which can execute commands on the remote Pico (W) MicroPython REPL
+- To enable the new remote workspace feature, a new queuing system between the serial port and the VSCode inputs had to be developed
+to cope with the bottleneck of a *serial* connection. For stability reasons, I therefore do **not** recommend excessive multitasking with the features of the extension in conjunction with the Pico. It should work fine and also handle a large load, but you don't need to overuse it.
+- Better detection for OS and hardware
+- Improved stability for file transfers
+- Updated stubs for 'Firmware v1.19.1-1009 nightly'
+- Shrunk extension file size because it's not required to bundle serialport package anymore within the extn
+
+# Removed 
+- `ctrlCOnConnect` setting, because its now the default
+- FTP-Server, it was deprecated had security vulnarabilities and some users reported problems using it
+- Cut many other dependencies
+
+---
 
 ## [2.1.8] - 2023-03-04
 

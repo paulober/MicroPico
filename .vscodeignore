@@ -1,20 +1,18 @@
 .vscode/**
 .vscode-test/**
+.idea/**
 out/**
-# have to include node_modules because of external webpackmodules to
-# be added by vsce package --dependencies
-#node_modules/**
+node_modules/**
 src/**
 .gitignore
 .yarnrc
-webpack.config.js
+rollup.config.mjs
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
 **/*.ts
 
 .github/**
-patches/**
 scripts/**
 
 # instance files
@@ -23,3 +21,7 @@ azure-pipelines.yml
 
 # other
 *.vsix
+
+!dist/*.cjs
+!dist/scripts/*.py
+dist/scripts/__pycache__

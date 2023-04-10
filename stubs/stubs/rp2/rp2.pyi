@@ -308,7 +308,7 @@ class PIOASMEmit:
 class StateMachine:
     # Determined from: https://github.com/raspberrypi/micropython/blob/1196871a0f2f974b03915e08cfcc0433de4b8a64/ports/rp2/rp2_pio.c
     # Documentation put together via research and may be flawed!
-    def __init__(self, id, prog, freq: int=-1, *, in_base: Pin=None, out_base: Pin=None, set_base: Pin=None, jmp_pin: Pin=None, sideset_base: Pin=None, in_shiftdir: int=None, out_shiftdir: int=None, push_thresh: int=None, pull_thresh: int=None):
+    def __init__(self, id, prog, freq: int=-1, *, in_base: Pin | None =None, out_base: Pin | None =None, set_base: Pin | None =None, jmp_pin: Pin | None =None, sideset_base: Pin | None =None, in_shiftdir: int | None =None, out_shiftdir: int | None =None, push_thresh: int | None =None, pull_thresh: int | None =None):
         """
         Create a new StateMachine containing two First-In-First-Out (FIFO)
         structures: one for incoming data and another for outgoing data.
@@ -440,17 +440,23 @@ def asm_pio(
     In Pylint, add a comment that reads ``# pylint: disable=E,W,C,R`` at the beginning of 
     the method.
     """
-    #   0: return emit.prog
-    # ? 0: return emit.prog
-    #   1: return dec
-    # ? 1: return dec
     ...
 
 
 def asm_pio_encode(instr: str, sideset_count: int, sideset_opt=False) -> Any:
     """Assemble a single PIO instruction. You usually want to use ``asm_pio()`` instead."""
-    #   0: return emit.prog[_PROG_DATA][]
-    # ? 0: return emit.prog[_PROG_DATA][]
+    ...
+
+def bootsel_button() -> int:
+    """
+    Temporarily turns the QSPI_SS pin into an input and reads its value, returning 1 for 
+    low and 0 for high. On a typical RP2040 board with a BOOTSEL button, a return value 
+    of 1 indicates that the button is pressed.
+
+    Since this function temporarily disables access to the external flash memory, it 
+    also temporarily disables interrupts and the other core to prevent them from trying 
+    to execute code from flash.
+    """
     ...
 
 def const(value: Any) -> Any:

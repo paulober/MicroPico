@@ -1,13 +1,30 @@
 # Contributing
 
-When contributing to this repository, please first discuss the change you wish to make via an issue, email, or any other method with the owners of this repository before making a change.
+When contributing to this repository, please first discuss the change you wish to make via an issue with the owners of this repository before making a change.
 
 ::Please note we have a Code of Conduct, please follow it in all your interactions with the project.::
 
 ## Pull Request Process
 
-1. Update the `README.md` with details of changes to the interface, this includes new environment variables, useful file locations and container parameters.
-2. Increase the version numbers in any examples files and the `README.md` to the new version that this Pull Request would represent. The versioning scheme we use is [SemVer](https://semver.org).
+### - NPM setup
+In order to install `paulober/pyboard-serial-com` sub-package you first have configure npm. See ["Configuring npm for use with GitHub Package Registry."](https://help.github.com/en/articles/configuring-npm-for-use-with-github-package-registry#authenticating-to-github-package-registry)
+
+### Repository setup
+1. Fork the repository into your private account
+2. Create a branch with following naming scheeme `fix-<issue-id>-<short-title-of-the-issue>`
+3. Download your fork of the repository (Github.cli recommended)
+4. `cd Pico-W-Go`
+5. Switch to your newly created branch (`git checkout <branch-name>` for example)
+6. `npm install`
+
+Do changes and commits...
+
+After the fix is complete DO some extensive testing if all what could be affected works without problems.
+
+7. Now squash all your commits and name the final commit something like `Fix #<issue-id>, <Short title of the issue>`
+    - The description of the squash commit should contain a list (description) of all the changes you've made
+
+8. Push and create a pull request to the develop branch of paulober/Pico-W-Go
 
 ## Code of Conduct
 

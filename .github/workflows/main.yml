@@ -6,15 +6,23 @@ on:
     branches-ignore:
       - "dependabot/**"
     paths-ignore:
-      - "doc/**"
+      - ".idea/**"
+      - ".vscode/**"
+      - "**/*.md"
+      - ".prettierrc.json"
+      - "LICENSE"
+      - ".editorconfig"
+      - ".eslintrc.json"
+
+permissions:
+  contents: read
+  packages: read
 
 jobs:
   build:
-    name: "Build ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    name: "Build ubuntu-latest"
+    runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v3
 
@@ -22,19 +30,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16.14.x"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@paulober"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Dependencies
         shell: bash
         run: |
-          npm install --no-audit
+          sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
+          npm ci --no-audit
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package Extension
-        run: npx vsce package --no-yarn --dependencies -o picowgo-${{ github.sha }}.vsix
-
-# Stop uploading artifacts for the basic build process
-#      - name: Upload VSIX
-#        #if: github.event_name == 'schedule'
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: picowgo-nightly.vsix
-#          path: ./picowgo-${{ github.sha }}.vsix
+        run: npx @vscode/vsce package --no-yarn -o picowgo-${{ github.sha }}.vsix
