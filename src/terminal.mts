@@ -98,8 +98,11 @@ export class Terminal implements Pseudoterminal {
         } else if (data === "\x1b[B") {
           // arrow down
           const historyItem = this.history.arrowDown();
-          this.writeEmitter.fire(DEL(this.buffer.length));
+          // delete until last save positon
+          this.writeEmitter.fire("\x1b[u\x1b[0J");
           this.buffer = historyItem;
+          this.xCursor = this.buffer.length;
+          this.writeEmitter.fire(this.buffer);
         } else if (data === "\x1b[C") {
           // arrow right
           if (this.xCursor < this.buffer.length) {
