@@ -308,7 +308,7 @@
           "type": "string",
           "default": null,
           "title": "Python Path",
-          "description": "Path to the Python interpreter. Defaults to null.",
+          "description": "Path to the Python interpreter. Default for Windows is 'python.exe' and 'python3' for Linux and MacOS.",
           "order": 12
         }
       }

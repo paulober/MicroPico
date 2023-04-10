@@ -80,8 +80,9 @@ export default class Activator {
     }
 
     if (!isPyserialInstalled(pyCommand)) {
+      // TODO: maybe add a progress bar after choosing the install option
       const response = await vscode.window.showQuickPick(
-        ["Install pyserial (required)", "Stop Pico-W-Go"],
+        ["Auto install pyserial (required)", "Stop Pico-W-Go"],
         {
           canPickMany: false,
           placeHolder: "pyserial pip package is not installed",
