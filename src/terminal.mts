@@ -36,6 +36,8 @@ export class Terminal implements Pseudoterminal {
   }
 
   public open(initialDimensions: TerminalDimensions | undefined): void {
+    if (this.isOpen && initialDimensions !== undefined) return;
+
     this.isOpen = true;
     this.isForzen = false;
 
@@ -295,5 +297,9 @@ export class Terminal implements Pseudoterminal {
     this.writeEmitter.fire(PROMPT);
     // save cursor positon
     this.writeEmitter.fire("\x1b7");
+  }
+
+  public getIsOpen(): boolean {
+    return this.isOpen;
   }
 }

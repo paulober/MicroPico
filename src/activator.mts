@@ -50,6 +50,11 @@ export default class Activator {
   public async activate(
     context: vscode.ExtensionContext
   ): Promise<UI | undefined> {
+    // catch reactivation which causes terminals created by code to crash
+    if (this.stubs !== undefined || this.ui !== undefined) {
+      return this.ui;
+    }
+
     const settings = new Settings(context.workspaceState);
     const pyCommand = settings.pythonExecutable || (await getPythonCommand());
     settings.update(SettingsKey.pythonPath, pyCommand);
@@ -95,22 +100,24 @@ export default class Activator {
     this.stubs = new Stubs();
     await this.stubs.update();
 
-    this.ui = new UI(settings);
-    this.ui.init();
-
     let comDevice = await settings.getComDevice();
 
     if (comDevice === undefined || comDevice === "") {
       comDevice = undefined;
 
       const choice = await vscode.window.showErrorMessage(
-        "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect.",
+        "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect. For Linux users: make sure your user is in dialout group: sudo usermod -a -G dialout $USER",
         "Open Settings"
       );
 
       if (choice === "Open Settings") {
         openSettings();
       }
+    }
+
+    this.ui = new UI(settings);
+    if (comDevice !== undefined) {
+      this.ui.init();
     }
 
     this.pyb = new PyboardRunner(
@@ -183,6 +190,20 @@ export default class Activator {
       })
     );
 
+    context.subscriptions.push(
+      vscode.window.onDidOpenTerminal(newTerminal => {
+        if (newTerminal.creationOptions.name === TERMINAL_NAME) {
+          if (this.terminal?.getIsOpen()) {
+            vscode.window.showWarningMessage(
+              "Only one instance of Pico (W) vREPL is recommended. Please close the new terminal instance!"
+            );
+            // would freeze old terminal
+            //newTerminal.dispose();
+          }
+        }
+      })
+    );
+
     // register fs provider as early as possible
     this.picoFs = new PicoWFs(this.pyb);
     context.subscriptions.push(
@@ -198,7 +219,10 @@ export default class Activator {
       },
     });
 
-    if (settings.getBoolean(SettingsKey.openOnStart)) {
+    if (
+      settings.getBoolean(SettingsKey.openOnStart) &&
+      comDevice !== undefined
+    ) {
       await focusTerminal(this.terminalOptions);
     }
 
@@ -233,6 +257,7 @@ export default class Activator {
       async () => {
         comDevice = await settings.getComDevice();
         if (comDevice !== undefined) {
+          await this.ui?.init();
           this.pyb?.switchDevice(comDevice);
         }
       }
@@ -589,6 +614,7 @@ export default class Activator {
           if (comDevice === undefined) {
             vscode.window.showErrorMessage("No COM device found!");
           } else {
+            await this.ui?.init();
             this.pyb?.switchDevice(comDevice);
           }
         }

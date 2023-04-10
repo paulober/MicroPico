@@ -19,6 +19,7 @@ export default class UI {
   private settings: Settings;
   private logger: Logger;
   private visible: boolean = false;
+  private initialized: boolean = false;
 
   private items: { [key: string]: StatusBarItem } = {};
 
@@ -28,6 +29,9 @@ export default class UI {
   }
 
   public async init(): Promise<void> {
+    if (this.initialized) return;
+    this.initialized = true;
+
     for (const item of pkg.statusBar) {
       this.items[item.key] = this.createStatusBarItem(
         item.key,
