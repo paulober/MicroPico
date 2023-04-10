@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
   "description": "Autocompletion, remote Workspace and a REPL console for the Raspberry Pi Pico (W).",
-  "version": "2.1.8",
+  "version": "3.0.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
@@ -48,29 +48,6 @@
     "onFileSystem:pico"
   ],
   "main": "./dist/extension.cjs",
-  "compatibility": [
-    {
-      "platform": "win32",
-      "arch": [
-        "x64"
-      ]
-    },
-    {
-      "platform": "darwin",
-      "arch": [
-        "x64",
-        "arm64"
-      ]
-    },
-    {
-      "platform": "linux",
-      "arch": [
-        "x64",
-        "arm64",
-        "arm"
-      ]
-    }
-  ],
   "os": [
     "win32",
     "darwin",
