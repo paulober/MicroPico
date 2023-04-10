@@ -128,7 +128,8 @@ export default class Stubs {
       "python.languageServer": "Pylance",
       "python.analysis.typeCheckingMode": "basic",
       "picowgo.syncFolder": "",
-      "picowgo.openOnStart": true,
+      // (Currently not supported)
+      //"picowgo.openOnStart": true,
     };
 
     let settings = (await readJsonFile(settingsFilePath)) || {};

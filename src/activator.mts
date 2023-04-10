@@ -38,10 +38,6 @@ export default class Activator {
   private ui?: UI;
   private stubs?: Stubs;
   private picoFs?: PicoWFs;
-  private terminalOptions:
-    | vscode.ExtensionTerminalOptions
-    | vscode.TerminalOptions = {};
-  private terminal?: Terminal;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -50,10 +46,20 @@ export default class Activator {
   public async activate(
     context: vscode.ExtensionContext
   ): Promise<UI | undefined> {
-    // catch reactivation which causes terminals created by code to crash
-    if (this.stubs !== undefined || this.ui !== undefined) {
-      return this.ui;
-    }
+    vscode.window
+      .showInformationMessage(
+        "Pico-W-Go v3 introduces many changes (also in requirements) compared to v2! To findout more about what changed, please read the changelog. (Notification will be removed next minor update)",
+        "Open Changelog"
+      )
+      .then(choice => {
+        if (choice === "Open Changelog") {
+          vscode.env.openExternal(
+            vscode.Uri.parse(
+              "https://github.com/paulober/Pico-W-Go/blob/main/CHANGELOG.md"
+            )
+          );
+        }
+      });
 
     const settings = new Settings(context.workspaceState);
     const pyCommand = settings.pythonExecutable || (await getPythonCommand());
@@ -127,7 +133,7 @@ export default class Activator {
       pyCommand
     );
 
-    this.terminal = new Terminal(async () => {
+    const terminal = new Terminal(async () => {
       if (this.pyb?.isPipeConnected()) {
         const result = await this.pyb?.executeCommand(
           "\rfrom usys import implementation, version; print(version.split('; ')[1] + '; ' + implementation._machine)"
@@ -146,7 +152,7 @@ export default class Activator {
       return "No connection to Pico (W) REPL";
     });
     let commandExecuting = false;
-    this.terminal.onDidSubmit(async (cmd: string) => {
+    terminal.onDidSubmit(async (cmd: string) => {
       if (commandExecuting) {
         this.pyb?.writeToPyboard(cmd);
         return;
@@ -156,16 +162,23 @@ export default class Activator {
       await this.pyb?.executeFriendlyCommand(cmd, (data: string) => {
         if (data === "!!JSONDecodeError!!" || data === "!!ERR!!") {
           // write red text into terminal
-          this.terminal?.write("\x1b[31mException occured\x1b[0m");
+          terminal?.write("\x1b[31mException occured\x1b[0m");
           return;
         }
-        this.terminal?.write(data);
+        terminal?.write(data);
       });
       commandExecuting = false;
-      this.terminal?.prompt();
+      terminal?.prompt();
     });
 
-    this.terminalOptions = {
+    try {
+      // dispose old terminals on reactivation as otherwise they would be frozen
+      vscode.window.terminals
+        .find(term => term.creationOptions.name === TERMINAL_NAME)
+        ?.dispose();
+    } catch {}
+
+    const terminalOptions = {
       name: TERMINAL_NAME,
       iconPath: vscode.Uri.file(
         join(
@@ -176,7 +189,7 @@ export default class Activator {
         )
       ),
       isTransient: true,
-      pty: this.terminal,
+      pty: terminal,
       hideFromUser: false,
       location: vscode.TerminalLocation.Panel,
     };
@@ -185,7 +198,7 @@ export default class Activator {
     context.subscriptions.push(
       vscode.window.registerTerminalProfileProvider("picowgo.vrepl", {
         provideTerminalProfile: () => {
-          return new vscode.TerminalProfile(this.terminalOptions);
+          return new vscode.TerminalProfile(terminalOptions);
         },
       })
     );
@@ -193,12 +206,13 @@ export default class Activator {
     context.subscriptions.push(
       vscode.window.onDidOpenTerminal(newTerminal => {
         if (newTerminal.creationOptions.name === TERMINAL_NAME) {
-          if (this.terminal?.getIsOpen()) {
+          if (terminal?.getIsOpen()) {
             vscode.window.showWarningMessage(
               "Only one instance of Pico (W) vREPL is recommended. Please close the new terminal instance!"
             );
             // would freeze old terminal
-            //newTerminal.dispose();
+            newTerminal.dispose();
+            //focusTerminal(terminalOptions);
           }
         }
       })
@@ -223,7 +237,7 @@ export default class Activator {
       settings.getBoolean(SettingsKey.openOnStart) &&
       comDevice !== undefined
     ) {
-      await focusTerminal(this.terminalOptions);
+      await focusTerminal(terminalOptions);
     }
 
     // [Command] help
@@ -290,23 +304,23 @@ export default class Activator {
       }
 
       let frozen = false;
-      await focusTerminal(this.terminalOptions);
+      await focusTerminal();
       const data = await this.pyb.runFile(file, (data: string) => {
         // only freeze after operation has started
         if (!frozen) {
-          this.terminal?.freeze();
-          this.terminal?.write("\r\n");
+          terminal?.freeze();
+          terminal?.write("\r\n");
           frozen = true;
         }
-        this.terminal?.write(data);
+        terminal?.write(data);
       });
       if (data.type === PyOutType.commandResult) {
         const result = data as PyOutCommandResult;
         // TODO: reflect result.result somehow
       }
-      this.terminal?.melt();
-      this.terminal?.write("\r\n");
-      this.terminal?.prompt();
+      terminal?.melt();
+      terminal?.write("\r\n");
+      terminal?.prompt();
     });
     context.subscriptions.push(disposable);
 
@@ -326,7 +340,7 @@ export default class Activator {
         }
 
         let frozen = false;
-        await focusTerminal(this.terminalOptions);
+        await focusTerminal();
         await this.pyb.executeCommand(
           "import uos; " +
             "__pico_dir=uos.getcwd(); " +
@@ -337,16 +351,16 @@ export default class Activator {
           (data: string) => {
             // only freeze after operation has started
             if (!frozen) {
-              this.terminal?.freeze();
-              this.terminal?.write("\r\n");
+              terminal?.freeze();
+              terminal?.write("\r\n");
               frozen = true;
             }
-            this.terminal?.write(data);
+            terminal?.write(data);
           }
         );
-        this.terminal?.melt();
-        this.terminal?.write("\r\n");
-        this.terminal?.prompt();
+        terminal?.melt();
+        terminal?.write("\r\n");
+        terminal?.prompt();
       }
     );
     context.subscriptions.push(disposable);
@@ -367,24 +381,24 @@ export default class Activator {
           return;
         } else {
           let frozen = false;
-          await focusTerminal(this.terminalOptions);
+          await focusTerminal();
           this.pyb
             .executeCommand(code, (data: string) => {
               // only freeze after operation has started
               if (!frozen) {
-                this.terminal?.freeze();
-                this.terminal?.write("\r\n");
+                terminal?.freeze();
+                terminal?.write("\r\n");
                 frozen = true;
               }
-              this.terminal?.write(data);
+              terminal?.write(data);
             })
             .then((data: PyOut) => {
               if (data.type === PyOutType.commandResult) {
                 const result = data as PyOutCommandResult;
                 // TODO: reflect result.result in status bar
               }
-              this.terminal?.melt();
-              this.terminal?.prompt();
+              terminal?.melt();
+              terminal?.prompt();
             });
         }
       }

@@ -172,7 +172,7 @@ export async function getTypeshedPicoWStubPath(): Promise<
 }
 
 export async function focusTerminal(
-  terminalOptions: ExtensionTerminalOptions | TerminalOptions
+  terminalOptions?: TerminalOptions | ExtensionTerminalOptions
 ): Promise<void> {
   const openTerminals = window.terminals;
 
@@ -180,7 +180,7 @@ export async function focusTerminal(
     return term.creationOptions.name === TERMINAL_NAME;
   });
 
-  if (picoRepl) {
+  if (picoRepl && terminalOptions === undefined) {
     // focus the terminal
     picoRepl.show(false);
   } else {
@@ -189,9 +189,13 @@ export async function focusTerminal(
       id: "picowgo.vrepl",
       profileName: TERMINAL_NAME,
     } as Object);*/
-
-    window.createTerminal(terminalOptions).show();
-    // wait for terminal to open
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    if (terminalOptions) {
+      // does crash on reactivation
+      window.createTerminal(terminalOptions).show();
+      // wait for terminal to open
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } else {
+      window.showWarningMessage("Pico vREPL not open.");
+    }
   }
 }
