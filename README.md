@@ -2,7 +2,7 @@
 
 Pico-W-Go provides code auto-completion and allows you to communicate with your Raspberry Pi Pico (W) board using the built-in REPL console. Run a single file on your board, sync your entire project or directly type and execute commands.
 
-> __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20230302-unstable-v1.19.1-915-g2bcd88d55.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20230302-unstable-v1.19.1-915-g2bcd88d55.uf2)__
+> __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20230407-unstable-v1.19.1-1009-gcfd3b7093.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20230407-unstable-v1.19.1-1009-gcfd3b7093.uf2)__
 
 Works with:
 | Platform |    Architectures   |
@@ -35,14 +35,16 @@ Visual Studio Code extensions:
 
 Environment:
 
-On most Linux installations the device file of the Pico serial port is owned by root and a group you normal don't have by default. This leads to timeout and access denied errors when Pico-W-Go tries to connect to the Pico. There are two ways how to solve this problem:
+On most Linux installations the device file of the Pico serial port is owned by root and a group you normal don't have by default. This leads to timeout and access denied errors when Pico-W-Go tries to connect to the Pico. There are three ways how to solve this problem:
 1. Run VS Code in sudo (NOT RECOMMENDED)
-2. Add the group who "owns" the serial port file to your current user. You can easily do this by downloading and executing the `scripts/solvePermissions.sh` script. However you have to change the marked line in the script if you raspberry pi pico (w) does not connect to/shows up as `/dev/ttyACM0` to the correct device file.
+2. Normaly adding your user to `dialout` group should fix the issue: `sudo usermod -a -G dialout $THEUSER` (logout required)
+3. Dynamically add the group who "owns" the serial port file to your current user. You can easily do this by downloading and executing the `scripts/solvePermissions.sh` script. However you **have** to change the marked line in the script if you Raspberry Pi Pico (w) does not connect to/shows up as `/dev/ttyACM0` to the correct device file. The script will readout the group owning the device file and then add you to this group. (logout required)
 ```bash
 # download scripts/solvePermissions.sh
 wget https://raw.githubusercontent.com/paulober/Pico-W-Go/main/scripts/solvePermissions.sh
 # maybe not required
 chmod +x ./solvePermissions.sh
+# (change `/dev/ttyACM0` to the device file/port of your Pico)
 # run the script
 ./solvePermissions.sh
 ``` 

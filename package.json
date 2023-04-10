@@ -44,7 +44,8 @@
     }
   },
   "activationEvents": [
-    "workspaceContains:.picowgo"
+    "workspaceContains:.picowgo",
+    "onFileSystem:pico"
   ],
   "main": "./dist/extension.cjs",
   "compatibility": [
@@ -161,7 +162,7 @@
       },
       {
         "command": "picowgo.toggleFileSystem",
-        "title": "Pico-W-Go > Toggle Virtual File System"
+        "title": "Pico-W-Go > Toggle Virtual File System (closes existing vREPLs)"
       },
       {
         "command": "picowgo.switchPico",
