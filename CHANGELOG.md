@@ -7,8 +7,18 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 ## Known issues
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
 - Mounting virtual workspace causes existing vREPLs to freeze so they need to be disposed manually for some reason. (maybe cauaused by vscode)
+- `autoConnect` is currently not working
 
 ---
+
+## [3.0.1] - 2023-04-11
+
+# Changed
+- Small UX improvements
+- Fixes [#58](https://github.com/paulober/Pico-W-Go/issues/58), Run button no stop option
+
+# Removes
+- Artificial upload constraint ([#61](https://github.com/paulober/Pico-W-Go/issues/61))
 
 ## [3.0.0] - 2023-04-10
 
@@ -29,7 +39,7 @@ to cope with the bottleneck of a *serial* connection. For stability reasons, I t
 - Better detection for OS and hardware
 - Improved stability for file transfers
 - Updated stubs for 'Firmware v1.19.1-1009 nightly'
-- Shrunk extension file size because it's not required to bundle serialport package anymore within the extn
+- Shrunk extension file size because it's not required to bundle serialport package anymore within the extension
 
 # Removed 
 - `ctrlCOnConnect` setting, because its now the default

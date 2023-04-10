@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
   "description": "Autocompletion, remote Workspace and a REPL console for the Raspberry Pi Pico (W).",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
@@ -80,7 +80,7 @@
       {
         "command": "picowgo.uploadFile",
         "title": "Pico-W-Go > Upload current file",
-        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "enablement": "resourceScheme != pico && isFileSystemResource"
       },
       {
         "command": "picowgo.download",
@@ -99,7 +99,7 @@
       {
         "command": "picowgo.runselection",
         "title": "Pico-W-Go > Run current selection",
-        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python"
       },
       {
         "command": "picowgo.deleteAllFiles",
@@ -308,7 +308,7 @@
           "type": "string",
           "default": null,
           "title": "Python Path",
-          "description": "Path to the Python interpreter. Defaults to null.",
+          "description": "Path to the Python interpreter. Default for Windows is 'python.exe' and 'python3' for Linux and MacOS.",
           "order": 12
         }
       }
@@ -424,7 +424,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.4.15",
+    "@paulober/pyboard-serial-com": "^1.4.19",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "uuid": "^9.0.0"

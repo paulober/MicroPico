@@ -20,6 +20,7 @@ export default class UI {
   private logger: Logger;
   private visible: boolean = false;
   private initialized: boolean = false;
+  private userOperationOngoing: boolean = false;
 
   private items: { [key: string]: StatusBarItem } = {};
 
@@ -124,6 +125,26 @@ export default class UI {
     }
 
     return item;
+  }
+
+  public userOperationStarted(): void {
+    this.userOperationOngoing = true;
+    this.logger.debug("User operation started");
+
+    this.items["run"].hide();
+    this.items["stop"].show();
+  }
+
+  public userOperationStopped(): void {
+    this.userOperationOngoing = false;
+    this.logger.debug("User operation stopped");
+
+    this.items["stop"].hide();
+    this.items["run"].show();
+  }
+
+  public isUserOperationOngoing(): boolean {
+    return this.userOperationOngoing;
   }
 
   public async destroy(): Promise<void> {
