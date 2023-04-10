@@ -44,8 +44,7 @@
     }
   },
   "activationEvents": [
-    "workspaceContains:.picowgo",
-    "onFileSystem:pico"
+    "workspaceContains:.picowgo"
   ],
   "main": "./dist/extension.cjs",
   "compatibility": [
@@ -296,7 +295,7 @@
           "type": "boolean",
           "default": false,
           "title": "Open on start",
-          "description": "Automatically open the Pico-W-Go console after starting VS Code",
+          "description": "Automatically open the Pico-W-Go console after starting VS Code. Could cause random terminal freezes on Linux.",
           "order": 8
         },
         "picowgo.statusbarButtons": {
@@ -447,7 +446,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.4.12",
+    "@paulober/pyboard-serial-com": "^1.4.14",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "uuid": "^9.0.0"
