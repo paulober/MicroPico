@@ -433,7 +433,6 @@ export default class Activator {
         },
         async (progress, token) => {
           token.onCancellationRequested(() => {});
-
           const data = await this.pyb?.startUploadingProject(
             syncDir,
             settings.getSyncFileTypes(),
@@ -451,6 +450,7 @@ export default class Activator {
           if ((data as PyOut).type === PyOutType.status) {
             const result = data as PyOutStatus;
             if (result.status) {
+              progress.report({ increment: 100, message: "Project uploaded." });
               vscode.window.showInformationMessage("Project uploaded.");
               if (settings.getBoolean(SettingsKey.rebootAfterUpload)) {
                 await this.pyb?.softReset();
