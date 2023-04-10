@@ -80,7 +80,7 @@
       {
         "command": "picowgo.uploadFile",
         "title": "Pico-W-Go > Upload current file",
-        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "enablement": "resourceScheme != pico && isFileSystemResource"
       },
       {
         "command": "picowgo.download",
@@ -99,7 +99,7 @@
       {
         "command": "picowgo.runselection",
         "title": "Pico-W-Go > Run current selection",
-        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python"
       },
       {
         "command": "picowgo.deleteAllFiles",
