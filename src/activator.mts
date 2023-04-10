@@ -82,7 +82,10 @@ export default class Activator {
     if (!isPyserialInstalled(pyCommand)) {
       // TODO: maybe add a progress bar after choosing the install option
       const response = await vscode.window.showQuickPick(
-        ["Auto install pyserial (required)", "Stop Pico-W-Go"],
+        [
+          "Auto install pyserial (required)",
+          "Stop Pico-W-Go (doing it manually)",
+        ],
         {
           canPickMany: false,
           placeHolder: "pyserial pip package is not installed",
@@ -112,20 +115,20 @@ export default class Activator {
     if (comDevice === undefined || comDevice === "") {
       comDevice = undefined;
 
-      const choice = await vscode.window.showErrorMessage(
-        "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect. For Linux users: make sure your user is in dialout group: sudo usermod -a -G dialout $USER",
-        "Open Settings"
-      );
-
-      if (choice === "Open Settings") {
-        openSettings();
-      }
+      vscode.window
+        .showErrorMessage(
+          "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect. For Linux users: make sure your user is in dialout group: sudo usermod -a -G dialout $USER",
+          "Open Settings"
+        )
+        .then(choice => {
+          if (choice === "Open Settings") {
+            openSettings();
+          }
+        });
     }
 
     this.ui = new UI(settings);
-    if (comDevice !== undefined) {
-      this.ui.init();
-    }
+    this.ui.init();
 
     this.pyb = new PyboardRunner(
       comDevice ?? "default",
