@@ -14,19 +14,19 @@ Works with:
 ## Features
 
 - Auto-completion and docs
-- Console integration for communication with MicroPython REPL on the pico (w) board
+- Terminal integration for communication with MicroPython REPL on a Pico (w) board
 - Running/Transferring files to/from your board
-- Built-in remote FileSystem provider (coming soon)
+- Built-in virtual-workspace provider for Raspberry Pi Pico (W) boards
 
 ![Terminal](images/autocomplete.gif)
 
 ## Requirements
 
 * [MicroPython firmware](https://micropython.org/download) flashed onto the Raspberry Pi Pico (W):
-    - See [raspberry pi docs](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython) for help.
+    - See [Raspberry Pi docs](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython) for help.
 
 * [Python 3.9 or newer](https://www.python.org/downloads/) installed on your system and in your PATH.
-* [pyserial pip package](https://pypi.org/project/pyserial/): `pip install pyserial`
+* [`pyserial` pip package](https://pypi.org/project/pyserial/): `pip install pyserial`
 
 Visual Studio Code extensions:
 * [ms-python.python](vscode://extension/ms-python.python)
