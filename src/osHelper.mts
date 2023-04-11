@@ -19,15 +19,19 @@ export async function getPythonCommand(): Promise<string | undefined> {
   const pythonCommand: string | undefined = pythonCommands[currentPlatform];
 
   return new Promise(resolve => {
-    exec(`${pythonCommand} --version`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error executing ${pythonCommand}: ${error.message}`);
-        resolve(undefined);
-      } else {
-        console.debug(`Python version: ${stdout || stderr}`);
-        resolve(pythonCommand);
+    exec(
+      `${pythonCommand} --version`,
+      { timeout: 1000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing ${pythonCommand}: ${error.message}`);
+          resolve(undefined);
+        } else {
+          console.debug(`Python version: ${stdout || stderr}`);
+          resolve(pythonCommand);
+        }
       }
-    });
+    );
   });
 }
 

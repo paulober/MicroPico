@@ -58,11 +58,16 @@ export class Terminal implements Pseudoterminal {
   public freeze(): void {
     this.isForzen = true;
 
+    this.clean(false);
+  }
+
+  public clean(waitingForPrompt?: boolean): void {
+    this.waitingForPrompt! != waitingForPrompt;
+
     // TODO: maybe restore current state
     this.buffer = "";
     this.multilineMode = false;
     this.indentation = 0;
-    this.waitingForPrompt = false;
     this.xCursor = 0;
   }
 

@@ -39,6 +39,9 @@ export default class Activator {
   private stubs?: Stubs;
   private picoFs?: PicoWFs;
 
+  private autoConnectTimer?: NodeJS.Timer;
+  private comDevice?: string;
+
   constructor() {
     this.logger = new Logger("Activator");
   }
@@ -110,10 +113,10 @@ export default class Activator {
     this.stubs = new Stubs();
     await this.stubs.update();
 
-    let comDevice = await settings.getComDevice();
+    this.comDevice = await settings.getComDevice();
 
-    if (comDevice === undefined || comDevice === "") {
-      comDevice = undefined;
+    if (this.comDevice === undefined || this.comDevice == "") {
+      this.comDevice = undefined;
 
       vscode.window
         .showErrorMessage(
@@ -131,11 +134,13 @@ export default class Activator {
     this.ui.init();
 
     this.pyb = new PyboardRunner(
-      comDevice ?? "default",
+      this.comDevice ?? "default",
       this.pyboardOnError.bind(this),
       this.pyboardOnExit.bind(this),
       pyCommand
     );
+
+    this.setupAutoConnect(settings);
 
     const terminal = new Terminal(async () => {
       if (this.pyb?.isPipeConnected()) {
@@ -239,7 +244,7 @@ export default class Activator {
 
     if (
       settings.getBoolean(SettingsKey.openOnStart) &&
-      comDevice !== undefined
+      this.comDevice !== undefined
     ) {
       await focusTerminal(terminalOptions);
     }
@@ -273,10 +278,11 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.connect",
       async () => {
-        comDevice = await settings.getComDevice();
-        if (comDevice !== undefined) {
+        this.comDevice = await settings.getComDevice();
+        if (this.comDevice !== undefined) {
           await this.ui?.init();
-          this.pyb?.switchDevice(comDevice);
+          this.pyb?.switchDevice(this.comDevice);
+          this.setupAutoConnect(settings);
         }
       }
     );
@@ -286,6 +292,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "picowgo.disconnect",
       async () => {
+        clearInterval(this.autoConnectTimer);
         await this.pyb?.disconnect();
       }
     );
@@ -317,7 +324,8 @@ export default class Activator {
       const data = await this.pyb.runFile(file, (data: string) => {
         // only freeze after operation has started
         if (!frozen) {
-          terminal?.freeze();
+          commandExecuting = true;
+          terminal?.clean(true);
           terminal?.write("\r\n");
           this.ui?.userOperationStarted();
           frozen = true;
@@ -329,6 +337,7 @@ export default class Activator {
         const result = data as PyOutCommandResult;
         // TODO: reflect result.result somehow
       }
+      commandExecuting = false;
       terminal?.melt();
       terminal?.write("\r\n");
       terminal?.prompt();
@@ -362,7 +371,8 @@ export default class Activator {
           (data: string) => {
             // only freeze after operation has started
             if (!frozen) {
-              terminal?.freeze();
+              commandExecuting = true;
+              terminal?.clean(true);
               terminal?.write("\r\n");
               this.ui?.userOperationStarted();
               frozen = true;
@@ -372,6 +382,7 @@ export default class Activator {
           true
         );
         this.ui?.userOperationStopped();
+        commandExecuting = false;
         terminal?.melt();
         terminal?.write("\r\n");
         terminal?.prompt();
@@ -401,7 +412,8 @@ export default class Activator {
             (data: string) => {
               // only freeze after operation has started
               if (!frozen) {
-                terminal?.freeze();
+                commandExecuting = true;
+                terminal?.clean(true);
                 terminal?.write("\r\n");
                 this.ui?.userOperationStarted();
                 frozen = true;
@@ -410,6 +422,7 @@ export default class Activator {
             },
             true
           );
+          commandExecuting = false;
           this.ui?.userOperationStopped();
           if (data.type === PyOutType.commandResult) {
             const result = data as PyOutCommandResult;
@@ -627,7 +640,7 @@ export default class Activator {
 
     // [Command] Global settings
     disposable = vscode.commands.registerCommand(
-      "picowgo.globalsettings",
+      "picowgo.globalSettings",
       async () => {
         openSettings();
       }
@@ -639,14 +652,16 @@ export default class Activator {
       "picowgo.toggleConnect",
       async () => {
         if (this.pyb?.isPipeConnected()) {
+          clearInterval(this.autoConnectTimer);
           await this.pyb?.disconnect();
         } else {
-          comDevice = await settings.getComDevice();
-          if (comDevice === undefined) {
+          this.comDevice = await settings.getComDevice();
+          if (this.comDevice == undefined) {
             vscode.window.showErrorMessage("No COM device found!");
           } else {
             await this.ui?.init();
-            this.pyb?.switchDevice(comDevice);
+            this.pyb?.switchDevice(this.comDevice);
+            this.setupAutoConnect(settings);
           }
         }
       }
@@ -772,8 +787,8 @@ export default class Activator {
         });
 
         if (port !== undefined) {
-          comDevice = port;
-          this.pyb?.switchDevice(comDevice);
+          this.comDevice = port;
+          this.pyb?.switchDevice(this.comDevice);
         }
       }
     );
@@ -856,14 +871,54 @@ export default class Activator {
     return this.ui;
   }
 
+  private setupAutoConnect(settings: Settings): void {
+    this.autoConnectTimer = setInterval(async () => {
+      await this.pyb?.checkStatus();
+      if (this.pyb?.isPipeConnected()) {
+        this.ui?.refreshState(true);
+        return;
+      }
+      this.ui?.refreshState(false);
+      const autoPort = settings.getBoolean(SettingsKey.autoConnect);
+
+      const ports = await PyboardRunner.getPorts(settings.pythonExecutable);
+      if (ports.ports.length === 0) {
+        return;
+      }
+
+      // try to connect to previously connected device first
+      if (this.comDevice && ports.ports.includes(this.comDevice)) {
+        // try to reconnect
+        this.pyb?.switchDevice(this.comDevice);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (this.pyb?.isPipeConnected()) {
+          return;
+        }
+      }
+
+      if (autoPort) {
+        const port = ports.ports[0];
+        this.comDevice = port;
+        this.pyb?.switchDevice(port);
+      }
+    }, 2500);
+  }
+
   private pyboardOnError(data: Buffer | undefined) {
-    if (data === undefined) {
-      this.ui?.refreshState(true);
-      this.logger.info("Connection to Pico successfully established");
+    if (
+      data === undefined &&
+      this.comDevice !== undefined &&
+      this.comDevice !== "" &&
+      this.comDevice !== "default"
+    ) {
+      //this.ui?.refreshState(true);
+      this.logger.info("Connection to wrapper successfully established");
 
       return;
     } else {
-      vscode.window.showErrorMessage(data.toString("utf-8"));
+      if (data) {
+        vscode.window.showErrorMessage(data.toString("utf-8"));
+      }
     }
   }
 
