@@ -10,6 +10,13 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.3] - 2023-04-13
+
+# Changed
+- `rebootAfterUpload` default value to `false`
+- Better error handling and more detailed error messages for 
+- Upgraded to pyboard-serial-com v1.4.23
+
 ## [3.0.2] - 2023-04-11
 
 # Added

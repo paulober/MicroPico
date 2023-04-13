@@ -1,4 +1,4 @@
-import { Memento, WorkspaceConfiguration, workspace } from "vscode";
+import { Memento, WorkspaceConfiguration, window, workspace } from "vscode";
 import { PyboardRunner } from "@paulober/pyboard-serial-com";
 import { getProjectPath } from "./api.mjs";
 import { join } from "path";
@@ -71,10 +71,21 @@ export default class Settings {
         }
       } catch (e) {
         console.error(e);
+        window.showErrorMessage(
+          "Error while reading (COM) ports for autoConnect: " + e
+        );
       }
     }
 
-    return this.getString(SettingsKey.manualComDevice);
+    let manualComDevice = this.getString(SettingsKey.manualComDevice);
+    if (manualComDevice === undefined || manualComDevice === "") {
+      manualComDevice = undefined;
+      window.showErrorMessage(
+        "autoConnect setting has been disabled (or no Pico has been found automatically) but no manualComDevice has been set."
+      );
+    }
+
+    return manualComDevice;
   }
 
   /**
