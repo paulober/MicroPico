@@ -9,11 +9,14 @@ const pythonCommands = {
 };
 
 export async function getPythonCommand(): Promise<string | undefined> {
-  const currentPlatform = platform() as keyof typeof pythonCommands;
+  const system = platform();
+  let currentPlatform: keyof typeof pythonCommands;
 
-  if (currentPlatform in pythonCommands === false) {
-    console.error(`Unsupported platform: ${currentPlatform}`);
-    return;
+  if (system in pythonCommands) {
+    currentPlatform = system as keyof typeof pythonCommands;
+  } else {
+    console.error(`Unsupported platform: ${system}`);
+    return undefined;
   }
 
   const pythonCommand: string | undefined = pythonCommands[currentPlatform];
@@ -72,18 +75,24 @@ export async function writeJsonFile(path: string, content: any): Promise<void> {
 
 export function isPyserialInstalled(pyCommand: string): boolean {
   try {
-    const output = execSync(`${pyCommand} -m pip show pyserial`);
-    return output.toString().includes("Name: pyserial");
+    const output = execSync(`${pyCommand} -m pip show pyserial`, {
+      timeout: 1000,
+    });
+    return output.toString("utf-8").includes("Name: pyserial");
   } catch (error) {
+    console.error(
+      "[Pico-W-Go] Failed to check if pyserial is installed: ",
+      error instanceof Error ? error.message : error
+    );
     return false;
   }
 }
 
 export function installPyserial(pyCommand: string): void {
   try {
-    execSync(`${pyCommand} -m pip install pyserial`);
+    execSync(`${pyCommand} -m pip install pyserial`, { timeout: 10000 });
     console.log("[Pico-W-Go] pyserial installed successfully");
   } catch (error) {
-    console.error("[Pico-W-Go] Failed to install pyserial", error);
+    console.error("[Pico-W-Go] Failed to install pyserial: ", error);
   }
 }

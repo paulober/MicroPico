@@ -65,7 +65,7 @@ export default class Activator {
       });
 
     const settings = new Settings(context.workspaceState);
-    const pyCommand = settings.pythonExecutable || (await getPythonCommand());
+    const pyCommand = settings.pythonExecutable ?? (await getPythonCommand());
     settings.update(SettingsKey.pythonPath, pyCommand);
     settings.pythonExecutable = pyCommand;
 
@@ -82,6 +82,7 @@ export default class Activator {
       return;
     }
 
+    const outIsInstalled = isPyserialInstalled(pyCommand);
     if (!isPyserialInstalled(pyCommand)) {
       // TODO: maybe add a progress bar after choosing the install option
       const response = await vscode.window.showQuickPick(
@@ -96,16 +97,24 @@ export default class Activator {
         }
       );
       if (response === undefined || response === "Stop Pico-W-Go") {
-        throw new Error("Required pip package pyserial is not installed");
+        vscode.window.showErrorMessage(
+          "Manual installation of pyserial chosen. Make sure to also set the correct python path (`picowgo.pythonPath`) in your settings."
+        );
+        throw new Error(
+          "[Pico-W-Go] Required pip package pyserial is not installed"
+        );
       }
       installPyserial(pyCommand);
       if (isPyserialInstalled(pyCommand)) {
         vscode.window.showInformationMessage(
-          "pyserial pip package installed successfully!"
+          "`pyserial` pip package installed successfully!"
         );
       } else {
+        vscode.window.showErrorMessage(
+          "Failed to install pyserial pip package. Check that your python path in the settings (`picowgo.pythonPath`) is pointing to the correct python executable."
+        );
         throw new Error(
-          "Faild to install pyserial pip package. Manual install required!"
+          "[Pico-W-Go] Faild to install pyserial pip package. Manual install required!"
         );
       }
     }
