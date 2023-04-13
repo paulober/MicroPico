@@ -299,7 +299,7 @@
         },
         "picowgo.rebootAfterUpload": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "title": "Reboot after upload",
           "description": "Reboots your board after any upload action.",
           "order": 11
