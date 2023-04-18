@@ -24,7 +24,7 @@ export async function getPythonCommand(): Promise<string | undefined> {
   return new Promise(resolve => {
     exec(
       `${pythonCommand} --version`,
-      { timeout: 1000 },
+      { timeout: 2500 },
       (error, stdout, stderr) => {
         if (error) {
           console.error(`Error executing ${pythonCommand}: ${error.message}`);
@@ -76,7 +76,7 @@ export async function writeJsonFile(path: string, content: any): Promise<void> {
 export function isPyserialInstalled(pyCommand: string): boolean {
   try {
     const output = execSync(`${pyCommand} -m pip show pyserial`, {
-      timeout: 1000,
+      timeout: 5000,
     });
     return output.toString("utf-8").includes("Name: pyserial");
   } catch (error) {
