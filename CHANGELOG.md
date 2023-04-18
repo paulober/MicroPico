@@ -10,6 +10,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.4] - 2023-04-18
+
+# Changed
+- Increased timeout on pyserial and python version detection (PR #74)
+
 ## [3.0.3] - 2023-04-13
 
 # Changed

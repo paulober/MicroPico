@@ -49,21 +49,6 @@ export default class Activator {
   public async activate(
     context: vscode.ExtensionContext
   ): Promise<UI | undefined> {
-    vscode.window
-      .showInformationMessage(
-        "Pico-W-Go v3 introduces many changes (also in requirements) compared to v2! To findout more about what changed, please read the changelog. (Notification will be removed next minor update)",
-        "Open Changelog"
-      )
-      .then(choice => {
-        if (choice === "Open Changelog") {
-          vscode.env.openExternal(
-            vscode.Uri.parse(
-              "https://github.com/paulober/Pico-W-Go/blob/main/CHANGELOG.md"
-            )
-          );
-        }
-      });
-
     const settings = new Settings(context.workspaceState);
     const pyCommand = settings.pythonExecutable ?? (await getPythonCommand());
     settings.update(SettingsKey.pythonPath, pyCommand);
