@@ -24,7 +24,7 @@ export async function getPythonCommand(): Promise<string | undefined> {
   return new Promise(resolve => {
     exec(
       `${pythonCommand} --version`,
-      { timeout: 1000 },
+      { timeout: 2500 },
       (error, stdout, stderr) => {
         if (error) {
           console.error(`Error executing ${pythonCommand}: ${error.message}`);
