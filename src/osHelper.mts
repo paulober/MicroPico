@@ -73,26 +73,39 @@ export async function writeJsonFile(path: string, content: any): Promise<void> {
   }
 }
 
-export function isPyserialInstalled(pyCommand: string): boolean {
-  try {
-    const output = execSync(`${pyCommand} -m pip show pyserial`, {
-      timeout: 5000,
-    });
-    return output.toString("utf-8").includes("Name: pyserial");
-  } catch (error) {
-    console.error(
-      "[Pico-W-Go] Failed to check if pyserial is installed: ",
-      error instanceof Error ? error.message : error
+export async function isPyserialInstalled(pyCommand: string): Promise<boolean> {
+  return new Promise(resolve => {
+    exec(
+      `${pyCommand} -m pip show pyserial`,
+      { timeout: 5000 },
+      (error, stdout) => {
+        if (error) {
+          console.error(
+            "[Pico-W-Go] Failed to check if pyserial is installed: ",
+            error?.message
+          );
+        } else {
+          resolve(stdout.includes("Name: pyserial"));
+        }
+      }
     );
-    return false;
-  }
+  });
 }
 
-export function installPyserial(pyCommand: string): void {
-  try {
-    execSync(`${pyCommand} -m pip install pyserial`, { timeout: 10000 });
-    console.log("[Pico-W-Go] pyserial installed successfully");
-  } catch (error) {
-    console.error("[Pico-W-Go] Failed to install pyserial: ", error);
-  }
+export async function installPyserial(pyCommand: string): Promise<boolean> {
+  return new Promise(resolve => {
+    exec(
+      `${pyCommand} -m pip install --upgrade pyserial`,
+      { timeout: 10000, windowsHide: true },
+      (error, stdout) => {
+        if (error || stdout.includes("ERROR: ")) {
+          console.error("[Pico-W-Go] Failed to install pyserial: ", error);
+        } else {
+          console.log("[Pico-W-Go] pyserial installed successfully");
+        }
+
+        resolve(true);
+      }
+    );
+  });
 }
