@@ -11,6 +11,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.6] - 2023-04-26
+
+# Changed
+- `pyserial` is now auto-installed as requirement on start. If the installation/detection fails, the extension give feedback to the user.
+
 ## [3.0.5] - 2023-04-18
 
 # Changed
