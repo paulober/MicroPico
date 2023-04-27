@@ -5,7 +5,8 @@ on:
     types: [published]
 
 permissions:
-  contents: read
+  # read is not enought for editing releases
+  contents: write
   deployments: write
   packages: write
 
@@ -44,7 +45,7 @@ jobs:
           name: Visual Studio Code extension package
           path: pico-w-go-*.vsix
 
-      - name: Add artifact to release
+      - name: Upload artifact to release
         #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/Pico-W-Go/releases/$RELEASE_ID/assets 
         run: gh release upload $RELEASE_TAG_NAME pico-w-go-*.vsix
         env:
