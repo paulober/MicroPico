@@ -11,6 +11,12 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.7] - 2023-04-27
+
+# Changed
+- Download project progressbar title
+- Updated stubs for 'Firmware v1.20.0 stable'
+
 ## [3.0.6] - 2023-04-26
 
 # Changed
