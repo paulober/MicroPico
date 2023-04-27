@@ -556,7 +556,7 @@ export default class Activator {
         vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: "Uploading file...",
+            title: "Downloading Project...",
             cancellable: false,
           },
           async (progress, token) => {
