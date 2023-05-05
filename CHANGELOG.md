@@ -11,6 +11,12 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.8] - 2023-05-05
+
+# Changed
+- Fixes Python 3.9 compatibility
+- Upgraded to pyboard-serial-com v1.4.24
+
 ## [3.0.7] - 2023-04-27
 
 # Changed
