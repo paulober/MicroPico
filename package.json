@@ -389,6 +389,12 @@
       "name": "$(list-unordered) All commands",
       "command": "picowgo.listCommands",
       "tooltip": "List all available Pico-W-Go commands"
+    },
+    {
+      "key": "togglepicowfs",
+      "name": "$(list-tree) Toggle Pico-W-FS",
+      "command": "picowgo.toggleFileSystem",
+      "tooltip": "Toggle virtual Pico (W) workspace"
     }
   ],
   "scripts": {
