@@ -408,7 +408,7 @@
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.1",
     "@types/fs-extra": "^11.0.1",
-    "@types/lodash": "^4.14.194",
+    "@types/lodash": "^4.14.195",
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.x",
     "@types/uuid": "^9.0.1",
@@ -425,7 +425,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.4.24",
+    "@paulober/pyboard-serial-com": "^1.4.25",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "uuid": "^9.0.0"
