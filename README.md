@@ -18,7 +18,7 @@ Works with:
 - Running / Transferring files to / from your board
 - Built-in virtual-workspace provider for Raspberry Pi Pico (W) boards
 
-![Terminal](images/autocomplete.gif)
+![Preview](images/preview.gif)
 
 ## Requirements
 
