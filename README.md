@@ -18,7 +18,7 @@ Works with:
 - Running / Transferring files to / from your board
 - Built-in virtual-workspace provider for Raspberry Pi Pico (W) boards
 
-![Terminal](images/autocomplete.gif)
+![Preview](images/preview.gif)
 
 ## Requirements
 
@@ -33,21 +33,10 @@ Visual Studio Code extensions:
 * `visualstudioexptteam.vscodeintellicode` | [\[Install\]](vscode://extension/visualstudioexptteam.vscodeintellicode) [\[Show\]](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
 * `ms-python.vscode-pylance` | [\[Install\]](vscode://extension/ms-python.vscode-pylance) [\[Show\]](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)
 
-Environment:
+Environment (Linux only):
 
 On most Linux installations the device file of the Pico serial port is owned by root and a group you normal don't have by default (*except on Raspbian OS*). This leads to timeout and access denied errors when Pico-W-Go tries to connect to the Pico. There are three ways how to solve this problem:
-1. Run VS Code in sudo (__NOT RECOMMENDED__)
-2. Normaly adding your user to `dialout` group should fix the issue: `sudo usermod -a -G dialout $USER` (logout required)
-3. Dynamically add the group who "owns" the serial port file to your current user. You can easily do this by downloading and executing the `scripts/solvePermissions.sh` script. However you **have** to change the marked line in the script if you Raspberry Pi Pico (w) does not connect to/shows up as `/dev/ttyACM0` to the correct device file. The script will readout the group owning the device file and then add you to this group. (logout required)
-```bash
-# download scripts/solvePermissions.sh
-wget https://raw.githubusercontent.com/paulober/Pico-W-Go/main/scripts/solvePermissions.sh
-# maybe not required
-chmod +x ./solvePermissions.sh
-# (change `/dev/ttyACM0` to the device file/port of your Pico)
-# run the script
-./solvePermissions.sh
-``` 
+- See [Wiki | Linux](https://github.com/paulober/Pico-W-Go/wiki/Linux) for a small guide
 
 ## Getting started
 

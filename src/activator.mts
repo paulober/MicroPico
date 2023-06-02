@@ -1,9 +1,5 @@
 import * as vscode from "vscode";
-import {
-  getPythonCommand,
-  installPyserial,
-  isPyserialInstalled,
-} from "./osHelper.mjs";
+import { getPythonCommand, installPyserial } from "./osHelper.mjs";
 import UI from "./ui.mjs";
 import {
   TERMINAL_NAME,
@@ -92,7 +88,7 @@ export default class Activator {
           "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect. For Linux users: make sure your user is in dialout group: sudo usermod -a -G dialout $USER",
           "Open Settings"
         )
-        .then(choice => {
+        .then((choice: "Open Settings" | undefined) => {
           if (choice === "Open Settings") {
             openSettings();
           }
@@ -268,7 +264,6 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     // [Command] Run File
-    // TODO: !IMPORTANT! sometimes not all is run or shown to the terminal
     disposable = vscode.commands.registerCommand("picowgo.run", async () => {
       if (!this.pyb?.isPipeConnected()) {
         vscode.window.showWarningMessage("Please connect to the Pico first.");
@@ -299,7 +294,14 @@ export default class Activator {
           this.ui?.userOperationStarted();
           frozen = true;
         }
-        terminal?.write(data);
+        if (data.includes("!!ERR!!")) {
+          // write red text into terminal
+          terminal?.write(
+            "\x1b[31mException occured (maybe a connection loss)\x1b[0m\r\n"
+          );
+        } else {
+          terminal?.write(data);
+        }
       });
       this.ui?.userOperationStopped();
       if (data.type === PyOutType.commandResult) {

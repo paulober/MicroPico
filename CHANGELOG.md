@@ -11,6 +11,15 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.9] - 2023-06-02
+
+# Added
+- Status Bar button `togglepicowfs` (Suggested in #95)
+
+# Changed
+- Fixed #73, Extension freezes when Pico is disconnected during code execution
+- Upgrade to pyboard-serial-com v1.4.26
+
 ## [3.0.8] - 2023-05-05
 
 # Changed
