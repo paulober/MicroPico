@@ -11,6 +11,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.10] - 2023-06-03
+
+# Changed
+- The minimum VSCode engine version was lowered to v1.76.0 for better compaibility with Raspberry Pi
+
 ## [3.0.9] - 2023-06-02
 
 # Added

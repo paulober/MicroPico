@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
   "description": "Autocompletion, remote Workspace and a REPL console for the Raspberry Pi Pico (W).",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
@@ -20,7 +20,7 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.77.0",
+    "vscode": "^1.76.0",
     "node": ">=16.14.2"
   },
   "keywords": [
@@ -419,7 +419,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.x",
     "@types/uuid": "^9.0.1",
-    "@types/vscode": "^1.77.0",
+    "@types/vscode": "^1.76.0",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "@vscode/test-electron": "^2.3.2",
