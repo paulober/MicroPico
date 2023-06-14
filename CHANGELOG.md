@@ -11,6 +11,7 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.12] - 2023-06-15
 ## [3.0.11] - 2023-06-15
 
 # Added
