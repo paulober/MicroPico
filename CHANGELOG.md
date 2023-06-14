@@ -18,7 +18,8 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 # Changed
 - Logo remake (by an AI) upon advice
-- Upgrade to pyboard-serial-com v1.4.29
+- Upgrade to pyboard-serial-com v1.4.30
+- Fixes script needs print statement to be stoppable
 
 ## [3.0.10] - 2023-06-03
 
