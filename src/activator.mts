@@ -140,7 +140,9 @@ export default class Activator {
           terminal?.write("\x1b[31mException occured\x1b[0m");
           return;
         }
-        terminal?.write(data);
+        if (data.length > 0) {
+          terminal?.write(data);
+        }
       });
       commandExecuting = false;
       terminal?.prompt();
@@ -329,7 +331,7 @@ export default class Activator {
           terminal?.write(
             "\x1b[31mException occured (maybe a connection loss)\x1b[0m\r\n"
           );
-        } else {
+        } else if (data.length > 0) {
           terminal?.write(data);
         }
       });
@@ -378,7 +380,9 @@ export default class Activator {
               this.ui?.userOperationStarted();
               frozen = true;
             }
-            terminal?.write(data);
+            if (data.length > 0) {
+              terminal?.write(data);
+            }
           },
           true
         );
@@ -419,7 +423,9 @@ export default class Activator {
                 this.ui?.userOperationStarted();
                 frozen = true;
               }
-              terminal?.write(data);
+              if (data.length > 0) {
+                terminal?.write(data);
+              }
             },
             true
           );
