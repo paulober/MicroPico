@@ -17,6 +17,7 @@ import type {
   PyOutCommandResult,
   PyOutCommandWithResponse,
   PyOutStatus,
+  PyOutTabComp,
 } from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
 import { basename, dirname, join } from "path";
@@ -143,6 +144,35 @@ export default class Activator {
       });
       commandExecuting = false;
       terminal?.prompt();
+    });
+    terminal.onDidRequestTabComp(async (buf: string) => {
+      terminal.freeze();
+      const nlIdx = buf.lastIndexOf("\n");
+      const lastLineTrimmed = buf.slice(nlIdx + 1).trim();
+      const result = await this.pyb?.retrieveTabCompletion(lastLineTrimmed);
+      // to be modified if simple tab completion
+      let newUserInp = buf;
+      if (
+        result?.type === PyOutType.tabComp &&
+        (result as PyOutTabComp).completion.length > 0
+      ) {
+        const compResult = result as PyOutTabComp;
+        if (compResult.isSimple) {
+          newUserInp = newUserInp.replace(
+            lastLineTrimmed,
+            compResult.completion
+          );
+        } else {
+          terminal.write(compResult.completion);
+        }
+      }
+      terminal.prompt();
+      terminal.melt();
+
+      // simulate user input to get the correct indentation
+      for (const char of newUserInp) {
+        terminal.handleInput(char);
+      }
     });
 
     try {
