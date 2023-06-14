@@ -17,6 +17,7 @@ export class Terminal implements Pseudoterminal {
   private writeEmitter = new EventEmitter<string>();
   private closeEmitter = new EventEmitter<void | number>();
   private submitEmitter = new EventEmitter<string>();
+  private tabCompEmitter = new EventEmitter<string>();
   private isOpen = false;
   private buffer = "";
   private multilineMode = false;
@@ -30,6 +31,7 @@ export class Terminal implements Pseudoterminal {
   onDidWrite: Event<string> = this.writeEmitter.event;
   onDidClose: Event<void | number> = this.closeEmitter.event;
   onDidSubmit: Event<string> = this.submitEmitter.event;
+  onDidRequestTabComp: Event<string> = this.tabCompEmitter.event;
 
   constructor(openingMessageCallback: () => Promise<string>) {
     this.openingMessageCallback = openingMessageCallback;
@@ -174,6 +176,9 @@ export class Terminal implements Pseudoterminal {
         if (!this.waitingForPrompt) return;
 
         this.submitEmitter.fire(char);
+      } else if (char === "\t") {
+        // Tab
+        this.handleTab();
       } else {
         if (IGNORED_CHARS.includes(char)) return;
 
@@ -239,6 +244,13 @@ export class Terminal implements Pseudoterminal {
       this.xCursor--;
       this.writeEmitter.fire(DEL(1));
     }
+  }
+
+  private handleTab(): void {
+    // move cursor into next line
+    this.writeEmitter.fire("\r\n");
+
+    this.tabCompEmitter.fire(this.buffer);
   }
 
   private checkMultilineMode(): void {
