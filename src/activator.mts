@@ -191,7 +191,7 @@ export default class Activator {
           dirname(fileURLToPath(import.meta.url)),
           "..",
           "images",
-          "logo.png"
+          "logo-256.png"
         )
       ),
       isTransient: true,
