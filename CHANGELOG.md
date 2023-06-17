@@ -10,6 +10,14 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.0.14] - 2023-06-17
+
+# Changed
+- Fix #66, Problems with uploading/downloading a project
+- Store listing improvements
+- Upgrade to pyboard-serial-com v1.4.31
+- Update terminal profile image
+
 ## [3.0.12] - 2023-06-15
 ## [3.0.11] - 2023-06-15
 
