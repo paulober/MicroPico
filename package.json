@@ -1,7 +1,7 @@
 {
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
-  "description": "Autocompletion, remote Workspace and a REPL console for the Raspberry Pi Pico (W).",
+  "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
   "version": "3.0.12",
   "publisher": "paulober",
   "license": "MPL-2.0",
@@ -15,8 +15,8 @@
   },
   "icon": "images/logo-256.png",
   "galleryBanner": {
-    "color": "#ffffff",
-    "theme": "light"
+    "color": "#5666c6",
+    "theme": "dark"
   },
   "markdown": "github",
   "engines": {
@@ -29,7 +29,8 @@
     "pico",
     "pico w",
     "raspberry pi pico",
-    "raspberry pi pico w"
+    "raspberry pi pico w",
+    "micropython"
   ],
   "categories": [
     "Other"

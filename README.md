@@ -5,11 +5,11 @@ Pico-W-Go provides code auto-completion and allows you to communicate with your 
 > __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [rp2-pico-w-20230426-v1.20.0.uf2](https://micropython.org/resources/firmware/rp2-pico-w-20230426-v1.20.0.uf2)__
 
 Works with:
-| Platform | x64 | arm64 / aarch64 | armhf |
-|----------|:---:|:--------------:|:------:|
-| Windows  | :white_check_mark: | :white_check_mark: | :x: |
-| macOS    | :white_check_mark: | :white_check_mark: | :x: |
-| Linux    | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Platform | x64 | arm64 | armhf |
+|----------|-----|-------|-------|
+| Windows  | ✅  | ✅    | ❌    |
+| macOS    | ✅  | ✅    | ❌    |
+| Linux    | ✅  | ✅    | ✅    |
 
 ## Features
 
