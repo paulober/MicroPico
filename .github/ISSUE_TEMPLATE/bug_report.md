@@ -1,8 +1,10 @@
 ---
 name: Bug report
-about: Auto-complete, linting or connection problem? See below first!
+about: Create a bug report to help us improve
 labels: 'bug'
 ---
+
+> Please provide a clear and concise description of the bug along with logs
 
 ## What are the steps to reproduce this issue?
 1.
@@ -16,18 +18,20 @@ labels: 'bug'
 
 
 ## Any logs, error output, etc?
-*(To get extension logs see Terminal > Output > Protcoll (Extensionhost) and copy output concerning picowgo)*
+*(To get extension logs see Terminal > Output > Extension Host and copy output concerning pico-w-go)*
 *(If it’s long, please paste to https://gist.github.com and insert the link here)*
 
 
 ## Any other comments?
 
 
+## Which version of Pico-W-Go are you using?
+
+
 ## Support info
 
-Copy this from the `Help -> Info/About -> Copy` option in Visual Studio Code:
+Copy this from the `Help -> Info/About -> Copy` (`Code -> About Visual Studio Code -> Copy` on macOS) option in Visual Studio Code:
 
 ```
-< Paste Here >
+<paste here>
 ```
-

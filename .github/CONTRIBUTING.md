@@ -15,7 +15,7 @@ In order to install `paulober/pyboard-serial-com` sub-package you first have con
 3. Download your fork of the repository (Github.cli recommended)
 4. `cd Pico-W-Go`
 5. Switch to your newly created branch (`git checkout <branch-name>` for example)
-6. `npm install`
+6. `npm install` (See CHANGELOG.md in repository root for more information)
 
 Do changes and commits...
 
