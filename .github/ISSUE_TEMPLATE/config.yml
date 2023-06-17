@@ -1,4 +1,4 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
   - name: Breaking changes and known issues [please check before opening an issue!!]
     url: https://github.com/paulober/Pico-W-Go/blob/main/CHANGELOG.md
