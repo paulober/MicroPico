@@ -65,87 +65,112 @@
     "commands": [
       {
         "command": "picowgo.connect",
-        "title": "Pico-W-Go > Connect"
+        "title": "Connect",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.disconnect",
-        "title": "Pico-W-Go > Disconnect"
+        "title": "Disconnect",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.initialise",
-        "title": "Pico-W-Go > Configure project"
+        "title": "Configure project",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.upload",
-        "title": "Pico-W-Go > Upload project"
+        "title": "Upload project",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.uploadFile",
-        "title": "Pico-W-Go > Upload current file",
-        "enablement": "resourceScheme != pico && isFileSystemResource"
+        "title": "Upload current file",
+        "enablement": "resourceScheme != pico && isFileSystemResource",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.download",
-        "title": "Pico-W-Go > Download project"
+        "title": "Download project",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.run",
-        "title": "Pico-W-Go > Run current file",
-        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "title": "Run current file",
+        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.remote.run",
-        "title": "Pico-W-Go > Remote > Run current file",
-        "enablement": "resourceScheme == pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "title": "Remote > Run current file",
+        "enablement": "resourceScheme == pico && isFileSystemResource && editorLangId == python && resourceExtname == .py",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.runselection",
-        "title": "Pico-W-Go > Run current selection",
-        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python"
+        "title": "Run current selection",
+        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.deleteAllFiles",
-        "title": "Pico-W-Go > Delete all files from board"
+        "title": "Delete all files from board",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.globalSettings",
-        "title": "Pico-W-Go > Global settings"
+        "title": "Global settings",
+        "category": "Pico-W-Go"
+      },
+      {
+        "command": "picowgo.workspaceSettings",
+        "title": "Workspace settings",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.reset.soft",
-        "title": "Pico-W-Go > Reset > Soft"
+        "title": "Reset > Soft",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.reset.hard",
-        "title": "Pico-W-Go > Reset > Hard"
+        "title": "Reset > Hard",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.help",
-        "title": "Pico-W-Go > Help > Getting started"
+        "title": "Help > Getting started",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.extra.pins",
-        "title": "Pico-W-Go > Help > Show Pico Pin Map"
+        "title": "Help > Show Pico Pin Map",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.extra.getSerial",
-        "title": "Pico-W-Go > Help > List serial ports"
+        "title": "Help > List serial ports",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.extra.firmwareUpdates",
-        "title": "Pico-W-Go > Help > Check for firmware updates"
+        "title": "Help > Check for firmware updates",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.listCommands",
-        "title": "Pico-W-Go > List all Commands"
+        "title": "List all Commands",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.toggleFileSystem",
-        "title": "Pico-W-Go > Toggle Virtual File System (closes existing vREPLs)"
+        "title": "Toggle Virtual File System (reloads UI and closes existing vREPLs)",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.switchPico",
-        "title": "Pico-W-Go > Switch Pico"
+        "title": "Switch Pico",
+        "category": "Pico-W-Go"
       }
     ],
     "menus": {

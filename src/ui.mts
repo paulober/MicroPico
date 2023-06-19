@@ -54,6 +54,9 @@ export default class UI {
     this.logger.debug("Initialized");
   }
 
+  /**
+   * Show the quick pick menu for Pico-W-Go contributed commands.
+   */
   public showQuickPick(): void {
     /*const items: QuickPickItem[] = pkg.contributes.commands
       .filter(item => item.command !== "pico-w-go.listCommands")
@@ -75,10 +78,7 @@ export default class UI {
           );
         }
       });*/
-    void commands.executeCommand(
-      "workbench.action.quickOpen",
-      "> Pico-W-Go > "
-    );
+    void commands.executeCommand("workbench.action.quickOpen", "> Pico-W-Go: ");
   }
 
   public show(): void {
