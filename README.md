@@ -6,15 +6,15 @@ Pico-W-Go provides code auto-completion and allows you to communicate with your 
 
 Works with:
 | Platform | x64 | arm64 | armhf |
-|----------|-----|-------|-------|
-| Windows  | ✅  | ✅    | ❌    |
-| macOS    | ✅  | ✅    | ❌    |
-| Linux    | ✅  | ✅    | ✅    |
+| -------- | --- | ----- | ----- |
+| Windows  | ✅   | ✅     | ❌     |
+| macOS    | ✅   | ✅     | ❌     |
+| Linux    | ✅   | ✅     | ✅     |
 
 ## Features
 
 - Auto-completion and docs
-- Pseudo terminal integration for communication with MicroPython REPL on a Pico (w) board
+- Pseudo terminal integration for communication with MicroPython REPL on a Pico (w) board (with support for tab-completion)
 - Running / Transferring files to / from your board
 - Built-in virtual-workspace provider for Raspberry Pi Pico (W) boards
 
