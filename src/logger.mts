@@ -1,4 +1,4 @@
-import { LogLevel as vsLogLevel, LogOutputChannel } from "vscode";
+import { LogLevel as vsLogLevel, LogOutputChannel, window } from "vscode";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 
@@ -26,6 +26,9 @@ export default class Logger {
       /*Logger.outputChannel = window.createOutputChannel("Pico-W-Go", {
         log: true,
       });*/
+      Logger.outputChannel = window.createOutputChannel("Pico-W-Go", {
+        log: true,
+      });
     }
   }
 
