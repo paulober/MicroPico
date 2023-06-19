@@ -33,13 +33,13 @@ export default class Stubs {
 
     const currentVersion = JSON.parse(
       await readFile(currentVersionFile, "utf8")
-    );
+    ) as { version: string };
 
     // Check if the existing version file exists and if the version is the same
     if (await pathExists(existingVersionFile)) {
       const existingVersion = JSON.parse(
         await readFile(existingVersionFile, "utf8")
-      );
+      ) as { version: string };
 
       if (existingVersion.version === currentVersion.version) {
         return;
@@ -55,22 +55,25 @@ export default class Stubs {
         typeof error === "string" ? error : (error as Error).message;
       this.logger.error(`Updating stubs failed: ${msg}`);
     }
+
     return;
   }
 
-  public async addToWorkspace() {
+  public async addToWorkspace(): Promise<void> {
     const workspace = getProjectPath();
 
     // no folfer opened in vscode
     if (!workspace) {
-      window.showErrorMessage(
-        "You need to open your project folder in VS Code before you can configure it!"
+      void window.showErrorMessage(
+        "You need to open your project folder in " +
+          "VS Code before you can configure it!"
       );
+
       return;
     }
 
     // the path to the .vscode folder in the project folder
-    let vsc = join(workspace, ".vscode");
+    const vsc = join(workspace, ".vscode");
 
     // check if .vscode folder exists if not create it
     if (!(await pathExists(vsc))) {
@@ -82,10 +85,10 @@ export default class Stubs {
     await this.addSettings(vsc);
     await this.addProjectFile(workspace);
 
-    window.showInformationMessage("Project configuration complete!");
+    void window.showInformationMessage("Project configuration complete!");
 
     if (shouldRecommendExtensions()) {
-      commands.executeCommand(
+      void commands.executeCommand(
         "workbench.extensions.action.showRecommendedExtensions"
       );
     }
@@ -96,7 +99,7 @@ export default class Stubs {
    *
    * @param vsc The path to the vscode config folder in current workspace
    */
-  private async addStubs(vsc: string) {
+  private async addStubs(vsc: string): Promise<void> {
     const stubsPath = join(vsc, "Pico-W-Stub");
     if (!(await pathExists(stubsPath))) {
       const configFolder = getVsCodeUserPath();
@@ -112,7 +115,10 @@ export default class Stubs {
     const extensionsFilePath = join(vsc, "extensions.json");
 
     // Option for adding recommended extensions in a included extensions.json file
-    let extensions = (await readJsonFile(extensionsFilePath)) || {};
+    const extensions =
+      ((await readJsonFile(extensionsFilePath)) as {
+        recommendations: string[];
+      }) || {};
     extensions.recommendations = _.union(
       extensions.recommendations || [],
       recommendedExtensions
@@ -124,15 +130,26 @@ export default class Stubs {
     const settingsFilePath = join(vsc, "settings.json");
     const stubsPath = join(".vscode", "Pico-W-Stub");
     const defaultSettings = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.linting.enabled": true,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.languageServer": "Pylance",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.analysis.typeCheckingMode": "basic",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       "picowgo.syncFolder": "",
       // (Currently not supported)
       //"picowgo.openOnStart": true,
     };
 
-    let settings = (await readJsonFile(settingsFilePath)) || {};
+    interface ISettings {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "python.analysis.typeshedPaths": string[];
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "python.analysis.extraPaths": string[];
+    }
+
+    let settings = ((await readJsonFile(settingsFilePath)) as ISettings) || {};
     settings = _.defaults(settings, defaultSettings);
 
     settings["python.analysis.typeshedPaths"] = _.union(

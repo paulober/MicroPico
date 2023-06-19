@@ -1,26 +1,31 @@
-import {
-  QuickPickItem,
-  QuickPickItemKind,
-  StatusBarAlignment,
-  StatusBarItem,
-  commands,
-  extensions,
-  window,
-} from "vscode";
+import { StatusBarAlignment, commands, extensions, window } from "vscode";
+import type { StatusBarItem } from "vscode";
 import Logger from "./logger.mjs";
-import Settings, { SettingsKey } from "./settings.mjs";
+import { SettingsKey } from "./settings.mjs";
+import type Settings from "./settings.mjs";
 
-const pkg: {
-  statusBar: { key: string; name: string; command: string; tooltip: string }[];
-  contributes: { commands: { title: string; command: string }[] };
-} = extensions.getExtension("paulober.pico-w-go")?.packageJSON;
+interface PkgJSON {
+  statusBar: Array<{
+    key: string;
+    name: string;
+    command: string;
+    tooltip: string;
+  }>;
+  contributes: { commands: Array<{ title: string; command: string }> };
+}
+
+const pkg = (extensions.getExtension("paulober.pico-w-go")
+  ?.packageJSON as PkgJSON) ?? {
+  statusBar: [],
+  contributes: { commands: [] },
+};
 
 export default class UI {
   private settings: Settings;
   private logger: Logger;
-  private visible: boolean = false;
-  private initialized: boolean = false;
-  private userOperationOngoing: boolean = false;
+  private visible = false;
+  private initialized = false;
+  private userOperationOngoing = false;
 
   private items: { [key: string]: StatusBarItem } = {};
 
@@ -29,8 +34,10 @@ export default class UI {
     this.logger = new Logger("UI");
   }
 
-  public async init(): Promise<void> {
-    if (this.initialized) return;
+  public init(): void {
+    if (this.initialized) {
+      return;
+    }
     this.initialized = true;
 
     for (const item of pkg.statusBar) {
@@ -68,10 +75,13 @@ export default class UI {
           );
         }
       });*/
-    commands.executeCommand("workbench.action.quickOpen", "> Pico-W-Go > ");
+    void commands.executeCommand(
+      "workbench.action.quickOpen",
+      "> Pico-W-Go > "
+    );
   }
 
-  public async show() {
+  public show(): void {
     if (this.visible) {
       return;
     }
@@ -95,6 +105,7 @@ export default class UI {
   public refreshState(force?: boolean): void {
     if (force !== undefined) {
       this.setState(force);
+
       return;
     }
 
@@ -102,7 +113,7 @@ export default class UI {
     throw new Error("Method not implemented.");
   }
 
-  private statusbarItemPriority: number = 11;
+  private statusbarItemPriority = 11;
 
   private createStatusBarItem(
     key: string,
@@ -148,7 +159,7 @@ export default class UI {
     return this.userOperationOngoing;
   }
 
-  public async destroy(): Promise<void> {
+  public destroy(): void {
     for (const item of Object.values(this.items)) {
       item.dispose();
     }

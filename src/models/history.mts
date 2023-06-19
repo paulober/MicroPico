@@ -1,13 +1,13 @@
 export default class History {
   private items: string[];
   // -1 indicates no history item is currently selected
-  private pos: number = -1;
+  private pos = -1;
 
   constructor() {
     this.items = [];
   }
 
-  public add(item: string) {
+  public add(item: string): void {
     const index = this.items.indexOf(item);
 
     if (index > -1) {
@@ -22,7 +22,7 @@ export default class History {
     this.pos = -1;
   }
 
-  public getItems() {
+  public getItems(): string[] {
     return this.items;
   }
 
@@ -52,7 +52,7 @@ export default class History {
     return this.items[this.pos];
   }
 
-  public clear() {
+  public clear(): void {
     this.items = [];
     this.pos = -1;
   }

@@ -1,4 +1,5 @@
-import { LogLevel as vsLogLevel, LogOutputChannel, window } from "vscode";
+import { window } from "vscode";
+import type { LogOutputChannel } from "vscode";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 
@@ -13,6 +14,10 @@ const blue = "\x1b[34m";
 const magenta = "\x1b[35m";
 // ANSI escape code to reset color
 const reset = "\x1b[0m";
+
+interface Stringable {
+  toString(): string;
+}
 
 export default class Logger {
   private className: string;
@@ -34,10 +39,11 @@ export default class Logger {
 
   private shouldLog(level: LogLevel): boolean {
     const levels: LogLevel[] = ["debug", "info", "warn", "error"];
+
     return levels.indexOf(level) >= levels.indexOf(logLevel);
   }
 
-  public info(message: string, ...optionalParams: any[]): void {
+  public info(message: string, ...optionalParams: Stringable[]): void {
     if (this.shouldLog("info")) {
       if (Logger.outputChannel !== undefined) {
         Logger.outputChannel.info(`[${this.className}] ${message}`);
@@ -50,7 +56,7 @@ export default class Logger {
     }
   }
 
-  public warn(message: string, ...optionalParams: any[]): void {
+  public warn(message: string, ...optionalParams: Stringable[]): void {
     if (this.shouldLog("warn")) {
       if (Logger.outputChannel !== undefined) {
         Logger.outputChannel.warn(`[${this.className}] ${message}`);
@@ -63,7 +69,7 @@ export default class Logger {
     }
   }
 
-  public error(message: string | Error, ...optionalParams: any[]): void {
+  public error(message: string | Error, ...optionalParams: Stringable[]): void {
     if (this.shouldLog("error")) {
       if (message instanceof Error) {
         message = message.message;
@@ -79,7 +85,7 @@ export default class Logger {
     }
   }
 
-  public debug(message: string, ...optionalParams: any[]): void {
+  public debug(message: string, ...optionalParams: Stringable[]): void {
     if (this.shouldLog("debug")) {
       if (Logger.outputChannel !== undefined) {
         Logger.outputChannel.debug(

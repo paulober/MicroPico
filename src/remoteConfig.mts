@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { TextEncoder } from "util";
 
-const VSCodeFS = {
+const VSCODE_FS = {
   /*init: function () {
     this[".vscode"]["settings.json"].size = new TextEncoder().encode(
       JSON.stringify(this[".vscode"]["settings.json"].content)
@@ -27,6 +28,7 @@ const VSCodeFS = {
           if (this._size === -1) {
             this._size = this.content.length;
           }
+
           return this._size;
         },
         content: new TextEncoder().encode(
@@ -46,10 +48,12 @@ const VSCodeFS = {
             JSON.stringify({
               "python.linting.enabled": true,
               "python.analysis.typeshedPaths": [
+                // eslint-disable-next-line max-len
                 `\${workspaceFolder:${localWorkspaceName}}/${localRelativeStubPath}`,
               ],
               "python.languageServer": "Pylance",
               "python.analysis.extraPaths": [
+                // eslint-disable-next-line max-len
                 `\${workspaceFolder:${localWorkspaceName}}/${localRelativeStubPath}/stubs`,
               ],
             })
@@ -66,4 +70,4 @@ const VSCodeFS = {
   },
 };
 
-export default VSCodeFS;
+export default VSCODE_FS;
