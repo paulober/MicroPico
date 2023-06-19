@@ -21,7 +21,7 @@
   "markdown": "github",
   "engines": {
     "vscode": "^1.76.0",
-    "node": ">=16.14.2"
+    "node": ">=16.17.1"
   },
   "keywords": [
     "raspberry",
