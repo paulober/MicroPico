@@ -234,9 +234,24 @@ export default class Activator {
                 "Please close the new terminal instance!"
             );
             // would freeze old terminal
-            newTerminal.dispose();
-            //focusTerminal(terminalOptions);
+            //newTerminal.dispose();
+
+            // TODO: currently disreagarding if user has unsubmitted input in pty
+            // send enter for new prompt
+            newTerminal.sendText("\n");
           }
+        }
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.window.onDidCloseTerminal(closedTerminal => {
+        if (closedTerminal.creationOptions.name === TERMINAL_NAME) {
+          // close all other vREPL instance as they freeze anyway because the
+          // close operation does dispose the pty in the background
+          vscode.window.terminals
+            .filter(t => t.creationOptions.name === TERMINAL_NAME)
+            .forEach(t => t.dispose());
         }
       })
     );
@@ -260,7 +275,7 @@ export default class Activator {
       settings.getBoolean(SettingsKey.openOnStart) &&
       this.comDevice !== undefined
     ) {
-      focusTerminal(terminalOptions);
+      await focusTerminal(terminalOptions);
     }
 
     // [Command] help
@@ -341,7 +356,7 @@ export default class Activator {
       }
 
       let frozen = false;
-      focusTerminal(terminalOptions);
+      await focusTerminal(terminalOptions);
       const data = await this.pyb.runFile(file, (data: string) => {
         // only freeze after operation has started
         if (!frozen) {
@@ -394,14 +409,15 @@ export default class Activator {
         }
 
         let frozen = false;
-        focusTerminal(terminalOptions);
+        await focusTerminal(terminalOptions);
         await this.pyb.executeCommand(
-          "import uos; " +
-            "__pico_dir=uos.getcwd(); " +
-            `uos.chdir('${dirname(file)}'); ` +
+          "import uos as _pico_uos; " +
+            "__pico_dir=_pico_uos.getcwd(); " +
+            `_pico_uos.chdir('${dirname(file)}'); ` +
             `execfile('${file}'); ` +
-            "uos.chdir(__pico_dir); " +
-            "del __pico_dir",
+            "_pico_uos.chdir(__pico_dir); " +
+            "del __pico_dir; " +
+            "del _pico_uos",
           (data: string) => {
             // only freeze after operation has started
             if (!frozen) {
@@ -446,7 +462,7 @@ export default class Activator {
           return;
         } else {
           let frozen = false;
-          focusTerminal();
+          await focusTerminal(terminalOptions);
           const data = await this.pyb.executeCommand(
             code,
             (data: string) => {

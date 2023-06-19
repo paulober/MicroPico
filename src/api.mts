@@ -187,9 +187,9 @@ export async function getTypeshedPicoWStubPath(): Promise<
  * @param terminalOptions ExtensionTerminalOptions required to create a
  * new terminal if none already exists
  */
-export function focusTerminal(
+export async function focusTerminal(
   terminalOptions?: ExtensionTerminalOptions
-): void {
+): Promise<void> {
   const openTerminals = window.terminals;
 
   const picoRepl = openTerminals.find(
@@ -203,6 +203,11 @@ export function focusTerminal(
     if (terminalOptions) {
       const terminal = window.createTerminal(terminalOptions);
       terminal.show(false);
+      // wait for 200ms so the opening message of the terminal can be queued
+      await ((ms: number): Promise<void> =>
+        new Promise(resolve => {
+          setTimeout(resolve, ms);
+        }))(200);
     } else {
       void window.showWarningMessage("Pico vREPL not open.");
     }
