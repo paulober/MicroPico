@@ -24,8 +24,17 @@ export const recommendedExtensions = [
 /**
  * Opens the settings page for this extension in the settings editor window
  */
-export function openSettings(): void {
-  void commands.executeCommand("workbench.action.openSettings", extName);
+export function openSettings(workspace = false): void {
+  if (workspace) {
+    // open workspace settings
+    void commands.executeCommand(
+      "workbench.action.openWorkspaceSettings",
+      extName
+    );
+  } else {
+    // open user settings (global settings)
+    void commands.executeCommand("workbench.action.openSettings", extName);
+  }
 }
 
 /**

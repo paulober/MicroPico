@@ -715,9 +715,14 @@ export default class Activator {
     // [Command] Global settings
     disposable = vscode.commands.registerCommand(
       "picowgo.globalSettings",
-      () => {
-        openSettings();
-      }
+      openSettings
+    );
+    context.subscriptions.push(disposable);
+
+    // [Command] Workspace settings
+    disposable = vscode.commands.registerCommand(
+      "picowgo.workspaceSettings",
+      () => openSettings(true)
     );
     context.subscriptions.push(disposable);
 
