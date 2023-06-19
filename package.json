@@ -325,12 +325,12 @@
           "description": "[Only works with firmware v1.16.0.b1 and up.] Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
           "order": 10
         },
-        "picowgo.rebootAfterUpload": {
+        "picowgo.softResetAfterUpload": {
           "type": "boolean",
           "default": false,
-          "title": "Reboot after upload",
-          "description": "Reboots your board after any upload action.",
-          "order": 11
+          "title": "Soft-reset after upload",
+          "description": "Soft-resets your board after any upload action.",
+          "order": 12
         },
         "picowgo.pythonPath": {
           "type": "string",

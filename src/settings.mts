@@ -14,7 +14,7 @@ export enum SettingsKey {
   openOnStart = "openOnStart",
   statusbarButtons = "statusbarButtons",
   gcBeforeUpload = "gcBeforeUpload",
-  rebootAfterUpload = "rebootAfterUpload",
+  softResetAfterUpload = "softResetAfterUpload",
   pythonPath = "pythonPath",
 }
 

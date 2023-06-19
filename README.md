@@ -77,7 +77,7 @@ This extension contributes the following settings:
 * `picowgo.openOnStart`: Automatically open the Pico-W-Go console and connect to the board after starting VS Code.
 * `picowgo.statusbarButtons`: Select which buttons to show in the statusbar (DO NOT CHANGE, unless you know what you are doing)
 * `picowgo.gcBeforeUpload`: [Only works with firmware v1.16.0.b1 and up.] Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
-* `picowgo.rebootAfterUpload`: Reboots your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
+* `picowgo.softResetAfterUpload`: Soft-resets your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
 * `picowgo.pythonPath`: Path to the Python interpreter. Defaults to null so it will try to auto-detect a suitable python installation.
 
 ---

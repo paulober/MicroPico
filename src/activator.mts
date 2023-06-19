@@ -546,7 +546,7 @@ export default class Activator {
             if (result.status) {
               progress.report({ increment: 100, message: "Project uploaded." });
               void vscode.window.showInformationMessage("Project uploaded.");
-              if (settings.getBoolean(SettingsKey.rebootAfterUpload)) {
+              if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
                 await this.pyb?.softReset();
               }
             } else {
@@ -620,7 +620,7 @@ export default class Activator {
                     path: "/" + basename(file),
                   })
                 );
-                if (settings.getBoolean(SettingsKey.rebootAfterUpload)) {
+                if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
                   await this.pyb?.softReset();
                 }
               } else {
