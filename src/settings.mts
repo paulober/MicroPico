@@ -8,6 +8,7 @@ export enum SettingsKey {
   autoConnect = "autoConnect",
   manualComDevice = "manualComDevice",
   syncFolder = "syncFolder",
+  additionalSyncFolders = "additionalSyncFolders",
   syncAllFileTypes = "syncAllFileTypes",
   syncFileTypes = "syncFileTypes",
   pyIgnore = "pyIgnore",
@@ -118,6 +119,58 @@ export default class Settings {
     }
 
     return join(projectDir, syncDir);
+  }
+
+  /**
+   * Returns the absolute path to one sync folder based on the user's selection
+   * when multiple folders are configured.
+   * If only one folder is configured, its absolute path is returned.
+   *
+   * @param actionTitle The title of the action to perform. Used in the selection dialog.
+   * E.g. "Upload" or "Download".
+   *
+   * @returns The absolute path to one sync folder.
+   */
+  public async requestSyncFolder(
+    actionTitle: string
+  ): Promise<string | undefined> {
+    const syncFolder = this.getSyncFolderAbsPath();
+    const projectDir = getProjectPath();
+
+    if (projectDir === undefined) {
+      // How can this ever happen??!
+      return;
+    }
+
+    let additionalSyncFolders = this.getArray(
+      SettingsKey.additionalSyncFolders
+    )?.map(sf => join(projectDir, sf));
+
+    if (
+      additionalSyncFolders === undefined ||
+      additionalSyncFolders.length === 0
+    ) {
+      return syncFolder;
+    }
+
+    // prepend normal syncFolder if available to options
+    if (
+      syncFolder !== undefined &&
+      !additionalSyncFolders.includes(syncFolder)
+    ) {
+      additionalSyncFolders = [syncFolder, ...additionalSyncFolders];
+    }
+
+    const selectedFolder = await window.showQuickPick(additionalSyncFolders, {
+      placeHolder:
+        `Select a sync folder to ${actionTitle.toLowerCase()} ` +
+        "(add more in settings)",
+      canPickMany: false,
+      ignoreFocusOut: false,
+      title: `${actionTitle} sync folder selection`,
+    });
+
+    return selectedFolder;
   }
 
   /**

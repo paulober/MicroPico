@@ -264,13 +264,25 @@
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
           "order": 4
         },
+        "picowgo.additionalSyncFolders": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "uniqueItems": true
+          },
+          "default": [],
+          "scope": "resource",
+          "title": "Additional Sync Folders",
+          "description": "Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.",
+          "order": 5
+        },
         "picowgo.syncAllFileTypes": {
           "type": "boolean",
           "default": false,
           "scope": "machine-overridable",
           "title": "Upload all file types",
           "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
-          "order": 5
+          "order": 6
         },
         "picowgo.syncFileTypes": {
           "type": "array",
@@ -292,7 +304,7 @@
           "scope": "machine-overridable",
           "title": "Upload file types",
           "description": "All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action",
-          "order": 6
+          "order": 7
         },
         "picowgo.pyIgnore": {
           "title": "Pyignore list",
@@ -311,7 +323,7 @@
             "env",
             "venv"
           ],
-          "order": 7
+          "order": 8
         },
         "picowgo.openOnStart": {
           "type": "boolean",
@@ -319,7 +331,7 @@
           "scope": "machine",
           "title": "Open on start",
           "description": "Automatically open the Pico-W-Go console after starting VS Code. Could cause random terminal freezes on Linux.",
-          "order": 8
+          "order": 9
         },
         "picowgo.statusbarButtons": {
           "type": "array",
@@ -350,7 +362,7 @@
             "softreset",
             "togglepicowfs"
           ],
-          "order": 9
+          "order": 10
         },
         "picowgo.gcBeforeUpload": {
           "type": "boolean",
@@ -358,7 +370,7 @@
           "scope": "machine-overridable",
           "title": "Garbage collection before upload",
           "description": "Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
-          "order": 10
+          "order": 11
         },
         "picowgo.softResetAfterUpload": {
           "type": "boolean",
@@ -374,7 +386,7 @@
           "scope": "machine",
           "title": "Python Path",
           "description": "Path to the Python interpreter. Default for Windows is 'python.exe' and 'python3' for Linux and MacOS.",
-          "order": 12
+          "order": 13
         }
       }
     },

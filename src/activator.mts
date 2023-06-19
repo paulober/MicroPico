@@ -503,10 +503,12 @@ export default class Activator {
         return;
       }
 
-      const syncDir = settings.getSyncFolderAbsPath();
+      const syncDir = await settings.requestSyncFolder("Upload");
 
       if (syncDir === undefined) {
-        void vscode.window.showErrorMessage("No open project found!");
+        void vscode.window.showWarningMessage(
+          "Upload canceled. No sync folder selected."
+        );
 
         return;
       }
@@ -635,51 +637,56 @@ export default class Activator {
 
     // [Command] Download project
     // TODO: maybe add diffent warning methods for overwritten files in syncFolder
-    disposable = vscode.commands.registerCommand("picowgo.download", () => {
-      if (!this.pyb?.isPipeConnected()) {
-        void vscode.window.showWarningMessage(
-          "Please connect to the Pico first."
-        );
-
-        return;
-      }
-
-      const syncDir = settings.getSyncFolderAbsPath();
-
-      if (syncDir === undefined) {
-        void vscode.window.showErrorMessage(
-          "No open project with syncFolder as download target found!"
-        );
-
-        return;
-      }
-
-      void vscode.window.withProgress(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: "Downloading Project...",
-          cancellable: false,
-        },
-        async (progress /*, token*/) => {
-          const data = await this.pyb?.downloadProject(
-            syncDir,
-            (/*data: string*/) => undefined
+    disposable = vscode.commands.registerCommand(
+      "picowgo.download",
+      async () => {
+        if (!this.pyb?.isPipeConnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
           );
-          if (data && data.type === PyOutType.status) {
-            const result = data as PyOutStatus;
-            if (result.status) {
-              progress.report({
-                increment: 100,
-                message: "Project downloaded.",
-              });
-              void vscode.window.showInformationMessage("Project downloaded.");
-            } else {
-              void vscode.window.showErrorMessage("Project download failed.");
+
+          return;
+        }
+
+        const syncDir = await settings.requestSyncFolder("Download");
+
+        if (syncDir === undefined) {
+          void vscode.window.showWarningMessage(
+            "Download canceled. No sync folder selected."
+          );
+
+          return;
+        }
+
+        void vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: "Downloading Project...",
+            cancellable: false,
+          },
+          async (progress /*, token*/) => {
+            const data = await this.pyb?.downloadProject(
+              syncDir,
+              (/*data: string*/) => undefined
+            );
+            if (data && data.type === PyOutType.status) {
+              const result = data as PyOutStatus;
+              if (result.status) {
+                progress.report({
+                  increment: 100,
+                  message: "Project downloaded.",
+                });
+                void vscode.window.showInformationMessage(
+                  "Project downloaded."
+                );
+              } else {
+                void vscode.window.showErrorMessage("Project download failed.");
+              }
             }
           }
-        }
-      );
-    });
+        );
+      }
+    );
     context.subscriptions.push(disposable);
 
     // [Command] Delete all files on Pico
