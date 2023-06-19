@@ -8,8 +8,8 @@ import {
   workspace,
   env as vscodeEnv,
   Uri,
+  ExtensionTerminalOptions,
 } from "vscode";
-import type { ExtensionTerminalOptions, TerminalOptions } from "vscode";
 
 export const extName = "pico-w-go";
 export const extId = "paulober.pico-w-go";
@@ -88,7 +88,7 @@ export function getProjectPath(): string | undefined {
  * if scheme is pico it will return path, otherwise undefined
  */
 export async function getFocusedFile(
-  remotePosix: boolean = false
+  remotePosix = false
 ): Promise<string | undefined> {
   const editor = window.activeTextEditor;
   if (editor === undefined) {
@@ -172,7 +172,7 @@ export async function getTypeshedPicoWStubPath(): Promise<
 }
 
 export async function focusTerminal(
-  terminalOptions?: TerminalOptions | ExtensionTerminalOptions
+  terminalOptions?: ExtensionTerminalOptions
 ): Promise<void> {
   const openTerminals = window.terminals;
 
@@ -180,7 +180,7 @@ export async function focusTerminal(
     return term.creationOptions.name === TERMINAL_NAME;
   });
 
-  if (picoRepl && terminalOptions === undefined) {
+  if (picoRepl) {
     // focus the terminal
     picoRepl.show(false);
   } else {
@@ -190,10 +190,8 @@ export async function focusTerminal(
       profileName: TERMINAL_NAME,
     } as Object);*/
     if (terminalOptions) {
-      // does crash on reactivation
-      window.createTerminal(terminalOptions).show();
-      // wait for terminal to open
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const terminal = window.createTerminal(terminalOptions);
+      terminal.show(false);
     } else {
       window.showWarningMessage("Pico vREPL not open.");
     }

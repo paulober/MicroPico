@@ -316,7 +316,7 @@ export default class Activator {
       }
 
       let frozen = false;
-      await focusTerminal();
+      await focusTerminal(terminalOptions);
       const data = await this.pyb.runFile(file, (data: string) => {
         // only freeze after operation has started
         if (!frozen) {
@@ -363,7 +363,7 @@ export default class Activator {
         }
 
         let frozen = false;
-        await focusTerminal();
+        await focusTerminal(terminalOptions);
         await this.pyb.executeCommand(
           "import uos; " +
             "__pico_dir=uos.getcwd(); " +
