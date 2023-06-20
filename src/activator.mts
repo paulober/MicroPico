@@ -564,14 +564,18 @@ export default class Activator {
           if (data.type === PyOutType.status) {
             const result = data as PyOutStatus;
             if (result.status) {
-              progress.report({ increment: 100, message: "Project uploaded." });
               void vscode.window.showInformationMessage("Project uploaded.");
-              if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
-                await this.pyb?.softReset();
-              }
             } else {
               void vscode.window.showErrorMessage("Project upload failed.");
+
+              return;
             }
+          }
+          progress.report({ increment: 100, message: "Project uploaded." });
+          // moved outside if so if not uploaded because file already exists it still resets
+          if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
+            //await this.pyb?.softReset();
+            await vscode.commands.executeCommand("picowgo.reset.soft.listen");
           }
         }
       );
@@ -641,7 +645,10 @@ export default class Activator {
                   })
                 );
                 if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
-                  await this.pyb?.softReset();
+                  //await this.pyb?.softReset();
+                  await vscode.commands.executeCommand(
+                    "picowgo.reset.soft.listen"
+                  );
                 }
               } else {
                 void vscode.window.showErrorMessage("File upload failed.");
@@ -971,6 +978,48 @@ export default class Activator {
       }
     );
     context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      "picowgo.reset.soft.listen",
+      async () => {
+        if (!this.pyb?.isPipeConnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
+          );
+
+          return;
+        }
+
+        let frozen = false;
+        await focusTerminal(terminalOptions);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        const result: PyOut = await this.pyb?.sendCtrlD((data: string) => {
+          if (!frozen) {
+            commandExecuting = true;
+            //terminal?.freeze();
+            terminal?.clean(true);
+            //terminal?.write("\r\n");
+            this.ui?.userOperationStarted();
+            frozen = true;
+          }
+          terminal?.write(data);
+        });
+        commandExecuting = false;
+        this.ui?.userOperationStopped();
+        if (result.type === PyOutType.commandResult) {
+          const fsOps = result as PyOutCommandResult;
+          if (fsOps.result) {
+            void vscode.window.showInformationMessage(
+              "Hard reset and reboot finished"
+            );
+          } else {
+            void vscode.window.showErrorMessage("Hard reset failed");
+          }
+        }
+        terminal?.melt();
+        terminal?.prompt();
+      }
+    );
 
     disposable = vscode.commands.registerCommand(
       "picowgo.universalStop",

@@ -173,6 +173,11 @@
         "command": "picowgo.switchPico",
         "title": "Switch Pico",
         "category": "Pico-W-Go"
+      },
+      {
+        "command": "picowgo.reset.soft.listen",
+        "title": "Reset > Soft (listen)",
+        "category": "Pico-W-Go"
       }
     ],
     "menus": {
@@ -377,7 +382,7 @@
           "default": false,
           "scope": "machine-overridable",
           "title": "Soft-reset after upload",
-          "description": "Soft-resets your board after any upload action.",
+          "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
           "order": 12
         },
         "picowgo.pythonPath": {
