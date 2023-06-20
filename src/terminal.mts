@@ -307,7 +307,13 @@ export class Terminal implements Pseudoterminal {
       return;
     }
 
-    this.writeEmitter.fire("\r\n");
+    if (this.waitingForPrompt) {
+      // delete input as input(...) in repl echos input back
+      this.writeEmitter.fire(DEL(input.length));
+    } else {
+      this.writeEmitter.fire("\r\n");
+    }
+
     this.waitingForPrompt = true;
     this.history.add(input);
     this.submitEmitter.fire(input + "\n");
