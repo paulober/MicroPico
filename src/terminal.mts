@@ -1,13 +1,9 @@
-import {
-  Pseudoterminal,
-  EventEmitter,
-  Event,
-  TerminalDimensions,
-} from "vscode";
+import { EventEmitter } from "vscode";
+import type { Pseudoterminal, Event, TerminalDimensions } from "vscode";
 import History from "./models/history.mjs";
 
 const PROMPT = ">>> ";
-const DEL = (count: number) => `\x1b[${count}D\x1b[1P`;
+const DEL = (count: number): string => `\x1b[${count}D\x1b[1P`;
 // Ctrl+D; Ctrl+E
 const IGNORED_CHARS = ["\x04", "\x05"];
 
@@ -24,9 +20,9 @@ export class Terminal implements Pseudoterminal {
   private indentation = 0;
   private waitingForPrompt = false;
   private history: History = new History();
-  private controlSequence: boolean = false;
-  private xCursor: number = 0;
-  private isForzen: boolean = false;
+  private controlSequence = false;
+  private xCursor = 0;
+  private isForzen = false;
 
   onDidWrite: Event<string> = this.writeEmitter.event;
   onDidClose: Event<void | number> = this.closeEmitter.event;
@@ -38,14 +34,16 @@ export class Terminal implements Pseudoterminal {
   }
 
   public open(initialDimensions: TerminalDimensions | undefined): void {
-    if (this.isOpen && initialDimensions !== undefined) return;
+    if (this.isOpen && initialDimensions !== undefined) {
+      return;
+    }
 
     this.isOpen = true;
     this.isForzen = false;
 
     //this.writeEmitter.fire("\x1b[1;32mWelcome to the Virtual REPL!\x1b[0m\r\n");
     //this.writeEmitter.fire("Enter a message and it will be echoed back:\r\n");
-    this.openingMessageCallback().then((message: string) => {
+    void this.openingMessageCallback().then((message: string) => {
       this.writeEmitter.fire(message);
       this.writeEmitter.fire(PROMPT);
     });
@@ -64,7 +62,7 @@ export class Terminal implements Pseudoterminal {
   }
 
   public clean(waitingForPrompt?: boolean): void {
-    this.waitingForPrompt! != waitingForPrompt;
+    this.waitingForPrompt = waitingForPrompt ?? this.waitingForPrompt;
 
     // TODO: maybe restore current state
     this.buffer = "";
@@ -81,14 +79,19 @@ export class Terminal implements Pseudoterminal {
     let relativeCursor = this.xCursor;
     if (this.multilineMode) {
       const currentLineLength = this.buffer.split("\n").pop()?.length;
-      if (currentLineLength === undefined) return -1;
+      if (currentLineLength === undefined) {
+        return -1;
+      }
       relativeCursor = this.xCursor + (this.buffer.length - currentLineLength);
     }
+
     return relativeCursor;
   }
 
   public handleInput(data: string): void {
-    if (!this.isOpen || this.isForzen) return;
+    if (!this.isOpen || this.isForzen) {
+      return;
+    }
 
     for (const char of data) {
       if (this.controlSequence) {
@@ -173,17 +176,24 @@ export class Terminal implements Pseudoterminal {
         this.controlSequence = true;
       } else if (char === "\x03") {
         // Ctrl+C
-        if (!this.waitingForPrompt) return;
+        if (!this.waitingForPrompt) {
+          return;
+        }
 
         this.submitEmitter.fire(char);
       } else if (char === "\t") {
         // Tab
         this.handleTab();
       } else {
-        if (IGNORED_CHARS.includes(char)) return;
+        if (IGNORED_CHARS.includes(char)) {
+          return;
+        }
 
         const relativeCursor = this.getRelativeCursor();
-        if (relativeCursor === -1) return;
+        if (relativeCursor === -1) {
+          return;
+        }
+
         // this.buffer += char; for xCursor
         this.buffer =
           this.buffer.slice(0, relativeCursor) +
@@ -219,7 +229,9 @@ export class Terminal implements Pseudoterminal {
   private handleBackspace(): void {
     const currentLine = this.buffer.split("\n").pop();
 
-    if (currentLine === undefined) return;
+    if (currentLine === undefined) {
+      return;
+    }
 
     if (
       this.multilineMode &&
@@ -235,7 +247,9 @@ export class Terminal implements Pseudoterminal {
       this.writeEmitter.fire(DEL(4));
     } else if (currentLine.length > 0) {
       const relativeCursor = this.getRelativeCursor();
-      if (relativeCursor === -1) return;
+      if (relativeCursor === -1) {
+        return;
+      }
 
       // Remove the last character from the buffer at relativeCursor-1
       this.buffer =
@@ -293,7 +307,13 @@ export class Terminal implements Pseudoterminal {
       return;
     }
 
-    this.writeEmitter.fire("\r\n");
+    if (this.waitingForPrompt) {
+      // delete input as input(...) in repl echos input back
+      this.writeEmitter.fire(DEL(input.length));
+    } else {
+      this.writeEmitter.fire("\r\n");
+    }
+
     this.waitingForPrompt = true;
     this.history.add(input);
     this.submitEmitter.fire(input + "\n");

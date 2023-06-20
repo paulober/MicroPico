@@ -1,21 +1,24 @@
-import {
-  Disposable,
+import type {
   Event,
-  EventEmitter,
   FileChangeEvent,
   FileChangeType,
-  FilePermission,
   FileStat,
-  FileSystemError,
   FileSystemProvider,
-  FileType,
   Uri,
 } from "vscode";
-import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
+import {
+  Disposable,
+  EventEmitter,
+  FilePermission,
+  FileSystemError,
+  FileType,
+} from "vscode";
+import { PyOutType } from "@paulober/pyboard-serial-com";
 import type {
   PyOutGetItemStat,
   PyOutListContents,
   PyOutStatus,
+  PyboardRunner,
 } from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
 import { v4 as uuidv4 } from "uuid";
@@ -39,7 +42,7 @@ export class PicoWFs implements FileSystemProvider {
   private remoteConfigFs = remoteConfigFs;
 
   private pyb: PyboardRunner;
-  private cacheEnabled: boolean = false;
+  private cacheEnabled = false;
 
   // FileSystemProvider stuff
   private _emitter = new EventEmitter<FileChangeEvent[]>();
@@ -50,7 +53,7 @@ export class PicoWFs implements FileSystemProvider {
     this.pyb = pyboardRunner;
 
     if (picoWFsVscodeConfiguration) {
-      getTypeshedPicoWStubPath().then(path => {
+      void getTypeshedPicoWStubPath().then(path => {
         if (path === null) {
           return;
         }
@@ -74,7 +77,7 @@ export class PicoWFs implements FileSystemProvider {
       readonly excludes: readonly string[];
     }
   ): Disposable {
-    return new Disposable(() => {});
+    return new Disposable(() => undefined);
   }
 
   public async stat(uri: Uri): Promise<FileStat> {
@@ -137,7 +140,7 @@ export class PicoWFs implements FileSystemProvider {
     };
   }
 
-  public async readDirectory(uri: Uri): Promise<[string, FileType][]> {
+  public async readDirectory(uri: Uri): Promise<Array<[string, FileType]>> {
     if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
       if (picoWFsVscodeConfiguration && basename(uri.path) === ".vscode") {
         return Object.keys(this.remoteConfigFs[".vscode"].children).map(
@@ -161,13 +164,14 @@ export class PicoWFs implements FileSystemProvider {
 
     const items = (result as PyOutListContents).response;
 
-    const children: [string, FileType][] = items.map(item => [
+    const children: Array<[string, FileType]> = items.map(item => [
       item.path,
       item.isDir ? FileType.Directory : FileType.File,
     ]);
     if (picoWFsVscodeConfiguration && uri.path === "/") {
       children.push([".vscode", FileType.Directory]);
     }
+
     return children;
   }
 
@@ -184,6 +188,7 @@ export class PicoWFs implements FileSystemProvider {
         this.logger.warn("createDirectory: propably already existsed");
         throw FileSystemError.FileExists(uri);
       }
+
       return;
     }
 
@@ -283,12 +288,12 @@ export class PicoWFs implements FileSystemProvider {
         }
       }
     } else {
-      let result = await this.pyb.deleteFileOrFolder(
+      const result = await this.pyb.deleteFileOrFolder(
         uri.path,
         options.recursive
       );
       if (result.type === PyOutType.status) {
-        let status = (result as PyOutStatus).status;
+        const status = (result as PyOutStatus).status;
         if (!status) {
           // both failed, so most likely the fs item does not exist
           throw FileSystemError.FileNotFound(uri);
@@ -326,7 +331,7 @@ export class PicoWFs implements FileSystemProvider {
     source: Uri,
     destination: Uri,
     options: { readonly overwrite: boolean }
-  ): Promise<void> {}
+  ): Promise<void>;
 }
 
 /**

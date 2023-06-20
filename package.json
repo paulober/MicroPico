@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
-  "version": "3.0.14",
+  "version": "3.1.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
@@ -21,7 +21,7 @@
   "markdown": "github",
   "engines": {
     "vscode": "^1.76.0",
-    "node": ">=16.14.2"
+    "node": ">=16.17.1"
   },
   "keywords": [
     "raspberry",
@@ -65,87 +65,119 @@
     "commands": [
       {
         "command": "picowgo.connect",
-        "title": "Pico-W-Go > Connect"
+        "title": "Connect",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.disconnect",
-        "title": "Pico-W-Go > Disconnect"
+        "title": "Disconnect",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.initialise",
-        "title": "Pico-W-Go > Configure project"
+        "title": "Configure project",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.upload",
-        "title": "Pico-W-Go > Upload project"
+        "title": "Upload project to Pico",
+        "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.uploadFile",
-        "title": "Pico-W-Go > Upload current file",
-        "enablement": "resourceScheme != pico && isFileSystemResource"
+        "title": "Upload current file to Pico",
+        "enablement": "resourceScheme != pico && isFileSystemResource",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.download",
-        "title": "Pico-W-Go > Download project"
+        "title": "Download project from Pico",
+        "enablement": "(resourceScheme == pico && isFileSystemResource) || inQuickOpen",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.run",
-        "title": "Pico-W-Go > Run current file",
-        "enablement": "resourceScheme != pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "title": "Run current file on Pico",
+        "enablement": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.remote.run",
-        "title": "Pico-W-Go > Remote > Run current file",
-        "enablement": "resourceScheme == pico && isFileSystemResource && editorLangId == python && resourceExtname == .py"
+        "title": "Remote > Run current file on Pico",
+        "enablement": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.runselection",
-        "title": "Pico-W-Go > Run current selection",
-        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python"
+        "title": "Run current selection on Pico",
+        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.deleteAllFiles",
-        "title": "Pico-W-Go > Delete all files from board"
+        "title": "Delete all files from board",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.globalSettings",
-        "title": "Pico-W-Go > Global settings"
+        "title": "Global settings",
+        "category": "Pico-W-Go"
+      },
+      {
+        "command": "picowgo.workspaceSettings",
+        "title": "Workspace settings",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.reset.soft",
-        "title": "Pico-W-Go > Reset > Soft"
+        "title": "Reset > Soft",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.reset.hard",
-        "title": "Pico-W-Go > Reset > Hard"
+        "title": "Reset > Hard",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.help",
-        "title": "Pico-W-Go > Help > Getting started"
+        "title": "Help > Getting started",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.extra.pins",
-        "title": "Pico-W-Go > Help > Show Pico Pin Map"
+        "title": "Help > Show Pico Pin Map",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.extra.getSerial",
-        "title": "Pico-W-Go > Help > List serial ports"
+        "title": "Help > List serial ports",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.extra.firmwareUpdates",
-        "title": "Pico-W-Go > Help > Check for firmware updates"
+        "title": "Help > Check for firmware updates",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.listCommands",
-        "title": "Pico-W-Go > List all Commands"
+        "title": "List all Commands",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.toggleFileSystem",
-        "title": "Pico-W-Go > Toggle Virtual File System (closes existing vREPLs)"
+        "title": "Toggle Virtual File System (reloads UI and closes existing vREPLs)",
+        "category": "Pico-W-Go"
       },
       {
         "command": "picowgo.switchPico",
-        "title": "Pico-W-Go > Switch Pico"
+        "title": "Switch Pico",
+        "category": "Pico-W-Go"
+      },
+      {
+        "command": "picowgo.reset.soft.listen",
+        "title": "Reset > Soft (listen)",
+        "category": "Pico-W-Go"
       }
     ],
     "menus": {
@@ -163,19 +195,24 @@
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
+        },
+        {
+          "command": "picowgo.remote.run",
+          "group": "picowgo",
+          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
         }
       ],
       "editor/context": [
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico"
+          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.runselection",
@@ -184,24 +221,29 @@
         {
           "command": "picowgo.uploadFile",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "resourceScheme != pico && isFileSystemResource"
         }
       ],
       "editor/title": [
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico"
+          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.upload",
           "group": "picowgo",
           "when": "resourceScheme != pico"
+        },
+        {
+          "command": "picowgo.download",
+          "group": "picowgo",
+          "when": "resourceScheme == pico"
         }
       ]
     },
@@ -211,6 +253,7 @@
         "picowgo.autoConnect": {
           "type": "boolean",
           "default": true,
+          "scope": "machine",
           "title": "Autoconnect on USB",
           "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
           "order": 2
@@ -218,6 +261,7 @@
         "picowgo.manualComDevice": {
           "type": "string",
           "default": "",
+          "scope": "machine",
           "title": "Manual COM device",
           "description": "If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here.",
           "order": 3
@@ -229,15 +273,30 @@
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
           "order": 4
         },
+        "picowgo.additionalSyncFolders": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "uniqueItems": true
+          },
+          "default": [],
+          "title": "Additional Sync Folders",
+          "description": "Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.",
+          "order": 5
+        },
         "picowgo.syncAllFileTypes": {
           "type": "boolean",
           "default": false,
           "title": "Upload all file types",
           "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
-          "order": 5
+          "order": 6
         },
         "picowgo.syncFileTypes": {
           "type": "array",
+          "items": {
+            "type": "string",
+            "uniqueItems": true
+          },
           "default": [
             "py",
             "txt",
@@ -251,7 +310,7 @@
           ],
           "title": "Upload file types",
           "description": "All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action",
-          "order": 6
+          "order": 7
         },
         "picowgo.pyIgnore": {
           "title": "Pyignore list",
@@ -269,21 +328,38 @@
             "env",
             "venv"
           ],
-          "order": 7
+          "order": 8
         },
         "picowgo.openOnStart": {
           "type": "boolean",
           "default": false,
+          "scope": "machine",
           "title": "Open on start",
           "description": "Automatically open the Pico-W-Go console after starting VS Code. Could cause random terminal freezes on Linux.",
-          "order": 8
+          "order": 9
         },
         "picowgo.statusbarButtons": {
           "type": "array",
           "title": "Statusbar buttons",
+          "scope": "machine-overridable",
           "description": "Select which buttons to show in the statusbar",
           "items": {
-            "type": "string"
+            "type": "string",
+            "uniqueItems": true,
+            "enum": [
+              "status",
+              "stop",
+              "run",
+              "runselection",
+              "upload",
+              "download",
+              "disconnect",
+              "softreset",
+              "settings",
+              "listserial",
+              "listcommands",
+              "togglepicowfs"
+            ]
           },
           "default": [
             "status",
@@ -291,28 +367,31 @@
             "softreset",
             "togglepicowfs"
           ],
-          "order": 9
+          "order": 10
         },
         "picowgo.gcBeforeUpload": {
           "type": "boolean",
-          "default": false,
+          "default": true,
+          "scope": "machine-overridable",
           "title": "Garbage collection before upload",
-          "description": "[Only works with firmware v1.16.0.b1 and up.] Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
-          "order": 10
+          "description": "Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
+          "order": 11
         },
-        "picowgo.rebootAfterUpload": {
+        "picowgo.softResetAfterUpload": {
           "type": "boolean",
           "default": false,
-          "title": "Reboot after upload",
-          "description": "Reboots your board after any upload action.",
-          "order": 11
+          "scope": "machine-overridable",
+          "title": "Soft-reset after upload",
+          "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
+          "order": 12
         },
         "picowgo.pythonPath": {
           "type": "string",
           "default": null,
+          "scope": "machine",
           "title": "Python Path",
           "description": "Path to the Python interpreter. Default for Windows is 'python.exe' and 'python3' for Linux and MacOS.",
-          "order": 12
+          "order": 13
         }
       }
     },
@@ -411,7 +490,7 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.1",
+    "@rollup/plugin-commonjs": "^25.0.2",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.1",
@@ -433,7 +512,7 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^1.4.31",
+    "@paulober/pyboard-serial-com": "^1.5.1",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "uuid": "^9.0.0"

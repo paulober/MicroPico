@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
+import type * as vscode from "vscode";
 import Activator from "./activator.mjs";
-import UI from "./ui.mjs";
+import type UI from "./ui.mjs";
 
 let view: UI | undefined;
 
@@ -12,16 +12,18 @@ let view: UI | undefined;
  *
  * @param context The vscode context for this extension
  */
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate(
+  context: vscode.ExtensionContext
+): Promise<void> {
   const activator = new Activator();
   view = await activator.activate(context);
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {
+export function deactivate(): void {
   if (view !== undefined) {
-    setTimeout(async () => {
-      await view?.destroy();
+    setTimeout(() => {
+      view?.destroy();
     }, 1500);
   }
 }

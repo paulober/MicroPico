@@ -1,4 +1,5 @@
-import { Memento, WorkspaceConfiguration, window, workspace } from "vscode";
+import type { Memento, WorkspaceConfiguration } from "vscode";
+import { window, workspace } from "vscode";
 import { PyboardRunner } from "@paulober/pyboard-serial-com";
 import { getProjectPath } from "./api.mjs";
 import { join } from "path";
@@ -7,13 +8,14 @@ export enum SettingsKey {
   autoConnect = "autoConnect",
   manualComDevice = "manualComDevice",
   syncFolder = "syncFolder",
+  additionalSyncFolders = "additionalSyncFolders",
   syncAllFileTypes = "syncAllFileTypes",
   syncFileTypes = "syncFileTypes",
   pyIgnore = "pyIgnore",
   openOnStart = "openOnStart",
   statusbarButtons = "statusbarButtons",
   gcBeforeUpload = "gcBeforeUpload",
-  rebootAfterUpload = "rebootAfterUpload",
+  softResetAfterUpload = "softResetAfterUpload",
   pythonPath = "pythonPath",
 }
 
@@ -37,20 +39,23 @@ export default class Settings {
 
   public getString(key: SettingsKey): string | undefined {
     const value = this.get(key);
+
     return typeof value === "string" ? value : undefined;
   }
 
   public getBoolean(key: SettingsKey): boolean | undefined {
     const value = this.get(key);
+
     return typeof value === "boolean" ? value : undefined;
   }
 
   public getArray(key: SettingsKey): string[] | undefined {
     const value = this.get(key);
+
     return Array.isArray(value) ? value : undefined;
   }
 
-  public update(key: SettingsKey, value: any): Thenable<void> {
+  public update<T>(key: SettingsKey, value: T): Thenable<void> {
     return this.config.update(key, value, true);
   }
 
@@ -58,11 +63,13 @@ export default class Settings {
   /**
    * Get the COM port to connect to.
    *
-   * @returns the com device to use. If autoConnect is true, the first port is returned. Otherwise the manual com device is returned.
+   * @returns the com device to use. If autoConnect is true, the first port is returned.
+   * Otherwise the manual com device is returned.
    */
   public async getComDevice(): Promise<string | undefined> {
-    // manual com device undefined if this.getBoolean(SettingsKey.autoConnect) is true or if manualComDevice is undefined
-    if (this.getBoolean(SettingsKey.autoConnect) == true) {
+    // manual com device undefined if this.getBoolean(SettingsKey.autoConnect) is true
+    // or if manualComDevice is undefined
+    if (this.getBoolean(SettingsKey.autoConnect) === true) {
       try {
         process.env.NODE_ENV = "production";
         const ports = await PyboardRunner.getPorts(this.pythonExecutable);
@@ -70,9 +77,12 @@ export default class Settings {
           return ports.ports[0];
         }
       } catch (e) {
+        // TODO: use logger
         console.error(e);
-        window.showErrorMessage(
-          "Error while reading (COM) ports for autoConnect: " + e
+        const message =
+          typeof e === "string" ? e : e instanceof Error ? e.message : "";
+        void window.showErrorMessage(
+          "Error while reading (COM) ports for autoConnect: " + message
         );
       }
     }
@@ -80,8 +90,9 @@ export default class Settings {
     let manualComDevice = this.getString(SettingsKey.manualComDevice);
     if (manualComDevice === undefined || manualComDevice === "") {
       manualComDevice = undefined;
-      window.showErrorMessage(
-        "autoConnect setting has been disabled (or no Pico has been found automatically) but no manualComDevice has been set."
+      void window.showErrorMessage(
+        "autoConnect setting has been disabled (or no Pico has been " +
+          "found automatically) but no manualComDevice has been set."
       );
     }
 
@@ -89,7 +100,8 @@ export default class Settings {
   }
 
   /**
-   * Returns the absolute path to the sync folder. If the sync folder is undefined, the project path is returned.
+   * Returns the absolute path to the sync folder. If the sync folder is undefined,
+   * the project path is returned.
    *
    * @returns the absolute path to the sync folder
    */
@@ -110,10 +122,64 @@ export default class Settings {
   }
 
   /**
-   * Returns the file types to sync.
-   * If syncAllFileTypes is false and syncFileTypes is undefined, an empty array is returned => do sync all file types.
+   * Returns the absolute path to one sync folder based on the user's selection
+   * when multiple folders are configured.
+   * If only one folder is configured, its absolute path is returned.
    *
-   * @returns the file types to sync. If syncAllFileTypes is true, an empty array is returned. Otherwise the syncFileTypes array is returned.
+   * @param actionTitle The title of the action to perform. Used in the selection dialog.
+   * E.g. "Upload" or "Download".
+   *
+   * @returns The absolute path to one sync folder.
+   */
+  public async requestSyncFolder(
+    actionTitle: string
+  ): Promise<string | undefined> {
+    const syncFolder = this.getSyncFolderAbsPath();
+    const projectDir = getProjectPath();
+
+    if (projectDir === undefined) {
+      // How can this ever happen??!
+      return;
+    }
+
+    let additionalSyncFolders = this.getArray(
+      SettingsKey.additionalSyncFolders
+    )?.map(sf => join(projectDir, sf));
+
+    if (
+      additionalSyncFolders === undefined ||
+      additionalSyncFolders.length === 0
+    ) {
+      return syncFolder;
+    }
+
+    // prepend normal syncFolder if available to options
+    if (
+      syncFolder !== undefined &&
+      !additionalSyncFolders.includes(syncFolder)
+    ) {
+      additionalSyncFolders = [syncFolder, ...additionalSyncFolders];
+    }
+
+    const selectedFolder = await window.showQuickPick(additionalSyncFolders, {
+      placeHolder:
+        `Select a sync folder to ${actionTitle.toLowerCase()} ` +
+        "(add more in settings)",
+      canPickMany: false,
+      ignoreFocusOut: false,
+      title: `${actionTitle} sync folder selection`,
+    });
+
+    return selectedFolder;
+  }
+
+  /**
+   * Returns the file types to sync.
+   * If syncAllFileTypes is false and syncFileTypes is undefined, an
+   * empty array is returned => do sync all file types.
+   *
+   * @returns the file types to sync. If syncAllFileTypes is true, an
+   * empty array is returned. Otherwise the syncFileTypes array is returned.
    */
   public getSyncFileTypes(): string[] {
     return this.getBoolean(SettingsKey.syncAllFileTypes)

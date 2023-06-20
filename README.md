@@ -6,15 +6,15 @@ Pico-W-Go provides code auto-completion and allows you to communicate with your 
 
 Works with:
 | Platform | x64 | arm64 | armhf |
-|----------|-----|-------|-------|
-| Windows  | ✅  | ✅    | ❌    |
-| macOS    | ✅  | ✅    | ❌    |
-| Linux    | ✅  | ✅    | ✅    |
+| -------- | --- | ----- | ----- |
+| Windows  | ✅   | ✅     | ❌     |
+| macOS    | ✅   | ✅     | ❌     |
+| Linux    | ✅   | ✅     | ✅     |
 
 ## Features
 
 - Auto-completion and docs
-- Pseudo terminal integration for communication with MicroPython REPL on a Pico (w) board
+- Pseudo terminal integration for communication with MicroPython REPL on a Pico (w) board (with support for tab-completion)
 - Running / Transferring files to / from your board
 - Built-in virtual-workspace provider for Raspberry Pi Pico (W) boards
 
@@ -68,17 +68,18 @@ while True:
 
 This extension contributes the following settings:
 
-* `picowgo.autoConnect`: Ignores any 'device address' setting and automatically connects to the top item in the serialport list.
+* `picowgo.autoConnect`: Ignores any 'device address' setting and automatically connects to the top item in the serial-port list (of Picos).
 * `picowgo.manualComDevice`: If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here.
 * `picowgo.syncFolder`: This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash.
+* `picowgo.additionalSyncFolders`: Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.
 * `picowgo.syncAllFileTypes`: If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored.
 * `picowgo.syncFileTypes`: All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action.
 * `picowgo.pyIgnore`: Comma separated list of files and folders to ignore when uploading (no wildcard or regular expressions supported).
 * `picowgo.openOnStart`: Automatically open the Pico-W-Go console and connect to the board after starting VS Code.
 * `picowgo.statusbarButtons`: Select which buttons to show in the statusbar (DO NOT CHANGE, unless you know what you are doing)
-* `picowgo.gcBeforeUpload`: [Only works with firmware v1.16.0.b1 and up.] Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
-* `picowgo.rebootAfterUpload`: Reboots your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
-* `picowgo.pythonPath`: Path to the Python interpreter. Defaults to null so it will try to auto-detect a suitable python installation.
+* `picowgo.gcBeforeUpload`: Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
+* `picowgo.softResetAfterUpload`: Soft-resets your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
+* `picowgo.pythonPath`: Path to the Python interpreter. Defaults to null so it will try to auto-detect a suitable python installation. NOTE: Must be deleted from global settings.json when switing between operating systems and settings-sync is enabled!
 
 ---
 

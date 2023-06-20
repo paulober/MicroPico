@@ -221,10 +221,48 @@ class Pin:
         GPIO9 : Pin 
         """ <class 'Pin'> = Pin(GPIO9, mode=ALT, pull=PULL_DOWN, alt=31) """
 
-    def __init__(self, id: int|str, /, mode: int = IN, pull: int = PULL_UP, af: str|int = -1):
+    def __init__(self, id: int|str|tuple[Any,Any], mode: int = -1, pull: int = -1, *, value: int | None = None, drive: int=0, alt: int = -1):
         """
-        Create a new Pin object associated with the id.  If additional arguments are given,
-        they are used to initialise the pin.  See :meth:`pin.init`.
+        Access the pin peripheral (GPIO pin) associated with the given id. If additional arguments are 
+        given in the constructor then they are used to initialise the pin. Any settings that are not 
+        specified will remain in their previous state.
+
+The arguments are:
+
+- `id` is mandatory and can be an arbitrary object. Among possible value types are: int 
+(an internal Pin identifier), str (a Pin name), and tuple (pair of [port, pin]).
+- `mode` specifies the pin mode, which can be one of:
+    - `Pin.IN` - Pin is configured for input. If viewed as an output the pin is in high-impedance state.
+    - `Pin.OUT` - Pin is configured for (normal) output.
+    - `Pin.OPEN_DRAIN` - Pin is configured for open-drain output. Open-drain output works in the 
+    following way: if the output value is set to 0 the pin is active at a low level; if the output 
+    value is 1 the pin is in a high-impedance state. Not all ports implement this mode, or some might only on certain pins.
+    - `Pin.ALT` - Pin is configured to perform an alternative function, which is port specific. For 
+    a pin configured in such a way any other Pin methods (except Pin.init()) are not applicable 
+    (calling them will lead to undefined, or a hardware-specific, result). Not all ports implement this mode.
+    - `Pin.ALT_OPEN_DRAIN` - The Same as `Pin.ALT`, but the pin is configured as open-drain. Not all 
+    ports implement this mode.
+    - `Pin.ANALOG` - Pin is configured for analog input, see the ADC class.
+- `pull` specifies if the pin has a (weak) pull resistor attached, and can be one of:
+    - `None` - No pull up or down resistor.
+    - `Pin.PULL_UP` - Pull up resistor enabled.
+    - `Pin.PULL_DOWN` - Pull down resistor enabled.
+- `value` is valid only for `Pin.OUT` and `Pin.OPEN_DRAIN` modes and specifies initial output pin value if 
+given, otherwise the state of the pin peripheral remains unchanged.
+- `drive` specifies the output power of the pin and can be one of: `Pin.DRIVE_0`, `Pin.DRIVE_1`, etc., 
+increasing in drive strength. The actual current driving capabilities are port dependent. Not all ports implement this argument.
+- `alt` specifies an alternate function for the pin and the values it can take are port dependent. This 
+argument is valid only for `Pin.ALT` and `Pin.ALT_OPEN_DRAIN` modes. It may be used when a pin supports 
+more than one alternate function. If only one pin alternate function is supported the this argument is 
+not required. Not all ports implement this argument.
+
+As specified above, the Pin class allows to set an alternate function for a particular pin, but it does not specify any 
+further operations on such a pin. Pins configured in alternate-function mode are usually not used as GPIO but are instead 
+driven by other hardware peripherals. The only operation supported on such a pin is re-initialising, by calling the 
+constructor or `Pin.init()` method. If a pin that is configured in alternate-function mode is re-initialised 
+with `Pin.IN`, `Pin.OUT`, or `Pin.OPEN_DRAIN`, the alternate function will be removed from the pin.
+
+        (Source: https://docs.micropython.org/en/latest/library/machine.Pin.html, Copyright: 2014-2023 Damien P. George, Paul Sokolovsky, and contributors.)
         """
         ...
 

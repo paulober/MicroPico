@@ -9,7 +9,7 @@ import {
   env as vscodeEnv,
   Uri,
 } from "vscode";
-import type { ExtensionTerminalOptions, TerminalOptions } from "vscode";
+import type { ExtensionTerminalOptions } from "vscode";
 
 export const extName = "pico-w-go";
 export const extId = "paulober.pico-w-go";
@@ -24,8 +24,17 @@ export const recommendedExtensions = [
 /**
  * Opens the settings page for this extension in the settings editor window
  */
-export function openSettings(): void {
-  commands.executeCommand("workbench.action.openSettings", extName);
+export function openSettings(workspace = false): void {
+  if (workspace) {
+    // open workspace settings
+    void commands.executeCommand(
+      "workbench.action.openWorkspaceSettings",
+      extName
+    );
+  } else {
+    // open user settings (global settings)
+    void commands.executeCommand("workbench.action.openSettings", extName);
+  }
 }
 
 /**
@@ -88,7 +97,7 @@ export function getProjectPath(): string | undefined {
  * if scheme is pico it will return path, otherwise undefined
  */
 export async function getFocusedFile(
-  remotePosix: boolean = false
+  remotePosix = false
 ): Promise<string | undefined> {
   const editor = window.activeTextEditor;
   if (editor === undefined) {
@@ -121,7 +130,7 @@ export function getSelectedCodeOrLine(): string | undefined {
 
   const selection = editor.selection;
   // no active selection? => get the current line
-  let codeSnippet = !selection.isEmpty
+  const codeSnippet = !selection.isEmpty
     ? editor.document.getText(selection)
     : editor?.document.lineAt(selection.active.line).text;
 
@@ -129,7 +138,7 @@ export function getSelectedCodeOrLine(): string | undefined {
 }
 
 export function writeIntoClipboard(text: string): void {
-  vscodeEnv.clipboard.writeText(text);
+  void vscodeEnv.clipboard.writeText(text);
 }
 
 /**
@@ -142,7 +151,9 @@ export async function getTypeshedPicoWStubPath(): Promise<
 > {
   const workspaceFolderUri = workspace.workspaceFolders?.[0].uri;
 
-  if (!workspaceFolderUri) return null;
+  if (!workspaceFolderUri) {
+    return null;
+  }
 
   const settingsUri = workspaceFolderUri.with({
     path: Uri.joinPath(workspaceFolderUri, ".vscode/settings.json").path,
@@ -151,51 +162,63 @@ export async function getTypeshedPicoWStubPath(): Promise<
   try {
     // Read the contents of the settings.json file
     const settingsData = await workspace.fs.readFile(settingsUri);
-    // Parse the settings data as a JSON object
-    const settingsObject = JSON.parse(new TextDecoder().decode(settingsData));
+    // Parse the settings data as a JSON object (cast to avoid unsafe any)
+    const settingsObject = JSON.parse(
+      new TextDecoder().decode(settingsData)
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+    ) as { "python.analysis.typeshedPaths": string[] };
     // Check if the typeshedPaths property includes "Pico-W-Stub"
-    const typeshedPaths: Array<string> =
+    const typeshedPaths: string[] =
       settingsObject["python.analysis.typeshedPaths"];
-    if (typeshedPaths) {
+    if (
+      typeshedPaths &&
+      workspace.workspaceFolders &&
+      workspace.workspaceFolders.length > 0
+    ) {
       const stubPath = typeshedPaths.find(path => path.includes("Pico-W-Stub"));
       if (stubPath !== undefined) {
         return [
           stubPath.replaceAll("\\", "/"),
-          workspace.workspaceFolders![0].name,
+          workspace.workspaceFolders[0].name,
         ];
       }
     }
+
     return null;
   } catch (err) {
     return null;
   }
 }
 
+/**
+ * Focus existing vREPL or create a new one and focus it.
+ *
+ * @param terminalOptions ExtensionTerminalOptions required to create a
+ * new terminal if none already exists
+ */
 export async function focusTerminal(
-  terminalOptions?: TerminalOptions | ExtensionTerminalOptions
+  terminalOptions?: ExtensionTerminalOptions
 ): Promise<void> {
   const openTerminals = window.terminals;
 
-  const picoRepl = openTerminals.find(term => {
-    return term.creationOptions.name === TERMINAL_NAME;
-  });
+  const picoRepl = openTerminals.find(
+    term => term.creationOptions.name === TERMINAL_NAME
+  );
 
-  if (picoRepl && terminalOptions === undefined) {
+  if (picoRepl) {
     // focus the terminal
     picoRepl.show(false);
   } else {
-    // create new with profile
-    /*await commands.executeCommand("workbench.action.terminal.newWithProfile", {
-      id: "picowgo.vrepl",
-      profileName: TERMINAL_NAME,
-    } as Object);*/
     if (terminalOptions) {
-      // does crash on reactivation
-      window.createTerminal(terminalOptions).show();
-      // wait for terminal to open
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const terminal = window.createTerminal(terminalOptions);
+      terminal.show(false);
+      // wait for 200ms so the opening message of the terminal can be queued
+      await ((ms: number): Promise<void> =>
+        new Promise(resolve => {
+          setTimeout(resolve, ms);
+        }))(200);
     } else {
-      window.showWarningMessage("Pico vREPL not open.");
+      void window.showWarningMessage("Pico vREPL not open.");
     }
   }
 }

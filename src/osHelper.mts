@@ -1,4 +1,4 @@
-import { exec, execSync } from "child_process";
+import { exec } from "child_process";
 import { readFile, stat, writeFile } from "fs/promises";
 import { platform } from "os";
 
@@ -16,6 +16,7 @@ export async function getPythonCommand(): Promise<string | undefined> {
     currentPlatform = system as keyof typeof pythonCommands;
   } else {
     console.error(`Unsupported platform: ${system}`);
+
     return undefined;
   }
 
@@ -41,26 +42,30 @@ export async function getPythonCommand(): Promise<string | undefined> {
 export async function pathExists(path: string): Promise<boolean> {
   try {
     await stat(path);
+
     return true;
   } catch (error) {
     return false;
   }
 }
 
-export async function readJsonFile(path: string): Promise<any> {
+export async function readJsonFile<T>(path: string): Promise<T | undefined> {
   try {
     const content = await readFile(path, {
       encoding: "utf8",
       flag: "r",
     });
 
-    return JSON.parse(content);
+    return JSON.parse(content) as T;
   } catch (error) {
     return undefined;
   }
 }
 
-export async function writeJsonFile(path: string, content: any): Promise<void> {
+export async function writeJsonFile<T>(
+  path: string,
+  content: T
+): Promise<void> {
   try {
     const json = JSON.stringify(content, null, 4);
 
@@ -68,8 +73,12 @@ export async function writeJsonFile(path: string, content: any): Promise<void> {
       encoding: "utf8",
       flag: "w",
     });
-  } catch (error) {
-    console.error(`[Pico-W-Go] [OSHelper] Error writing to ${path}: ${error}`);
+  } catch (e) {
+    const message =
+      typeof e === "string" ? e : e instanceof Error ? e.message : "";
+    console.error(
+      `[Pico-W-Go] [OSHelper] Error writing to ${path}: ${message}`
+    );
   }
 }
 

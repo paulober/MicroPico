@@ -6,9 +6,31 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ## Known issues
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
-- Mounting virtual workspace causes existing vREPLs to freeze (*sometimes*) so they need to be disposed manually for some reason. (maybe cauaused by vscode)
 
 ---
+
+## [3.1.0] - 2023-06-20
+
+# Added
+- Logger output channel
+- Open workspace settings command
+- Added scopes to some configuration settings
+- Added new `picowgo.additionalSyncFolders` setting (Requested in #40)
+- Added `soft-reset (listen)` command. Soft-reset now displays output (read and write) of main.py and boot.py reruns after soft-reset with this new command or the updated `picowgo.softResetAfterUpload` setting. (Requested in #101)
+
+# Changed
+- Renamed setting `picowgo.rebootAfterUpload` to `picowgo.softResetAfterUpload`
+- Fixed README table markdown for VS Code Marketplace store front
+- Fix #71, Better up-/download progress notification/feedback
+- vREPL now opens automatically on need (reduces "vREPL not open" warnings) (#60)
+- All commands are now grouped in one category
+- Some minor stability and performance improvements were made
+- Fixed duplicate vREPL handling and not prompt on additional vREPL panel
+- Fixed `input(...)` echoed back input in vREPL
+- Other dependency updates
+- Upgraded pyboard-serial-com to v1.5.1
+- Bumped minimum NodeJS engine version to v16.17.1
+- Updated stubs to patch v1.20.0-1 stable
 
 ## [3.0.14] - 2023-06-17
 
