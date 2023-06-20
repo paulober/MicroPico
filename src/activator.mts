@@ -644,6 +644,7 @@ export default class Activator {
                     path: "/" + basename(file),
                   })
                 );
+                progress.report({ increment: 100 });
                 if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
                   //await this.pyb?.softReset();
                   await vscode.commands.executeCommand(
