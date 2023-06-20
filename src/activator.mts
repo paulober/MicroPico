@@ -20,7 +20,7 @@ import type {
   PyOutTabComp,
 } from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
-import { basename, dirname, join } from "path";
+import { basename, dirname, join, relative, sep } from "path";
 import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
@@ -519,22 +519,40 @@ export default class Activator {
           "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
         );
       }
+
       void vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: "Uploading project...",
+          title: "Uploading",
           cancellable: false,
         },
         async (progress, token) => {
           // cancellation is not possible
           token.onCancellationRequested(() => undefined);
 
+          let currentFileIndex = -1;
           const data = await this.pyb?.startUploadingProject(
             syncDir,
             settings.getSyncFileTypes(),
             settings.getIngoredSyncItems().concat([".picowgo"]),
-            (/*data: string*/) => {
-              //progress.report({ message: data });
+            (data: string) => {
+              this.logger.debug("upload progress: " + data);
+              const status = this.analyseUploadDownloadProgress(data);
+
+              if (status === undefined) {
+                return;
+              }
+
+              if (currentFileIndex < status.current) {
+                currentFileIndex = status.current;
+                progress.report({
+                  increment: 100 / status.total,
+                });
+              }
+
+              progress.report({
+                message: sep + relative(syncDir, status.filePath),
+              });
             }
           );
 
@@ -661,13 +679,31 @@ export default class Activator {
         void vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: "Downloading Project...",
+            title: "Downloading",
             cancellable: false,
           },
           async (progress /*, token*/) => {
+            let currentFileIndex = -1;
             const data = await this.pyb?.downloadProject(
               syncDir,
-              (/*data: string*/) => undefined
+              (data: string) => {
+                const status = this.analyseUploadDownloadProgress(data);
+
+                if (status === undefined) {
+                  return;
+                }
+
+                if (currentFileIndex < status.current) {
+                  currentFileIndex = status.current;
+                  progress.report({
+                    increment: 100 / status.total,
+                  });
+                }
+
+                progress.report({
+                  message: status.filePath,
+                });
+              }
             );
             if (data && data.type === PyOutType.status) {
               const result = data as PyOutStatus;
@@ -692,7 +728,7 @@ export default class Activator {
     // [Command] Delete all files on Pico
     disposable = vscode.commands.registerCommand(
       "picowgo.deleteAllFiles",
-      () => {
+      async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
@@ -701,20 +737,19 @@ export default class Activator {
           return;
         }
 
-        void this.pyb.deleteFolderRecursive("/").then((data: PyOut) => {
-          if (data.type === PyOutType.status) {
-            const result = data as PyOutStatus;
-            if (result.status) {
-              void vscode.window.showInformationMessage(
-                "All files on Pico were deleted."
-              );
-            } else {
-              void vscode.window.showErrorMessage(
-                "File deletion on Pico failed."
-              );
-            }
+        const data = await this.pyb.deleteFolderRecursive("/");
+        if (data.type === PyOutType.status) {
+          const result = data as PyOutStatus;
+          if (result.status) {
+            void vscode.window.showInformationMessage(
+              "All files on Pico were deleted."
+            );
+          } else {
+            void vscode.window.showErrorMessage(
+              "File deletion on Pico failed."
+            );
           }
-        });
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -1065,5 +1100,27 @@ export default class Activator {
     </body>
     </html>`
     );
+  }
+
+  private analyseUploadDownloadProgress(progress: string):
+    | {
+        filePath: string;
+        total: number;
+        current: number;
+        percentage: number;
+      }
+    | undefined {
+    const progressRegex = /^'(.+)'\s\[(\d+)\/(\d+)\]$/;
+    const match = progress.match(progressRegex);
+    if (!match) {
+      return;
+    }
+
+    const filePath = match[1];
+    const current = parseInt(match[2]);
+    const total = parseInt(match[3]);
+    const percentage = parseInt(match[4]);
+
+    return { filePath, total, current, percentage };
   }
 }
