@@ -6,7 +6,7 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ## Known issues
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
-- Mounting virtual workspace causes existing vREPLs to freeze (*sometimes*) so they need to be disposed manually for some reason. (maybe cauaused by vscode)
+- `input(...)` in main.py requires a print before to be displayed on soft-reset.
 
 ---
 
