@@ -91,175 +91,175 @@ class Pin:
     PULL_UP = 1 # type: int
 
     class board():
-        GP0 : Pin 
+        GP0 : Pin
         """ <class 'Pin'> = Pin(GPIO0, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP1 : Pin 
+        GP1 : Pin
         """ <class 'Pin'> = Pin(GPIO1, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP10 : Pin 
+        GP10 : Pin
         """ <class 'Pin'> = Pin(GPIO10, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP11 : Pin 
+        GP11 : Pin
         """ <class 'Pin'> = Pin(GPIO11, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP12 : Pin 
+        GP12 : Pin
         """ <class 'Pin'> = Pin(GPIO12, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP13 : Pin 
+        GP13 : Pin
         """ <class 'Pin'> = Pin(GPIO13, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP14 : Pin 
+        GP14 : Pin
         """ <class 'Pin'> = Pin(GPIO14, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP15 : Pin 
+        GP15 : Pin
         """ <class 'Pin'> = Pin(GPIO15, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP16 : Pin 
+        GP16 : Pin
         """ <class 'Pin'> = Pin(GPIO16, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP17 : Pin 
+        GP17 : Pin
         """ <class 'Pin'> = Pin(GPIO17, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP18 : Pin 
+        GP18 : Pin
         """ <class 'Pin'> = Pin(GPIO18, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP19 : Pin 
+        GP19 : Pin
         """ <class 'Pin'> = Pin(GPIO19, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP2 : Pin 
+        GP2 : Pin
         """ <class 'Pin'> = Pin(GPIO2, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP20 : Pin 
+        GP20 : Pin
         """ <class 'Pin'> = Pin(GPIO20, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP21 : Pin 
+        GP21 : Pin
         """ <class 'Pin'> = Pin(GPIO21, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP22 : Pin 
+        GP22 : Pin
         """ <class 'Pin'> = Pin(GPIO22, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP26 : Pin 
+        GP26 : Pin
         """ <class 'Pin'> = Pin(GPIO26, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP27 : Pin 
+        GP27 : Pin
         """ <class 'Pin'> = Pin(GPIO27, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP28 : Pin 
+        GP28 : Pin
         """ <class 'Pin'> = Pin(GPIO28, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP3 : Pin 
+        GP3 : Pin
         """ <class 'Pin'> = Pin(GPIO3, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP4 : Pin 
+        GP4 : Pin
         """ <class 'Pin'> = Pin(GPIO4, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP5 : Pin 
+        GP5 : Pin
         """ <class 'Pin'> = Pin(GPIO5, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP6 : Pin 
+        GP6 : Pin
         """ <class 'Pin'> = Pin(GPIO6, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP7 : Pin 
+        GP7 : Pin
         """ <class 'Pin'> = Pin(GPIO7, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP8 : Pin 
+        GP8 : Pin
         """ <class 'Pin'> = Pin(GPIO8, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GP9 : Pin 
+        GP9 : Pin
         """ <class 'Pin'> = Pin(GPIO9, mode=ALT, pull=PULL_DOWN, alt=31) """
-        LED : Pin 
+        LED : Pin
         """ <class 'Pin'> = Pin(EXT_GPIO0, mode=IN) """
-        WL_GPIO0 : Pin 
+        WL_GPIO0 : Pin
         """ <class 'Pin'> = Pin(EXT_GPIO0, mode=IN) """
-        WL_GPIO1 : Pin 
+        WL_GPIO1 : Pin
         """ <class 'Pin'> = Pin(EXT_GPIO1, mode=IN) """
-        WL_GPIO2 : Pin 
+        WL_GPIO2 : Pin
         """ <class 'Pin'> = Pin(EXT_GPIO2, mode=IN) """
 
     class cpu():
-        
+
         EXT_GPIO0 : Pin
         """ <class 'Pin'> = Pin(EXT_GPIO0, mode=IN) """
         EXT_GPIO1 : Pin
         """ <class 'Pin'> = Pin(EXT_GPIO1, mode=IN) """
-        EXT_GPIO2 : Pin 
+        EXT_GPIO2 : Pin
         """ <class 'Pin'> = Pin(EXT_GPIO2, mode=IN) """
-        GPIO0 : Pin 
+        GPIO0 : Pin
         """ <class 'Pin'> = Pin(GPIO0, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO1 : Pin 
+        GPIO1 : Pin
         """ <class 'Pin'> = Pin(GPIO1, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO10 : Pin 
+        GPIO10 : Pin
         """ <class 'Pin'> = Pin(GPIO10, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO11 : Pin 
+        GPIO11 : Pin
         """ <class 'Pin'> = Pin(GPIO11, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO12 : Pin 
+        GPIO12 : Pin
         """ <class 'Pin'> = Pin(GPIO12, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO13 : Pin 
+        GPIO13 : Pin
         """ <class 'Pin'> = Pin(GPIO13, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO14 : Pin 
+        GPIO14 : Pin
         """ <class 'Pin'> = Pin(GPIO14, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO15 : Pin 
+        GPIO15 : Pin
         """ <class 'Pin'> = Pin(GPIO15, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO16 : Pin 
+        GPIO16 : Pin
         """ <class 'Pin'> = Pin(GPIO16, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO17 : Pin 
+        GPIO17 : Pin
         """ <class 'Pin'> = Pin(GPIO17, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO18 : Pin 
+        GPIO18 : Pin
         """ <class 'Pin'> = Pin(GPIO18, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO19 : Pin 
+        GPIO19 : Pin
         """ <class 'Pin'> = Pin(GPIO19, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO2 : Pin 
+        GPIO2 : Pin
         """ <class 'Pin'> = Pin(GPIO2, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO20 : Pin 
+        GPIO20 : Pin
         """ <class 'Pin'> = Pin(GPIO20, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO21 : Pin 
+        GPIO21 : Pin
         """ <class 'Pin'> = Pin(GPIO21, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO22 : Pin 
+        GPIO22 : Pin
         """ <class 'Pin'> = Pin(GPIO22, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO23 : Pin 
+        GPIO23 : Pin
         """ <class 'Pin'> = Pin(GPIO23, mode=ALT, alt=31) """
-        GPIO24 : Pin 
+        GPIO24 : Pin
         """ <class 'Pin'> = Pin(GPIO24, mode=ALT, alt=31) """
-        GPIO25 : Pin 
+        GPIO25 : Pin
         """ <class 'Pin'> = Pin(GPIO25, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO26 : Pin 
+        GPIO26 : Pin
         """ <class 'Pin'> = Pin(GPIO26, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO27 : Pin 
+        GPIO27 : Pin
         """ <class 'Pin'> = Pin(GPIO27, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO28 : Pin 
+        GPIO28 : Pin
         """ <class 'Pin'> = Pin(GPIO28, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO29 : Pin 
+        GPIO29 : Pin
         """ <class 'Pin'> = Pin(GPIO29, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO3 : Pin 
+        GPIO3 : Pin
         """ <class 'Pin'> = Pin(GPIO3, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO4 : Pin 
+        GPIO4 : Pin
         """ <class 'Pin'> = Pin(GPIO4, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO5 : Pin 
+        GPIO5 : Pin
         """ <class 'Pin'> = Pin(GPIO5, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO6 : Pin 
+        GPIO6 : Pin
         """ <class 'Pin'> = Pin(GPIO6, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO7 : Pin 
+        GPIO7 : Pin
         """ <class 'Pin'> = Pin(GPIO7, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO8 : Pin 
+        GPIO8 : Pin
         """ <class 'Pin'> = Pin(GPIO8, mode=ALT, pull=PULL_DOWN, alt=31) """
-        GPIO9 : Pin 
+        GPIO9 : Pin
         """ <class 'Pin'> = Pin(GPIO9, mode=ALT, pull=PULL_DOWN, alt=31) """
 
-    def __init__(self, id: int|str|tuple[Any,Any], mode: int = -1, pull: int = -1, *, value: int | None = None, drive: int=0, alt: int = -1):
+    def __init__(self, id: int|str|tuple[Any,Any], mode: int = -1, pull: int | None = -1, *, value: int | None = None, drive: int = 0, alt: int = -1):
         """
-        Access the pin peripheral (GPIO pin) associated with the given id. If additional arguments are 
-        given in the constructor then they are used to initialise the pin. Any settings that are not 
+        Access the pin peripheral (GPIO pin) associated with the given id. If additional arguments are
+        given in the constructor then they are used to initialise the pin. Any settings that are not
         specified will remain in their previous state.
 
 The arguments are:
 
-- `id` is mandatory and can be an arbitrary object. Among possible value types are: int 
+- `id` is mandatory and can be an arbitrary object. Among possible value types are: int
 (an internal Pin identifier), str (a Pin name), and tuple (pair of [port, pin]).
 - `mode` specifies the pin mode, which can be one of:
     - `Pin.IN` - Pin is configured for input. If viewed as an output the pin is in high-impedance state.
     - `Pin.OUT` - Pin is configured for (normal) output.
-    - `Pin.OPEN_DRAIN` - Pin is configured for open-drain output. Open-drain output works in the 
-    following way: if the output value is set to 0 the pin is active at a low level; if the output 
+    - `Pin.OPEN_DRAIN` - Pin is configured for open-drain output. Open-drain output works in the
+    following way: if the output value is set to 0 the pin is active at a low level; if the output
     value is 1 the pin is in a high-impedance state. Not all ports implement this mode, or some might only on certain pins.
-    - `Pin.ALT` - Pin is configured to perform an alternative function, which is port specific. For 
-    a pin configured in such a way any other Pin methods (except Pin.init()) are not applicable 
+    - `Pin.ALT` - Pin is configured to perform an alternative function, which is port specific. For
+    a pin configured in such a way any other Pin methods (except Pin.init()) are not applicable
     (calling them will lead to undefined, or a hardware-specific, result). Not all ports implement this mode.
-    - `Pin.ALT_OPEN_DRAIN` - The Same as `Pin.ALT`, but the pin is configured as open-drain. Not all 
+    - `Pin.ALT_OPEN_DRAIN` - The Same as `Pin.ALT`, but the pin is configured as open-drain. Not all
     ports implement this mode.
     - `Pin.ANALOG` - Pin is configured for analog input, see the ADC class.
 - `pull` specifies if the pin has a (weak) pull resistor attached, and can be one of:
     - `None` - No pull up or down resistor.
     - `Pin.PULL_UP` - Pull up resistor enabled.
     - `Pin.PULL_DOWN` - Pull down resistor enabled.
-- `value` is valid only for `Pin.OUT` and `Pin.OPEN_DRAIN` modes and specifies initial output pin value if 
+- `value` is valid only for `Pin.OUT` and `Pin.OPEN_DRAIN` modes and specifies initial output pin value if
 given, otherwise the state of the pin peripheral remains unchanged.
-- `drive` specifies the output power of the pin and can be one of: `Pin.DRIVE_0`, `Pin.DRIVE_1`, etc., 
+- `drive` specifies the output power of the pin and can be one of: `Pin.DRIVE_0`, `Pin.DRIVE_1`, etc.,
 increasing in drive strength. The actual current driving capabilities are port dependent. Not all ports implement this argument.
-- `alt` specifies an alternate function for the pin and the values it can take are port dependent. This 
-argument is valid only for `Pin.ALT` and `Pin.ALT_OPEN_DRAIN` modes. It may be used when a pin supports 
-more than one alternate function. If only one pin alternate function is supported the this argument is 
+- `alt` specifies an alternate function for the pin and the values it can take are port dependent. This
+argument is valid only for `Pin.ALT` and `Pin.ALT_OPEN_DRAIN` modes. It may be used when a pin supports
+more than one alternate function. If only one pin alternate function is supported the this argument is
 not required. Not all ports implement this argument.
 
-As specified above, the Pin class allows to set an alternate function for a particular pin, but it does not specify any 
-further operations on such a pin. Pins configured in alternate-function mode are usually not used as GPIO but are instead 
-driven by other hardware peripherals. The only operation supported on such a pin is re-initialising, by calling the 
-constructor or `Pin.init()` method. If a pin that is configured in alternate-function mode is re-initialised 
+As specified above, the Pin class allows to set an alternate function for a particular pin, but it does not specify any
+further operations on such a pin. Pins configured in alternate-function mode are usually not used as GPIO but are instead
+driven by other hardware peripherals. The only operation supported on such a pin is re-initialising, by calling the
+constructor or `Pin.init()` method. If a pin that is configured in alternate-function mode is re-initialised
 with `Pin.IN`, `Pin.OUT`, or `Pin.OPEN_DRAIN`, the alternate function will be removed from the pin.
 
         (Source: https://docs.micropython.org/en/latest/library/machine.Pin.html, Copyright: 2014-2023 Damien P. George, Paul Sokolovsky, and contributors.)
@@ -272,9 +272,10 @@ with `Pin.IN`, `Pin.OUT`, or `Pin.OPEN_DRAIN`, the alternate function will be re
         """
         ...
 
-    def init(self):
+    def init(self, mode: int = -1, pull: int | None = -1, *, value: int | None = None, drive: int = 0, alt: int = -1):
         """
-        Initialises the pin.
+        Re-initialise the pin using the given parameters. Only those arguments that are specified will be set. The rest
+        of the pin peripheral state will remain unchanged. See the constructor documentation for details of the arguments.
         """
         ...
 
@@ -1587,6 +1588,7 @@ class Timer:
         /,
         *,
         mode: int = PERIODIC,
+        freq: float|None = None,
         period: int = -1,
         callback: Callable[["Timer"], None] |None = None,
     ):
@@ -1601,8 +1603,8 @@ class Timer:
     def init(
         self,
         *,
-        freq: float|None = None,
         mode: int = PERIODIC,
+        freq: float|None = None,
         period: int = -1,
         callback: Callable[["Timer"], None]|None = None,
     ) -> None:
