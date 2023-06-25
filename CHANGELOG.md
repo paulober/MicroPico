@@ -9,6 +9,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.1.1] - 2023-06-21
+
+# Changed
+- Updated stubs to patch v1.20.0-2 stable
+
 ## [3.1.0] - 2023-06-20
 
 # Added
