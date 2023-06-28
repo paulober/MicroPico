@@ -9,6 +9,16 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.1.2] - 2023-06-22
+
+# Added
+- `picowgo.pyIgnore` now supports syncFolder specific rules
+
+# Changed
+- Fixed #111, Relative paths in `picowgo.pyIgnore` don't work
+- Fixed #113, Unnecessary re-uploading of unchanged files during upload-project
+- Upgraded pyboard-serial-com to v1.5.2
+
 ## [3.1.1] - 2023-06-21
 
 # Changed
