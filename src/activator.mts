@@ -513,6 +513,20 @@ export default class Activator {
         return;
       }
 
+      // reducde replaces filter, map and concat
+      const ignoredSyncItems = settings.getIngoredSyncItems().reduce(
+        (acc: string[], item: string) => {
+          // item must either be global or for the current sync folder otherwise it is ignored
+          if (!item.includes(":") || item.split(":")[0] === syncDir[0]) {
+            const finalItem = item.includes(":") ? item.split(":")[1] : item;
+            acc.push(finalItem);
+          }
+
+          return acc;
+        },
+        ["**/.picowgo", "**/.DS_Store"]
+      );
+
       if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
         // TODO: maybe do soft reboot instead of gc for bigger impact
         await this.pyb?.executeCommand(
@@ -532,9 +546,9 @@ export default class Activator {
 
           let currentFileIndex = -1;
           const data = await this.pyb?.startUploadingProject(
-            syncDir,
+            syncDir[1],
             settings.getSyncFileTypes(),
-            settings.getIngoredSyncItems().concat([".picowgo"]),
+            ignoredSyncItems,
             (data: string) => {
               this.logger.debug("upload progress: " + data);
               const status = this.analyseUploadDownloadProgress(data);
@@ -551,7 +565,7 @@ export default class Activator {
               }
 
               progress.report({
-                message: sep + relative(syncDir, status.filePath),
+                message: sep + relative(syncDir[1], status.filePath),
               });
             }
           );
@@ -693,7 +707,7 @@ export default class Activator {
           async (progress /*, token*/) => {
             let currentFileIndex = -1;
             const data = await this.pyb?.downloadProject(
-              syncDir,
+              syncDir[1],
               (data: string) => {
                 const status = this.analyseUploadDownloadProgress(data);
 

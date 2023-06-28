@@ -314,19 +314,20 @@
         },
         "picowgo.pyIgnore": {
           "title": "Pyignore list",
-          "description": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported)",
+          "markdownDescription": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `picowgo.additionalSyncFolders` setting or the value from `picowgo.syncFolder`.",
           "type": "array",
           "items": {
             "type": "string"
           },
           "default": [
-            ".picowgo",
-            ".vscode",
-            ".gitignore",
-            ".git",
-            "project.pico-go",
-            "env",
-            "venv"
+            "**/.picowgo",
+            "**/.vscode",
+            "**/.gitignore",
+            "**/.git",
+            "**/.DS_Store",
+            "**/project.pico-go",
+            "**/env",
+            "**/venv"
           ],
           "order": 8
         },
@@ -380,7 +381,6 @@
         "picowgo.softResetAfterUpload": {
           "type": "boolean",
           "default": false,
-          "scope": "machine-overridable",
           "title": "Soft-reset after upload",
           "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
           "order": 12

@@ -2,7 +2,7 @@ import type { Memento, WorkspaceConfiguration } from "vscode";
 import { window, workspace } from "vscode";
 import { PyboardRunner } from "@paulober/pyboard-serial-com";
 import { getProjectPath } from "./api.mjs";
-import { join } from "path";
+import { join, relative } from "path";
 
 export enum SettingsKey {
   autoConnect = "autoConnect",
@@ -129,11 +129,12 @@ export default class Settings {
    * @param actionTitle The title of the action to perform. Used in the selection dialog.
    * E.g. "Upload" or "Download".
    *
-   * @returns The absolute path to one sync folder.
+   * @returns [Relative to workspace root path of one sync folder,
+   * The absolute path to one sync folder]
    */
   public async requestSyncFolder(
     actionTitle: string
-  ): Promise<string | undefined> {
+  ): Promise<[string, string] | undefined> {
     const syncFolder = this.getSyncFolderAbsPath();
     const projectDir = getProjectPath();
 
@@ -150,7 +151,11 @@ export default class Settings {
       additionalSyncFolders === undefined ||
       additionalSyncFolders.length === 0
     ) {
-      return syncFolder;
+      if (syncFolder === undefined) {
+        return undefined;
+      } else {
+        return [relative(projectDir, syncFolder), syncFolder];
+      }
     }
 
     // prepend normal syncFolder if available to options
@@ -170,7 +175,9 @@ export default class Settings {
       title: `${actionTitle} sync folder selection`,
     });
 
-    return selectedFolder;
+    return selectedFolder === undefined
+      ? undefined
+      : [relative(projectDir, selectedFolder), selectedFolder];
   }
 
   /**

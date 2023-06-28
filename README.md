@@ -6,7 +6,7 @@ Pico-W-Go provides code auto-completion and allows you to communicate with your 
 
 Works with:
 | Platform | x64 | arm64 | armhf |
-| -------- | --- | ----- | ----- |
+| :------- | :-: | :---: | :---: |
 | Windows  | ✅   | ✅     | ❌     |
 | macOS    | ✅   | ✅     | ❌     |
 | Linux    | ✅   | ✅     | ✅     |
@@ -74,7 +74,7 @@ This extension contributes the following settings:
 * `picowgo.additionalSyncFolders`: Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.
 * `picowgo.syncAllFileTypes`: If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored.
 * `picowgo.syncFileTypes`: All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action.
-* `picowgo.pyIgnore`: Comma separated list of files and folders to ignore when uploading (no wildcard or regular expressions supported).
+* `picowgo.pyIgnore`: Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `picowgo.additionalSyncFolders` setting or the value from `picowgo.syncFolder`.
 * `picowgo.openOnStart`: Automatically open the Pico-W-Go console and connect to the board after starting VS Code.
 * `picowgo.statusbarButtons`: Select which buttons to show in the statusbar (DO NOT CHANGE, unless you know what you are doing)
 * `picowgo.gcBeforeUpload`: Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
