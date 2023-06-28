@@ -49,7 +49,6 @@ export default class Activator {
   ): Promise<UI | undefined> {
     const settings = new Settings(context.workspaceState);
     const pyCommand = settings.pythonExecutable ?? (await getPythonCommand());
-    await settings.update(SettingsKey.pythonPath, pyCommand);
     settings.pythonExecutable = pyCommand;
 
     if (pyCommand === undefined) {
