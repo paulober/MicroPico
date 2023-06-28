@@ -1036,6 +1036,23 @@ export default class Activator {
     );
 
     disposable = vscode.commands.registerCommand(
+      "picowgo.rtc.sync",
+      async () => {
+        if (!this.pyb?.isPipeConnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
+          );
+
+          return;
+        }
+
+        await this.pyb?.syncRtc();
+
+        void vscode.window.showInformationMessage("RTC on your Pico synced");
+      }
+    );
+
+    disposable = vscode.commands.registerCommand(
       "picowgo.universalStop",
       async () => {
         if (

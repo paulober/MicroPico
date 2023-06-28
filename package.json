@@ -178,6 +178,11 @@
         "command": "picowgo.reset.soft.listen",
         "title": "Reset > Soft (listen)",
         "category": "Pico-W-Go"
+      },
+      {
+        "command": "picowgo.rtc.sync",
+        "title": "Sync RTC",
+        "category": "Pico-W-Go"
       }
     ],
     "menus": {
