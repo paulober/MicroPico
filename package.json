@@ -514,7 +514,7 @@
     "mocha": "^10.2.0",
     "rollup": "^3.25.3",
     "rollup-plugin-copy": "^3.4.0",
-    "typescript": "^5.1.5"
+    "typescript": "^5.1.6"
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^1.5.2",
