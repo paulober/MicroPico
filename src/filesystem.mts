@@ -12,6 +12,7 @@ import {
   FilePermission,
   FileSystemError,
   FileType,
+  window,
 } from "vscode";
 import { PyOutType } from "@paulober/pyboard-serial-com";
 import type {
@@ -38,11 +39,11 @@ const picoWFsVscodeConfiguration = false;
 export class PicoWFs implements FileSystemProvider {
   private logger: Logger;
 
-  private cache: Map<string, any> = new Map();
+  //private cache: Map<string, any> = new Map();
   private remoteConfigFs = remoteConfigFs;
 
   private pyb: PyboardRunner;
-  private cacheEnabled = false;
+  //private cacheEnabled = false;
 
   // FileSystemProvider stuff
   private _emitter = new EventEmitter<FileChangeEvent[]>();
@@ -308,6 +309,13 @@ export class PicoWFs implements FileSystemProvider {
     // does always overwrite
     options: { readonly overwrite: boolean }
   ): Promise<void> {
+    //if old uri is open in editor close this editor window
+    for (const editor of window.visibleTextEditors) {
+      if (editor.document.uri.path === oldUri.path) {
+        await editor.document.save();
+      }
+    }
+
     if (forbiddenFolders.some(folder => oldUri.path.includes(folder))) {
       this.logger.error("rename: file destination in forbidden folder");
       throw FileSystemError.NoPermissions(oldUri);
@@ -320,6 +328,8 @@ export class PicoWFs implements FileSystemProvider {
       if (!status) {
         throw FileSystemError.FileExists(newUri);
       }
+
+      return;
     }
 
     this.logger.error("rename: unexpected result type");

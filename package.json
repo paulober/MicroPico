@@ -190,65 +190,66 @@
         {
           "command": "picowgo.upload",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "pico-w-go.isActivated && resourceScheme != pico"
         },
         {
           "command": "picowgo.download",
           "group": "picowgo",
-          "when": "resourceScheme == pico"
+          "when": "pico-w-go.isActivated && resourceScheme == pico"
         },
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
+          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
         }
       ],
       "editor/context": [
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.runselection",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "pico-w-go.isActivated"
         },
         {
           "command": "picowgo.uploadFile",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource"
         }
       ],
       "editor/title": [
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.upload",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "pico-w-go.isActivated && resourceScheme != pico"
         },
         {
           "command": "picowgo.download",
           "group": "picowgo",
-          "when": "resourceScheme == pico"
+          "when": "pico-w-go.isActivated && resourceScheme == pico"
         }
       ]
     },

@@ -24,6 +24,7 @@ import { basename, dirname, join, relative, sep } from "path";
 import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
+import { ContextKeys } from "./models/contextKeys.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -80,6 +81,13 @@ export default class Activator {
           "Manual install required!"
       );
     }
+
+    // execute async not await
+    void vscode.commands.executeCommand(
+      "setContext",
+      ContextKeys.isActivated,
+      true
+    );
 
     this.stubs = new Stubs();
     await this.stubs.update();

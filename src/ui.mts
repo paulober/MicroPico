@@ -3,6 +3,7 @@ import type { StatusBarItem } from "vscode";
 import Logger from "./logger.mjs";
 import { SettingsKey } from "./settings.mjs";
 import type Settings from "./settings.mjs";
+import { ContextKeys } from "./models/contextKeys.mjs";
 
 interface PkgJSON {
   statusBar: Array<{
@@ -102,15 +103,12 @@ export default class UI {
     );
   }
 
-  public refreshState(force?: boolean): void {
-    if (force !== undefined) {
-      this.setState(force);
+  public refreshState(force: boolean): void {
+    this.setState(force);
 
-      return;
-    }
+    void commands.executeCommand("setContext", ContextKeys.isConnected, force);
 
-    // TODO: if board is connected setState(true) else setState(false)
-    throw new Error("Method not implemented.");
+    return;
   }
 
   private statusbarItemPriority = 11;
