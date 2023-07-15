@@ -1,6 +1,7 @@
-import type * as vscode from "vscode";
+import { type ExtensionContext, commands } from "vscode";
 import Activator from "./activator.mjs";
 import type UI from "./ui.mjs";
+import { ContextKeys } from "./models/contextKeys.mjs";
 
 let view: UI | undefined;
 
@@ -12,15 +13,17 @@ let view: UI | undefined;
  *
  * @param context The vscode context for this extension
  */
-export async function activate(
-  context: vscode.ExtensionContext
-): Promise<void> {
+export async function activate(context: ExtensionContext): Promise<void> {
   const activator = new Activator();
   view = await activator.activate(context);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate(): void {
+  // execute async not await
+  void commands.executeCommand("setContext", ContextKeys.isActivated, false);
+  void commands.executeCommand("setContext", ContextKeys.isConnected, false);
+  // destry view
   if (view !== undefined) {
     setTimeout(() => {
       view?.destroy();

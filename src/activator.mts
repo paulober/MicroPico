@@ -24,6 +24,7 @@ import { basename, dirname, join, relative, sep } from "path";
 import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
+import { ContextKeys } from "./models/contextKeys.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -49,7 +50,6 @@ export default class Activator {
   ): Promise<UI | undefined> {
     const settings = new Settings(context.workspaceState);
     const pyCommand = settings.pythonExecutable ?? (await getPythonCommand());
-    await settings.update(SettingsKey.pythonPath, pyCommand);
     settings.pythonExecutable = pyCommand;
 
     if (pyCommand === undefined) {
@@ -81,6 +81,13 @@ export default class Activator {
           "Manual install required!"
       );
     }
+
+    // execute async not await
+    void vscode.commands.executeCommand(
+      "setContext",
+      ContextKeys.isActivated,
+      true
+    );
 
     this.stubs = new Stubs();
     await this.stubs.update();
@@ -1033,6 +1040,23 @@ export default class Activator {
         }
         terminal?.melt();
         terminal?.prompt();
+      }
+    );
+
+    disposable = vscode.commands.registerCommand(
+      "picowgo.rtc.sync",
+      async () => {
+        if (!this.pyb?.isPipeConnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
+          );
+
+          return;
+        }
+
+        await this.pyb?.syncRtc();
+
+        void vscode.window.showInformationMessage("RTC on your Pico synced");
       }
     );
 

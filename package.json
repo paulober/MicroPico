@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "Pico-W-Go",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
-  "version": "3.1.2",
+  "version": "3.2.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/Pico-W-Go/blob/main/README.md",
@@ -178,6 +178,11 @@
         "command": "picowgo.reset.soft.listen",
         "title": "Reset > Soft (listen)",
         "category": "Pico-W-Go"
+      },
+      {
+        "command": "picowgo.rtc.sync",
+        "title": "Sync RTC",
+        "category": "Pico-W-Go"
       }
     ],
     "menus": {
@@ -185,65 +190,66 @@
         {
           "command": "picowgo.upload",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "pico-w-go.isActivated && resourceScheme != pico"
         },
         {
           "command": "picowgo.download",
           "group": "picowgo",
-          "when": "resourceScheme == pico"
+          "when": "pico-w-go.isActivated && resourceScheme == pico"
         },
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
+          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
         }
       ],
       "editor/context": [
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.runselection",
-          "group": "picowgo"
+          "group": "picowgo",
+          "when": "pico-w-go.isActivated"
         },
         {
           "command": "picowgo.uploadFile",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource"
         }
       ],
       "editor/title": [
         {
           "command": "picowgo.run",
           "group": "picowgo",
-          "when": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.remote.run",
           "group": "picowgo",
-          "when": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
           "command": "picowgo.upload",
           "group": "picowgo",
-          "when": "resourceScheme != pico"
+          "when": "pico-w-go.isActivated && resourceScheme != pico"
         },
         {
           "command": "picowgo.download",
           "group": "picowgo",
-          "when": "resourceScheme == pico"
+          "when": "pico-w-go.isActivated && resourceScheme == pico"
         }
       ]
     },
@@ -479,10 +485,12 @@
     }
   ],
   "scripts": {
+    "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
     "vscode:prepublish": "npm run package",
-    "compile": "rollup -c",
+    "compile-uninstaller": "rollup -c uninstall.rollup.config.mjs",
+    "compile": "rollup -c && npm run compile-uninstaller",
     "watch": "rollup -cw",
-    "package": "rollup -c --environment BUILD:production --sourcemap hidden",
+    "package": "rollup -c --environment BUILD:production --sourcemap hidden && npm run compile-uninstaller",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -500,21 +508,22 @@
     "@types/node": "^16.x",
     "@types/uuid": "^9.0.2",
     "@types/vscode": "^1.76.0",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.60.1",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "@vscode/test-electron": "^2.3.3",
-    "eslint": "^8.43.0",
+    "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.8.0",
     "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "rollup": "^3.25.3",
+    "rollup": "^3.26.2",
     "rollup-plugin-copy": "^3.4.0",
-    "typescript": "^5.1.5"
+    "typescript": "^5.1.6"
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^1.5.2",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
+    "rimraf": "^5.0.1",
     "uuid": "^9.0.0"
   }
 }
