@@ -9,6 +9,18 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 
 ---
 
+## [3.2.0] - 2023-07-15
+
+# Added
+- `vscode:uninstall` script to remove Pico-W-Stub after extension gets uninstalled
+- `picowgo.rtc.sync` command to sync the Pico's RTC with the host's time
+- Fix #29, Add custom when clause context keys
+
+# Changed
+- Auto-detected Python3 commands are't automatically saved to global settings anymore to prevent erros when switching between different systems with different python installations and settings sync turned on
+- Contributed menu entries are now only shown when the extension is active
+- Updated dependencies
+
 ## [3.1.2] - 2023-06-22
 
 # Added
