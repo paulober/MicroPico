@@ -485,10 +485,12 @@
     }
   ],
   "scripts": {
+    "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
     "vscode:prepublish": "npm run package",
-    "compile": "rollup -c",
+    "compile-uninstaller": "rollup -c uninstall.rollup.config.mjs",
+    "compile": "rollup -c && npm run compile-uninstaller",
     "watch": "rollup -cw",
-    "package": "rollup -c --environment BUILD:production --sourcemap hidden",
+    "package": "rollup -c --environment BUILD:production --sourcemap hidden && npm run compile-uninstaller",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -521,6 +523,7 @@
     "@paulober/pyboard-serial-com": "^1.5.2",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
+    "rimraf": "^5.0.1",
     "uuid": "^9.0.0"
   }
 }

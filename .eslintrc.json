@@ -36,7 +36,8 @@
     "ignorePatterns": [
         "out",
         "dist",
-        "**/*.d.ts"
+        "**/*.d.ts",
+        "./vscodeUninstall.mjs"
     ],
     "env": {
         "node": true,
