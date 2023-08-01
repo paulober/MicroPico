@@ -13,6 +13,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 # Changed
 - Rename extension to `MicroPico` and `paulober.micropico`
+- Dependencies update
 
 ## [3.2.0] - 2023-07-15
 
