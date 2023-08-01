@@ -137,9 +137,9 @@ export default class Stubs {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.analysis.typeCheckingMode": "basic",
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      "picowgo.syncFolder": "",
-      // (Currently not supported)
-      //"picowgo.openOnStart": true,
+      "micropico.syncFolder": "",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "micropico.openOnStart": true,
     };
 
     interface ISettings {
@@ -165,7 +165,7 @@ export default class Stubs {
   }
 
   private async addProjectFile(workspace: string): Promise<void> {
-    const localProjectFile = join(workspace, ".picowgo");
+    const localProjectFile = join(workspace, ".micropico");
 
     if (!(await pathExists(localProjectFile))) {
       await writeJsonFile(localProjectFile, {

@@ -1,4 +1,4 @@
-name: Build Pico-W-Go
+name: Build MicroPico extension
 
 on:
   pull_request: ~
@@ -43,4 +43,4 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package Extension
-        run: npx @vscode/vsce package --no-yarn -o picowgo-${{ github.sha }}.vsix
+        run: npx @vscode/vsce package --no-yarn -o micropico-${{ github.sha }}.vsix

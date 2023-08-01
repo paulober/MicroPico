@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "pico-w-go" extension will be documented in this file.
+All notable changes to the "MicroPico" extension will be documented in this file.
 
 >_Based on structure recommendations from [Keep a Changelog](http://keepachangelog.com/)._
 
@@ -8,6 +8,11 @@ All notable changes to the "pico-w-go" extension will be documented in this file
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
 
 ---
+
+## [3.2.1] - 2023-08-01
+
+# Changed
+- Rename extension to `MicroPico` and `paulober.micropico`
 
 ## [3.2.0] - 2023-07-15
 

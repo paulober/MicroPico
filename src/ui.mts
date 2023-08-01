@@ -15,7 +15,7 @@ interface PkgJSON {
   contributes: { commands: Array<{ title: string; command: string }> };
 }
 
-const pkg = (extensions.getExtension("paulober.pico-w-go")
+const pkg = (extensions.getExtension("paulober.micropico")
   ?.packageJSON as PkgJSON) ?? {
   statusBar: [],
   contributes: { commands: [] },
@@ -79,7 +79,7 @@ export default class UI {
           );
         }
       });*/
-    void commands.executeCommand("workbench.action.quickOpen", "> Pico-W-Go: ");
+    void commands.executeCommand("workbench.action.quickOpen", "> MicroPico: ");
   }
 
   public show(): void {

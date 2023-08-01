@@ -27,7 +27,7 @@ export default class Settings {
   public pythonExecutable?: string;
 
   constructor(context: Memento) {
-    this.config = workspace.getConfiguration("picowgo");
+    this.config = workspace.getConfiguration("micropico");
 
     this.context = context;
     this.pythonExecutable = this.getString(SettingsKey.pythonPath);
