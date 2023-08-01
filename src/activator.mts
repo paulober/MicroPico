@@ -73,11 +73,11 @@ export default class Activator {
       this.logger.error("Failed to install pyserial pip package.");
       void vscode.window.showErrorMessage(
         "Failed to install pyserial pip package. Check that your " +
-          "python path in the settings (`picowgo.pythonPath`) is " +
+          "python path in the settings (`micropico.pythonPath`) is " +
           "pointing to the correct python executable."
       );
       throw new Error(
-        "[Pico-W-Go] Faild to install pyserial pip package. " +
+        "[MicroPico] Faild to install pyserial pip package. " +
           "Manual install required!"
       );
     }
@@ -226,7 +226,7 @@ export default class Activator {
 
     // register terminal profile provider
     context.subscriptions.push(
-      vscode.window.registerTerminalProfileProvider("picowgo.vrepl", {
+      vscode.window.registerTerminalProfileProvider("micropico.vrepl", {
         provideTerminalProfile: () =>
           new vscode.TerminalProfile(terminalOptions),
       })
@@ -287,7 +287,7 @@ export default class Activator {
 
     // [Command] help
     let disposable = vscode.commands.registerCommand(
-      "picowgo.help",
+      "micropico.help",
       function () {
         void vscode.env.openExternal(
           vscode.Uri.parse(
@@ -299,14 +299,17 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     // [Command] List Commands
-    disposable = vscode.commands.registerCommand("picowgo.listCommands", () => {
-      this.ui?.showQuickPick();
-    });
+    disposable = vscode.commands.registerCommand(
+      "micropico.listCommands",
+      () => {
+        this.ui?.showQuickPick();
+      }
+    );
     context.subscriptions.push(disposable);
 
     // [Command] Initialise
     disposable = vscode.commands.registerCommand(
-      "picowgo.initialise",
+      "micropico.initialise",
       async () => {
         await this.stubs?.addToWorkspace();
       }
@@ -315,7 +318,7 @@ export default class Activator {
 
     // [Command] Connect
     disposable = vscode.commands.registerCommand(
-      "picowgo.connect",
+      "micropico.connect",
       async () => {
         this.comDevice = await settings.getComDevice();
         if (this.comDevice !== undefined) {
@@ -329,7 +332,7 @@ export default class Activator {
 
     // [Command] Disconnect
     disposable = vscode.commands.registerCommand(
-      "picowgo.disconnect",
+      "micropico.disconnect",
       async () => {
         clearInterval(this.autoConnectTimer);
         await this.pyb?.disconnect();
@@ -338,7 +341,7 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     // [Command] Run File
-    disposable = vscode.commands.registerCommand("picowgo.run", async () => {
+    disposable = vscode.commands.registerCommand("micropico.run", async () => {
       if (!this.pyb?.isPipeConnected()) {
         void vscode.window.showWarningMessage(
           "Please connect to the Pico first."
@@ -356,7 +359,7 @@ export default class Activator {
 
           return;
         } else {
-          void vscode.commands.executeCommand("picowgo.remote.run");
+          void vscode.commands.executeCommand("micropico.remote.run");
 
           return;
         }
@@ -395,7 +398,7 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      "picowgo.remote.run",
+      "micropico.remote.run",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -451,7 +454,7 @@ export default class Activator {
 
     // [Command] Run Selection
     disposable = vscode.commands.registerCommand(
-      "picowgo.runselection",
+      "micropico.runselection",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -501,111 +504,116 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     // [Command] Upload project
-    disposable = vscode.commands.registerCommand("picowgo.upload", async () => {
-      if (!this.pyb?.isPipeConnected()) {
-        void vscode.window.showWarningMessage(
-          "Please connect to the Pico first."
-        );
-
-        return;
-      }
-
-      const syncDir = await settings.requestSyncFolder("Upload");
-
-      if (syncDir === undefined) {
-        void vscode.window.showWarningMessage(
-          "Upload canceled. No sync folder selected."
-        );
-
-        return;
-      }
-
-      // reducde replaces filter, map and concat
-      const ignoredSyncItems = settings.getIngoredSyncItems().reduce(
-        (acc: string[], item: string) => {
-          // item must either be global or for the current sync folder otherwise it is ignored
-          if (!item.includes(":") || item.split(":")[0] === syncDir[0]) {
-            const finalItem = item.includes(":") ? item.split(":")[1] : item;
-            acc.push(finalItem);
-          }
-
-          return acc;
-        },
-        ["**/.picowgo", "**/.DS_Store"]
-      );
-
-      if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
-        // TODO: maybe do soft reboot instead of gc for bigger impact
-        await this.pyb?.executeCommand(
-          "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
-        );
-      }
-
-      void vscode.window.withProgress(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: "Uploading",
-          cancellable: false,
-        },
-        async (progress, token) => {
-          // cancellation is not possible
-          token.onCancellationRequested(() => undefined);
-
-          let currentFileIndex = -1;
-          const data = await this.pyb?.startUploadingProject(
-            syncDir[1],
-            settings.getSyncFileTypes(),
-            ignoredSyncItems,
-            (data: string) => {
-              this.logger.debug("upload progress: " + data);
-              const status = this.analyseUploadDownloadProgress(data);
-
-              if (status === undefined) {
-                return;
-              }
-
-              if (currentFileIndex < status.current) {
-                currentFileIndex = status.current;
-                progress.report({
-                  increment: 100 / status.total,
-                });
-              }
-
-              progress.report({
-                message: sep + relative(syncDir[1], status.filePath),
-              });
-            }
+    disposable = vscode.commands.registerCommand(
+      "micropico.upload",
+      async () => {
+        if (!this.pyb?.isPipeConnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
           );
 
-          // check if data is PyOut
-          if (data === undefined) {
-            return;
-          }
+          return;
+        }
 
-          if (data.type === PyOutType.status) {
-            const result = data as PyOutStatus;
-            if (result.status) {
-              void vscode.window.showInformationMessage("Project uploaded.");
-            } else {
-              void vscode.window.showErrorMessage("Project upload failed.");
+        const syncDir = await settings.requestSyncFolder("Upload");
 
+        if (syncDir === undefined) {
+          void vscode.window.showWarningMessage(
+            "Upload canceled. No sync folder selected."
+          );
+
+          return;
+        }
+
+        // reducde replaces filter, map and concat
+        const ignoredSyncItems = settings.getIngoredSyncItems().reduce(
+          (acc: string[], item: string) => {
+            // item must either be global or for the current sync folder otherwise it is ignored
+            if (!item.includes(":") || item.split(":")[0] === syncDir[0]) {
+              const finalItem = item.includes(":") ? item.split(":")[1] : item;
+              acc.push(finalItem);
+            }
+
+            return acc;
+          },
+          ["**/.picowgo", "**/.micropico", "**/.DS_Store"]
+        );
+
+        if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
+          // TODO: maybe do soft reboot instead of gc for bigger impact
+          await this.pyb?.executeCommand(
+            "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
+          );
+        }
+
+        void vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: "Uploading",
+            cancellable: false,
+          },
+          async (progress, token) => {
+            // cancellation is not possible
+            token.onCancellationRequested(() => undefined);
+
+            let currentFileIndex = -1;
+            const data = await this.pyb?.startUploadingProject(
+              syncDir[1],
+              settings.getSyncFileTypes(),
+              ignoredSyncItems,
+              (data: string) => {
+                this.logger.debug("upload progress: " + data);
+                const status = this.analyseUploadDownloadProgress(data);
+
+                if (status === undefined) {
+                  return;
+                }
+
+                if (currentFileIndex < status.current) {
+                  currentFileIndex = status.current;
+                  progress.report({
+                    increment: 100 / status.total,
+                  });
+                }
+
+                progress.report({
+                  message: sep + relative(syncDir[1], status.filePath),
+                });
+              }
+            );
+
+            // check if data is PyOut
+            if (data === undefined) {
               return;
             }
+
+            if (data.type === PyOutType.status) {
+              const result = data as PyOutStatus;
+              if (result.status) {
+                void vscode.window.showInformationMessage("Project uploaded.");
+              } else {
+                void vscode.window.showErrorMessage("Project upload failed.");
+
+                return;
+              }
+            }
+            progress.report({ increment: 100, message: "Project uploaded." });
+            // moved outside if so if not uploaded because file already exists it still resets
+            if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
+              //await this.pyb?.softReset();
+              await vscode.commands.executeCommand(
+                "micropico.reset.soft.listen"
+              );
+            }
           }
-          progress.report({ increment: 100, message: "Project uploaded." });
-          // moved outside if so if not uploaded because file already exists it still resets
-          if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
-            //await this.pyb?.softReset();
-            await vscode.commands.executeCommand("picowgo.reset.soft.listen");
-          }
-        }
-      );
-    });
+        );
+      }
+    );
     context.subscriptions.push(disposable);
 
     // [Command] Upload file
     disposable = vscode.commands.registerCommand(
-      "picowgo.uploadFile",
+      "micropico.uploadFile",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -669,7 +677,7 @@ export default class Activator {
                 if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
                   //await this.pyb?.softReset();
                   await vscode.commands.executeCommand(
-                    "picowgo.reset.soft.listen"
+                    "micropico.reset.soft.listen"
                   );
                 }
               } else {
@@ -685,7 +693,7 @@ export default class Activator {
     // [Command] Download project
     // TODO: maybe add diffent warning methods for overwritten files in syncFolder
     disposable = vscode.commands.registerCommand(
-      "picowgo.download",
+      "micropico.download",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -756,7 +764,7 @@ export default class Activator {
 
     // [Command] Delete all files on Pico
     disposable = vscode.commands.registerCommand(
-      "picowgo.deleteAllFiles",
+      "micropico.deleteAllFiles",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -785,21 +793,21 @@ export default class Activator {
 
     // [Command] Global settings
     disposable = vscode.commands.registerCommand(
-      "picowgo.globalSettings",
+      "micropico.globalSettings",
       openSettings
     );
     context.subscriptions.push(disposable);
 
     // [Command] Workspace settings
     disposable = vscode.commands.registerCommand(
-      "picowgo.workspaceSettings",
+      "micropico.workspaceSettings",
       () => openSettings(true)
     );
     context.subscriptions.push(disposable);
 
     // [Command] Toggle connection
     disposable = vscode.commands.registerCommand(
-      "picowgo.toggleConnect",
+      "micropico.toggleConnect",
       async () => {
         if (this.pyb?.isPipeConnected()) {
           clearInterval(this.autoConnectTimer);
@@ -820,7 +828,7 @@ export default class Activator {
 
     // [Command] Toggle virutal file-system
     disposable = vscode.commands.registerCommand(
-      "picowgo.toggleFileSystem",
+      "micropico.toggleFileSystem",
       () => {
         const findWorkspace = vscode.workspace.workspaceFolders?.find(
           folder => folder.uri.scheme === "pico"
@@ -856,7 +864,7 @@ export default class Activator {
 
     // [Command] Open pin map
     disposable = vscode.commands.registerCommand(
-      "picowgo.extra.pins",
+      "micropico.extra.pins",
       async () => {
         const picoVariant = await vscode.window.showQuickPick(PICO_VARIANTS, {
           canPickMany: false,
@@ -870,7 +878,7 @@ export default class Activator {
         }
 
         const panel = vscode.window.createWebviewPanel(
-          "picowgo.pinoout",
+          "micropico.pinoout",
           `${PICO_VARIANTS[variantIdx]} Pinout`,
           vscode.ViewColumn.Active,
           {
@@ -902,7 +910,7 @@ export default class Activator {
 
     // [Command] List all serial ports a Pico is connected to
     disposable = vscode.commands.registerCommand(
-      "picowgo.extra.getSerial",
+      "micropico.extra.getSerial",
       async () => {
         const ports = await PyboardRunner.getPorts();
         if (ports.ports.length > 1) {
@@ -924,7 +932,7 @@ export default class Activator {
 
     // [Command] Switch Pico
     disposable = vscode.commands.registerCommand(
-      "picowgo.switchPico",
+      "micropico.switchPico",
       async () => {
         if (this.pyb?.isPipeConnected()) {
           await this.pyb?.disconnect();
@@ -952,7 +960,7 @@ export default class Activator {
 
     // [Command] Soft reset pico
     disposable = vscode.commands.registerCommand(
-      "picowgo.reset.soft",
+      "micropico.reset.soft",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -978,7 +986,7 @@ export default class Activator {
 
     // [Command] Hard reset pico
     disposable = vscode.commands.registerCommand(
-      "picowgo.reset.hard",
+      "micropico.reset.hard",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -1002,7 +1010,7 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      "picowgo.reset.soft.listen",
+      "micropico.reset.soft.listen",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -1014,7 +1022,6 @@ export default class Activator {
 
         let frozen = false;
         await focusTerminal(terminalOptions);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const result: PyOut = await this.pyb?.sendCtrlD((data: string) => {
           if (!frozen) {
             commandExecuting = true;
@@ -1044,7 +1051,7 @@ export default class Activator {
     );
 
     disposable = vscode.commands.registerCommand(
-      "picowgo.rtc.sync",
+      "micropico.rtc.sync",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -1061,7 +1068,7 @@ export default class Activator {
     );
 
     disposable = vscode.commands.registerCommand(
-      "picowgo.universalStop",
+      "micropico.universalStop",
       async () => {
         if (
           !this.pyb?.isPipeConnected() ||
@@ -1082,7 +1089,7 @@ export default class Activator {
 
     // [Command] Check for firmware updates
     disposable = vscode.commands.registerCommand(
-      "picowgo.extra.firmwareUpdates",
+      "micropico.extra.firmwareUpdates",
       () => {
         void vscode.env.openExternal(
           vscode.Uri.parse("https://micropython.org/download/")

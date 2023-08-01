@@ -31,7 +31,7 @@ export default class Logger {
       /*Logger.outputChannel = window.createOutputChannel("Pico-W-Go", {
         log: true,
       });*/
-      Logger.outputChannel = window.createOutputChannel("Pico-W-Go", {
+      Logger.outputChannel = window.createOutputChannel("MicroPico", {
         log: true,
       });
     }

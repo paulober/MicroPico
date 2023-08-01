@@ -77,7 +77,7 @@ export async function writeJsonFile<T>(
     const message =
       typeof e === "string" ? e : e instanceof Error ? e.message : "";
     console.error(
-      `[Pico-W-Go] [OSHelper] Error writing to ${path}: ${message}`
+      `[MicroPico] [OSHelper] Error writing to ${path}: ${message}`
     );
   }
 }
@@ -90,7 +90,7 @@ export async function isPyserialInstalled(pyCommand: string): Promise<boolean> {
       (error, stdout) => {
         if (error) {
           console.error(
-            "[Pico-W-Go] Failed to check if pyserial is installed: ",
+            "[MicroPico] Failed to check if pyserial is installed: ",
             error?.message
           );
         } else {
@@ -108,9 +108,9 @@ export async function installPyserial(pyCommand: string): Promise<boolean> {
       { timeout: 10000, windowsHide: true },
       (error, stdout) => {
         if (error || stdout.includes("ERROR: ")) {
-          console.error("[Pico-W-Go] Failed to install pyserial: ", error);
+          console.error("[MicroPico] Failed to install pyserial: ", error);
         } else {
-          console.log("[Pico-W-Go] pyserial installed successfully");
+          console.log("[MicroPico] pyserial installed successfully");
         }
 
         resolve(true);

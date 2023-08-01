@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "pico-w-go" extension will be documented in this file.
+All notable changes to the "MicroPico" extension will be documented in this file.
 
 >_Based on structure recommendations from [Keep a Changelog](http://keepachangelog.com/)._
 

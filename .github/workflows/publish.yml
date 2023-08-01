@@ -43,11 +43,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Visual Studio Code extension package
-          path: pico-w-go-*.vsix
+          path: micropico-*.vsix
 
       - name: Upload artifact to release
         #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/Pico-W-Go/releases/$RELEASE_ID/assets 
-        run: gh release upload $RELEASE_TAG_NAME pico-w-go-*.vsix
+        run: gh release upload $RELEASE_TAG_NAME micropico-*.vsix
         env:
           #RELEASE_ID: ${{ github.event.release.id }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}

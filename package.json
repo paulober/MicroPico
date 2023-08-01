@@ -1,6 +1,6 @@
 {
-  "name": "pico-w-go",
-  "displayName": "Pico-W-Go",
+  "name": "micropico",
+  "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
   "version": "3.2.0",
   "publisher": "paulober",
@@ -30,7 +30,8 @@
     "pico w",
     "raspberry pi pico",
     "raspberry pi pico w",
-    "micropython"
+    "micropython",
+    "pico-w-go"
   ],
   "categories": [
     "Other"
@@ -38,15 +39,16 @@
   "capabilities": {
     "virtualWorkspaces": {
       "supported": false,
-      "description": "Pico-W-Go does not support as first workspace a virtual one but contributes a virtual workspace for the Pico (W)."
+      "description": "MicroPico does not support as first workspace a virtual one but contributes a virtual workspace for the Pico (W)."
     },
     "untrustedWorkspaces": {
       "supported": false,
-      "description": "Why would you want to use Pico-W-Go in an untrusted workspace?"
+      "description": "Why would you want to use MicroPico in an untrusted workspace?"
     }
   },
   "activationEvents": [
     "workspaceContains:.picowgo",
+    "workspaceContains:.micropico",
     "onFileSystem:pico"
   ],
   "main": "./dist/extension.cjs",
@@ -64,199 +66,199 @@
   "contributes": {
     "commands": [
       {
-        "command": "picowgo.connect",
+        "command": "micropico.connect",
         "title": "Connect",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.disconnect",
+        "command": "micropico.disconnect",
         "title": "Disconnect",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.initialise",
+        "command": "micropico.initialise",
         "title": "Configure project",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.upload",
+        "command": "micropico.upload",
         "title": "Upload project to Pico",
         "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.uploadFile",
+        "command": "micropico.uploadFile",
         "title": "Upload current file to Pico",
         "enablement": "resourceScheme != pico && isFileSystemResource",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.download",
+        "command": "micropico.download",
         "title": "Download project from Pico",
         "enablement": "(resourceScheme == pico && isFileSystemResource) || inQuickOpen",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.run",
+        "command": "micropico.run",
         "title": "Run current file on Pico",
         "enablement": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.remote.run",
+        "command": "micropico.remote.run",
         "title": "Remote > Run current file on Pico",
         "enablement": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.runselection",
+        "command": "micropico.runselection",
         "title": "Run current selection on Pico",
         "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.deleteAllFiles",
+        "command": "micropico.deleteAllFiles",
         "title": "Delete all files from board",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.globalSettings",
+        "command": "micropico.globalSettings",
         "title": "Global settings",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.workspaceSettings",
+        "command": "micropico.workspaceSettings",
         "title": "Workspace settings",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.reset.soft",
+        "command": "micropico.reset.soft",
         "title": "Reset > Soft",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.reset.hard",
+        "command": "micropico.reset.hard",
         "title": "Reset > Hard",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.help",
+        "command": "micropico.help",
         "title": "Help > Getting started",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.extra.pins",
+        "command": "micropico.extra.pins",
         "title": "Help > Show Pico Pin Map",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.extra.getSerial",
+        "command": "micropico.extra.getSerial",
         "title": "Help > List serial ports",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.extra.firmwareUpdates",
+        "command": "micropico.extra.firmwareUpdates",
         "title": "Help > Check for firmware updates",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.listCommands",
+        "command": "micropico.listCommands",
         "title": "List all Commands",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.toggleFileSystem",
+        "command": "micropico.toggleFileSystem",
         "title": "Toggle Virtual File System (reloads UI and closes existing vREPLs)",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.switchPico",
+        "command": "micropico.switchPico",
         "title": "Switch Pico",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.reset.soft.listen",
+        "command": "micropico.reset.soft.listen",
         "title": "Reset > Soft (listen)",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       },
       {
-        "command": "picowgo.rtc.sync",
+        "command": "micropico.rtc.sync",
         "title": "Sync RTC",
-        "category": "Pico-W-Go"
+        "category": "MicroPico"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "picowgo.upload",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme != pico"
+          "command": "micropico.upload",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico"
         },
         {
-          "command": "picowgo.download",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme == pico"
+          "command": "micropico.download",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme == pico"
         },
         {
-          "command": "picowgo.run",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
+          "command": "micropico.run",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
         },
         {
-          "command": "picowgo.remote.run",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
+          "command": "micropico.remote.run",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
         }
       ],
       "editor/context": [
         {
-          "command": "picowgo.run",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "command": "micropico.run",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
-          "command": "picowgo.remote.run",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "command": "micropico.remote.run",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
-          "command": "picowgo.runselection",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated"
+          "command": "micropico.runselection",
+          "group": "micropico",
+          "when": "micropico.isActivated"
         },
         {
-          "command": "picowgo.uploadFile",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource"
+          "command": "micropico.uploadFile",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource"
         }
       ],
       "editor/title": [
         {
-          "command": "picowgo.run",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "command": "micropico.run",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
-          "command": "picowgo.remote.run",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+          "command": "micropico.remote.run",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
         },
         {
-          "command": "picowgo.upload",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme != pico"
+          "command": "micropico.upload",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico"
         },
         {
-          "command": "picowgo.download",
-          "group": "picowgo",
-          "when": "pico-w-go.isActivated && resourceScheme == pico"
+          "command": "micropico.download",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme == pico"
         }
       ]
     },
     "configuration": {
-      "title": "Pico-W-Go",
+      "title": "MicroPico",
       "properties": {
-        "picowgo.autoConnect": {
+        "micropico.autoConnect": {
           "type": "boolean",
           "default": true,
           "scope": "machine",
@@ -264,22 +266,22 @@
           "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
           "order": 2
         },
-        "picowgo.manualComDevice": {
+        "micropico.manualComDevice": {
           "type": "string",
           "default": "",
           "scope": "machine",
           "title": "Manual COM device",
-          "description": "If autoConnect is set to false Pico-W-Go will automatically connect to the serial port specified here.",
+          "description": "If autoConnect is set to false MicroPico will automatically connect to the serial port specified here.",
           "order": 3
         },
-        "picowgo.syncFolder": {
+        "micropico.syncFolder": {
           "type": "string",
           "default": "",
           "title": "Sync Folder",
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
           "order": 4
         },
-        "picowgo.additionalSyncFolders": {
+        "micropico.additionalSyncFolders": {
           "type": "array",
           "items": {
             "type": "string",
@@ -290,14 +292,14 @@
           "description": "Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.",
           "order": 5
         },
-        "picowgo.syncAllFileTypes": {
+        "micropico.syncAllFileTypes": {
           "type": "boolean",
           "default": false,
           "title": "Upload all file types",
           "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
           "order": 6
         },
-        "picowgo.syncFileTypes": {
+        "micropico.syncFileTypes": {
           "type": "array",
           "items": {
             "type": "string",
@@ -318,15 +320,16 @@
           "description": "All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action",
           "order": 7
         },
-        "picowgo.pyIgnore": {
+        "micropico.pyIgnore": {
           "title": "Pyignore list",
-          "markdownDescription": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `picowgo.additionalSyncFolders` setting or the value from `picowgo.syncFolder`.",
+          "markdownDescription": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `micropico.additionalSyncFolders` setting or the value from `micropico.syncFolder`.",
           "type": "array",
           "items": {
             "type": "string"
           },
           "default": [
             "**/.picowgo",
+            "**/.micropico",
             "**/.vscode",
             "**/.gitignore",
             "**/.git",
@@ -337,18 +340,17 @@
           ],
           "order": 8
         },
-        "picowgo.openOnStart": {
+        "micropico.openOnStart": {
           "type": "boolean",
           "default": false,
           "scope": "machine",
           "title": "Open on start",
-          "description": "Automatically open the Pico-W-Go console after starting VS Code. Could cause random terminal freezes on Linux.",
+          "description": "Automatically open the MicroPico console after starting VS Code. Could cause random terminal freezes on Linux.",
           "order": 9
         },
-        "picowgo.statusbarButtons": {
+        "micropico.statusbarButtons": {
           "type": "array",
           "title": "Statusbar buttons",
-          "scope": "machine-overridable",
           "description": "Select which buttons to show in the statusbar",
           "items": {
             "type": "string",
@@ -376,7 +378,7 @@
           ],
           "order": 10
         },
-        "picowgo.gcBeforeUpload": {
+        "micropico.gcBeforeUpload": {
           "type": "boolean",
           "default": true,
           "scope": "machine-overridable",
@@ -384,14 +386,14 @@
           "description": "Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
           "order": 11
         },
-        "picowgo.softResetAfterUpload": {
+        "micropico.softResetAfterUpload": {
           "type": "boolean",
           "default": false,
           "title": "Soft-reset after upload",
           "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
           "order": 12
         },
-        "picowgo.pythonPath": {
+        "micropico.pythonPath": {
           "type": "string",
           "default": null,
           "scope": "machine",
@@ -405,7 +407,7 @@
       "profiles": [
         {
           "title": "Pico (W) vREPL",
-          "id": "picowgo.vrepl"
+          "id": "micropico.vrepl"
         }
       ]
     }
@@ -414,73 +416,73 @@
     {
       "key": "status",
       "name": "",
-      "command": "picowgo.toggleConnect",
+      "command": "micropico.toggleConnect",
       "tooltip": "Toggle board connection"
     },
     {
       "key": "stop",
       "name": "$(primitive-square) Stop",
-      "command": "picowgo.universalStop",
+      "command": "micropico.universalStop",
       "tooltip": "Stop"
     },
     {
       "key": "run",
       "name": "$(play) Run",
-      "command": "picowgo.run",
+      "command": "micropico.run",
       "tooltip": "Run current file"
     },
     {
       "key": "runselection",
       "name": "$(play) Run Line",
-      "command": "picowgo.runselection",
+      "command": "micropico.runselection",
       "tooltip": "Run current line"
     },
     {
       "key": "upload",
       "name": "$(triangle-up) Upload",
-      "command": "picowgo.uploadFile",
+      "command": "micropico.uploadFile",
       "tooltip": "Upload current file to your board"
     },
     {
       "key": "download",
       "name": "$(triangle-down) Download",
-      "command": "picowgo.download",
+      "command": "micropico.download",
       "tooltip": "Download project from your board. This will overwrite all files in the sync folder."
     },
     {
       "key": "disconnect",
       "name": "$(chrome-close) Disconnect",
-      "command": "picowgo.disconnect",
+      "command": "micropico.disconnect",
       "tooltip": "Disconnect"
     },
     {
       "key": "softreset",
       "name": "$(refresh) Reset",
-      "command": "picowgo.reset.soft",
+      "command": "micropico.reset.soft",
       "tooltip": "Restart your board"
     },
     {
       "key": "settings",
       "name": "$(gear) Settings",
-      "command": "picowgo.globalSettings",
-      "tooltip": "Global Pico-W-Go settings"
+      "command": "micropico.globalSettings",
+      "tooltip": "Global MicroPico settings"
     },
     {
       "key": "listserial",
       "name": "$(list-unordered) List serialports",
-      "command": "picowgo.extra.getSerial",
+      "command": "micropico.extra.getSerial",
       "tooltip": "List available serialports"
     },
     {
       "key": "listcommands",
       "name": "$(list-unordered) All commands",
-      "command": "picowgo.listCommands",
-      "tooltip": "List all available Pico-W-Go commands"
+      "command": "micropico.listCommands",
+      "tooltip": "List all available MicroPico commands"
     },
     {
       "key": "togglepicowfs",
       "name": "$(list-tree) Toggle Pico-W-FS",
-      "command": "picowgo.toggleFileSystem",
+      "command": "micropico.toggleFileSystem",
       "tooltip": "Toggle virtual Pico (W) workspace"
     }
   ],
