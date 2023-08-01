@@ -1,6 +1,6 @@
 # MicroPico Visual Studio Code Extension (aka Pico-W-Go)
 
-> NOTE: The extension was renamed from `Pico-W-Go` to `MicroPico` and it's id to `paulober.micropico`. So if you have any problems after v3.2.1 make sure you have taken this into account
+> NOTE: The extension was renamed from `Pico-W-Go` to `MicroPico` but the ID remains `paulober.pico-w-go` for now. So if you have any problems after v3.2.1 make sure you have taken this into account
 
 "MicroPico" is a Visual Studio Code extension designed to simplify and accelerate the development of MicroPython projects for the Raspberry Pi Pico and Pico W boards. This tool streamlines the coding process, providing code highlighting, auto-completion, code snippets, and project management features, all tailored for the seamless development experience with MicroPython on Raspberry Pi Pico and Pico W microcontrollers.
 

@@ -4,6 +4,7 @@ import Logger from "./logger.mjs";
 import { SettingsKey } from "./settings.mjs";
 import type Settings from "./settings.mjs";
 import { ContextKeys } from "./models/contextKeys.mjs";
+import { extId } from "./api.mjs";
 
 interface PkgJSON {
   statusBar: Array<{
@@ -15,8 +16,7 @@ interface PkgJSON {
   contributes: { commands: Array<{ title: string; command: string }> };
 }
 
-const pkg = (extensions.getExtension("paulober.micropico")
-  ?.packageJSON as PkgJSON) ?? {
+const pkg = (extensions.getExtension(extId)?.packageJSON as PkgJSON) ?? {
   statusBar: [],
   contributes: { commands: [] },
 };
