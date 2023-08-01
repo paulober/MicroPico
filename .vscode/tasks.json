@@ -6,6 +6,7 @@
 		{
 			"type": "npm",
 			"script": "watch",
+			"problemMatcher": "$rollup-ts-watch",
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never",
