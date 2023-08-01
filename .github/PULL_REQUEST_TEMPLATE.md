@@ -18,5 +18,3 @@
 **Operating system:**
 
 **VSCode version:**
-
-**Pico-W-Go version:**

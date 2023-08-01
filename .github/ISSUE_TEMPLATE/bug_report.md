@@ -25,7 +25,7 @@ labels: 'bug'
 ## Any other comments?
 
 
-## Which version of Pico-W-Go are you using?
+## Which version of MicroPico are you using?
 
 
 ## Support info
