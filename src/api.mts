@@ -19,6 +19,7 @@ export const recommendedExtensions = [
   "ms-python.python",
   "visualstudioexptteam.vscodeintellicode",
   "ms-python.vscode-pylance",
+  extId,
 ];
 
 /**
