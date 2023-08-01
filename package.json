@@ -1,5 +1,5 @@
 {
-  "name": "micropico",
+  "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
   "version": "3.2.1",

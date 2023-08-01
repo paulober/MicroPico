@@ -31,6 +31,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # not needed because of publish
       - name: Package
         run: npx @vscode/vsce package --no-yarn
 
@@ -43,11 +44,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Visual Studio Code extension package
-          path: micropico-*.vsix
+          path: pico-w-go-*.vsix
 
       - name: Upload artifact to release
         #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/Pico-W-Go/releases/$RELEASE_ID/assets 
-        run: gh release upload $RELEASE_TAG_NAME micropico-*.vsix
+        run: gh release upload $RELEASE_TAG_NAME pico-w-go-*.vsix
         env:
           #RELEASE_ID: ${{ github.event.release.id }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
