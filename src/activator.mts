@@ -291,7 +291,7 @@ export default class Activator {
       function () {
         void vscode.env.openExternal(
           vscode.Uri.parse(
-            "https://github.com/paulober/Pico-W-Go/blob/main/README.md"
+            "https://github.com/paulober/MicroPico/blob/main/README.md"
           )
         );
       }
