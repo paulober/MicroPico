@@ -9,6 +9,11 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.2.1] - 2023-08-01
+
+# Changed
+- Rename extension to `MicroPico` and `paulober.micropico`
+
 ## [3.2.0] - 2023-07-15
 
 # Added
