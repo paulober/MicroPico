@@ -60,11 +60,17 @@ jobs:
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
-
-    - name: Custom-Build
+      
+    - name: Install Dependencies for custom build
+      shell: bash
       run: |
-        npm ci
-        npm run compile
+        sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
+        npm ci --no-audit
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Custom build
+      run: npm run compile
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
