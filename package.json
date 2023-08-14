@@ -367,7 +367,8 @@
               "settings",
               "listserial",
               "listcommands",
-              "togglepicowfs"
+              "togglepicowfs",
+              "uploadproject"
             ]
           },
           "default": [
@@ -442,6 +443,12 @@
       "name": "$(triangle-up) Upload",
       "command": "micropico.uploadFile",
       "tooltip": "Upload current file to your board"
+    },
+    {
+      "key": "uploadproject",
+      "name": "$(triangle-up) Upload Project",
+      "command": "micropico.upload",
+      "tooltip": "Upload current project to your board"
     },
     {
       "key": "download",
