@@ -9,6 +9,16 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.2.2] - 2023-08-14
+
+# Added
+- `uploadproject` status-bar button
+
+# Changed
+- Upgraded pyboard-serial-com to v1.5.3 (Fixes an issue where `pyIgnore` wildcard exclusions were not working)
+- Updated stubs to patch v1.20.0-3 stable
+- Dependencies were updated
+
 ## [3.2.1] - 2023-08-01
 
 # Changed

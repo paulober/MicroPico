@@ -30,7 +30,7 @@ Descriptions taken from
 """
 from collections.abc import Callable, Sequence
 from typing import overload, NoReturn
-from typing import ClassVar, Any
+from typing import ClassVar, Any, Literal
 
 
 class ADC:
@@ -313,13 +313,13 @@ with `Pin.IN`, `Pin.OUT`, or `Pin.OPEN_DRAIN`, the alternate function will be re
         """
         ...
 
-    def value(self, value: Any=..., /) -> None:
+    def value(self, value: Any=..., /) -> Literal[0, 1] | None:
         """
         Get or set the digital logic level of the pin:
 
             - With no argument, return 0 or 1 depending on the logic level of the pin.
-            - With ``value`` given, set the logic level of the pin.  ``value`` can be
-            anything that converts to a boolean.  If it converts to ``True``, the pin
+            - With ``value`` given, set the logic level of the pin. `value` can be
+            anything that converts to a boolean. If it converts to `True`, the pin
             is set high, otherwise it is set low.
         """
         ...

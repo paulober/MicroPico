@@ -1,7 +1,7 @@
 import type { Memento, WorkspaceConfiguration } from "vscode";
 import { window, workspace } from "vscode";
 import { PyboardRunner } from "@paulober/pyboard-serial-com";
-import { getProjectPath } from "./api.mjs";
+import { extName, getProjectPath } from "./api.mjs";
 import { join, relative } from "path";
 
 export enum SettingsKey {
@@ -27,7 +27,7 @@ export default class Settings {
   public pythonExecutable?: string;
 
   constructor(context: Memento) {
-    this.config = workspace.getConfiguration("micropico");
+    this.config = workspace.getConfiguration(extName);
 
     this.context = context;
     this.pythonExecutable = this.getString(SettingsKey.pythonPath);
