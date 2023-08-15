@@ -9,6 +9,11 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.2.4] - 2023-08-16
+
+# Changed
+- Updated stubs to patch v1.20.0-5 stable
+
 ## [3.2.3] - 2023-08-15
 
 # Changed

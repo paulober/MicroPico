@@ -29,8 +29,7 @@ Descriptions taken from
 
 """
 from collections.abc import Callable, Sequence
-from typing import overload, NoReturn
-from typing import ClassVar, Any, Literal
+from typing import overload, NoReturn, ClassVar, Any, Literal, Optional, Union
 
 
 class ADC:
@@ -47,7 +46,7 @@ class ADC:
        val = adc.read_u16()     # read a raw analog value in the range 0-65535
     """
 
-    def __init__(self, pin: int|Pin, /):
+    def __init__(self, pin: Union[int, Pin], /):
         """
         Access the ADC associated with a source identified by *id*.  This
         *id* may be an integer (usually specifying a channel number), a
@@ -221,7 +220,7 @@ class Pin:
         GPIO9 : Pin
         """ <class 'Pin'> = Pin(GPIO9, mode=ALT, pull=PULL_DOWN, alt=31) """
 
-    def __init__(self, id: int|str|tuple[Any,Any], mode: int = -1, pull: int | None = -1, *, value: int | None = None, drive: int = 0, alt: int = -1):
+    def __init__(self, id: Union[int, str, tuple[Any,Any]], mode: int = -1, pull: Optional[int] = -1, *, value: Optional[int] = None, drive: int = 0, alt: int = -1):
         """
         Access the pin peripheral (GPIO pin) associated with the given id. If additional arguments are
         given in the constructor then they are used to initialise the pin. Any settings that are not
@@ -272,7 +271,7 @@ with `Pin.IN`, `Pin.OUT`, or `Pin.OPEN_DRAIN`, the alternate function will be re
         """
         ...
 
-    def init(self, mode: int = -1, pull: int | None = -1, *, value: int | None = None, drive: int = 0, alt: int = -1):
+    def init(self, mode: int = -1, pull: Optional[int] = -1, *, value: Optional[int] = None, drive: int = 0, alt: int = -1):
         """
         Re-initialise the pin using the given parameters. Only those arguments that are specified will be set. The rest
         of the pin peripheral state will remain unchanged. See the constructor documentation for details of the arguments.
@@ -313,7 +312,7 @@ with `Pin.IN`, `Pin.OUT`, or `Pin.OPEN_DRAIN`, the alternate function will be re
         """
         ...
 
-    def value(self, value: Any=..., /) -> Literal[0, 1] | None:
+    def value(self, value: Any=..., /) -> Optional[Literal[0, 1]]:
         """
         Get or set the digital logic level of the pin:
 
@@ -401,9 +400,9 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Pin|None = None,
-        mosi: Pin|None = None,
-        miso: Pin|None = None,
+        sck: Optional[Pin] = None,
+        mosi: Optional[Pin] = None,
+        miso: Optional[Pin] = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -428,7 +427,7 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: tuple[Pin, Pin, Pin]|None = None,
+        pins: Optional[tuple[Pin, Pin, Pin]] = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -451,9 +450,9 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Pin|None = None,
-        mosi: Pin|None = None,
-        miso: Pin|None = None,
+        sck: Optional[Pin] = None,
+        mosi: Optional[Pin] = None,
+        miso: Optional[Pin] = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -487,7 +486,7 @@ class SPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: tuple[Pin, Pin, Pin]|None = None,
+        pins: Optional[tuple[Pin, Pin, Pin]] = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -526,7 +525,7 @@ class SPI:
         """
         ...
 
-    def readinto(self, buf: bytes, write: int = 0x00, /) -> int|None:
+    def readinto(self, buf: bytes, write: int = 0x00, /) -> Optional[int]:
         """
          Read into the buffer specified by ``buf`` while continuously writing the
          single byte given by ``write``.
@@ -536,7 +535,7 @@ class SPI:
         """
         ...
 
-    def write(self, buf: bytes, /) -> int|None:
+    def write(self, buf: bytes, /) -> Optional[int]:
         """
          Write the bytes contained in ``buf``.
          Returns ``None``.
@@ -545,7 +544,7 @@ class SPI:
         """
         ...
 
-    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> int|None:
+    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> Optional[int]:
         """
          Write the bytes from ``write_buf`` while reading into ``read_buf``.  The
          buffers can be the same or different, but both buffers must have the
@@ -585,6 +584,7 @@ class SoftSPI:
    set the first bit to be the least significant bit
    """
 
+    @overload
     def __init__(
         self,
         id: int,
@@ -595,9 +595,9 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Pin|None = None,
-        mosi: Pin|None = None,
-        miso: Pin|None = None,
+        sck: Optional[Pin] = None,
+        mosi: Optional[Pin] = None,
+        miso: Optional[Pin] = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -622,7 +622,7 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: tuple[Pin, Pin, Pin]|None = None,
+        pins: Optional[tuple[Pin, Pin, Pin]] = None,
     ):
         """
         Construct an SPI object on the given bus, *id*. Values of *id* depend
@@ -645,9 +645,9 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        sck: Pin|None = None,
-        mosi: Pin|None = None,
-        miso: Pin|None = None,
+        sck: Optional[Pin] = None,
+        mosi: Optional[Pin] = None,
+        miso: Optional[Pin] = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -681,7 +681,7 @@ class SoftSPI:
         phase: int = 0,
         bits: int = 8,
         firstbit: int = MSB,
-        pins: tuple[Pin, Pin, Pin]|None = None,
+        pins: Optional[tuple[Pin, Pin, Pin]] = None,
     ) -> None:
         """
         Initialise the SPI bus with the given parameters:
@@ -720,7 +720,7 @@ class SoftSPI:
         """
         ...
 
-    def readinto(self, buf: bytes, write: int = 0x00, /) -> int|None:
+    def readinto(self, buf: bytes, write: int = 0x00, /) -> Optional[int]:
         """
          Read into the buffer specified by ``buf`` while continuously writing the
          single byte given by ``write``.
@@ -730,7 +730,7 @@ class SoftSPI:
         """
         ...
 
-    def write(self, buf: bytes, /) -> int|None:
+    def write(self, buf: bytes, /) -> Optional[int]:
         """
          Write the bytes contained in ``buf``.
          Returns ``None``.
@@ -739,7 +739,7 @@ class SoftSPI:
         """
         ...
 
-    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> int|None:
+    def write_readinto(self, write_buf: bytes, read_buf: bytes, /) -> Optional[int]:
         """
          Write the bytes from ``write_buf`` while reading into ``read_buf``.  The
          buffers can be the same or different, but both buffers must have the
@@ -1188,7 +1188,7 @@ class PWM:
         """
         ...
 
-    def freq(self, frequency: int|None=...):
+    def freq(self, frequency: Optional[int]=...):
         """
         With no arguments the frequency in Hz is returned.
 
@@ -1196,7 +1196,7 @@ class PWM:
         """
         ...
 
-    def duty_u16(self, duration: int|None=...):
+    def duty_u16(self, duration: Optional[int]=...):
         """
         Get or Set the current duty cycle of the PWM output, as an unsigned 16-bit value in the range 0 to 65535 inclusive.
 
@@ -1206,7 +1206,7 @@ class PWM:
         """
         ...
 
-    def duty_ns(self, duration: int|None=...):
+    def duty_ns(self, duration: Optional[int]=...):
         """
         Get or Set the current pulse width of the PWM output, as a value in nanoseconds.
 
@@ -1243,7 +1243,7 @@ class Signal:
         ...
 
     @overload
-    def __init__(self, id: int|str, /, mode: int = Pin.IN, pull: int = Pin.PULL_UP, af: str|int = -1, invert: bool = False):
+    def __init__(self, id: Union[int, str], /, mode: int = Pin.IN, pull: int = Pin.PULL_UP, af: Union[str, int] = -1, invert: bool = False):
         """
         Create a ``Signal`` object by passing required ``Pin`` parameters directly
         to ``Signal`` constructor, skipping the need to create intermediate ``Pin`` object.
@@ -1584,13 +1584,13 @@ class Timer:
 
     def __init__(
         self,
-        id: int|None=None,
+        id: Optional[int] = None,
         /,
         *,
         mode: int = PERIODIC,
-        freq: float|None = None,
+        freq: Optional[float] = None,
         period: int = -1,
-        callback: Callable[["Timer"], None] |None = None,
+        callback: Optional[Callable[["Timer"], None]] = None,
     ):
         """
         Construct a new timer object of the given id. Id of -1 constructs a
@@ -1604,9 +1604,9 @@ class Timer:
         self,
         *,
         mode: int = PERIODIC,
-        freq: float|None = None,
+        freq: Optional[float] = None,
         period: int = -1,
-        callback: Callable[["Timer"], None]|None = None,
+        callback: Optional[Callable[["Timer"], None]] = None,
     ) -> None:
         """
         Initialise the timer. Example::
@@ -1647,7 +1647,7 @@ class UART:
     INV_TX = 1 # type: int
     RTS = 2 # type: int
 
-    def __init__(self, id: int, baudrate: int = 9600, bits: int = 8, parity: int|None = None, stop: int = 1, tx: Pin|None = None, rx: Pin|None = None):
+    def __init__(self, id: int, baudrate: int = 9600, bits: int = 8, parity: Optional[int] = None, stop: int = 1, tx: Optional[Pin] = None, rx: Optional[Pin] = None):
         """
         Construct a UART object of the given id and initialise the UART
         bus with the given parameters:
@@ -1672,7 +1672,7 @@ class UART:
         """
         ...
 
-    def init(self, baudrate: int = 9600, bits: int = 8, parity: int|None = None, stop: int = 1, **kwargs) -> Any:
+    def init(self, baudrate: int = 9600, bits: int = 8, parity: Optional[int] = None, stop: int = 1, **kwargs) -> Any:
         ...
 
     def any(self) -> int:
@@ -1681,7 +1681,7 @@ class UART:
         """
         ...
 
-    def read(self, nbytes: int|None=None) -> bytes|None:
+    def read(self, nbytes: Optional[int]=None) -> Optional[bytes]:
         """
         Read characters.  If ``nbytes`` is specified then read at most that many bytes.
         If ``nbytes`` are available in the buffer, returns immediately, otherwise returns
@@ -1698,7 +1698,7 @@ class UART:
         """
         ...
 
-    def readinto(self, buf: bytes, nbytes: int|None=None, /) -> int|None:
+    def readinto(self, buf: bytes, nbytes: Optional[int]=None, /) -> Optional[int]:
         """
         Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
@@ -1708,7 +1708,7 @@ class UART:
         """
         ...
 
-    def readline(self) -> str|None:
+    def readline(self) -> Optional[str]:
         """
         Read a line, ending in a newline character. If such a line exists, return is
         immediate. If the timeout elapses, all available data is returned regardless
@@ -1718,7 +1718,7 @@ class UART:
         """
         ...
 
-    def write(self, buf: bytes, /) -> int|None:
+    def write(self, buf: bytes, /) -> Optional[int]:
         """
         Write the buffer of bytes to the bus.  If characters are 7 or 8 bits wide
         then each byte is one character.  If characters are 9 bits wide then two
@@ -1810,7 +1810,7 @@ def bootloader() -> NoReturn:
     ...
 
 
-def deepsleep(time_ms: int|None = None) -> None:
+def deepsleep(time_ms: Optional[int] = None) -> None:
     """
     Stops execution in an attempt to enter a low power state.
 
@@ -1833,7 +1833,7 @@ def deepsleep(time_ms: int|None = None) -> None:
     ...
 
 
-def lightsleep(time_ms: int|None = None) -> None:
+def lightsleep(time_ms: Optional[int] = None) -> None:
     """
     Stops execution in an attempt to enter a low power state.
 

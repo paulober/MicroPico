@@ -17,8 +17,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from typing import Union, Optional
 
-def gmtime(secs: int|None=None) -> tuple:
+def gmtime(secs: Optional[int]=None) -> tuple:
     """
     Converts a time expressed in seconds since the Epoch into an 8-tuple which
     contains:
@@ -39,7 +40,7 @@ def gmtime(secs: int|None=None) -> tuple:
     """
     ...
 
-def localtime(secs: int|None=None) -> tuple:
+def localtime(secs: Optional[int]=None) -> tuple:
     """
     Converts a time expressed in seconds since the Epoch into an 8-tuple which
     contains:
@@ -106,7 +107,7 @@ def time_ns() -> int:
     """
     ...
 
-def sleep(seconds: int|float) -> None:
+def sleep(seconds: Union[int, float]) -> None:
     """
     Sleeps for the given number of seconds. Some boards may accept seconds
     as a floating-point number to sleep for a fractional number of seconds.

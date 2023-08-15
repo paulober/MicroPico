@@ -1,1 +1,1 @@
-from .usocket import *
+from usocket import *

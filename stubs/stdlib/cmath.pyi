@@ -1,5 +1,5 @@
 import sys
-from typing import SupportsComplex, SupportsFloat
+from typing import SupportsComplex, SupportsFloat, Union
 
 e: float
 pi: float
@@ -10,7 +10,7 @@ if sys.version_info >= (3, 6):
     nanj: complex
     tau: float
 
-_C = SupportsFloat|SupportsComplex|complex
+_C = Union[SupportsFloat, SupportsComplex, complex]
 
 
 def cos(__z: _C) -> complex: ...

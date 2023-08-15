@@ -1,1 +1,1 @@
-from .uselect import *
+from uselect import *
