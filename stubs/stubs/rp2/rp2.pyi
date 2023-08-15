@@ -1,5 +1,5 @@
-from .uarray import array
-from .machine import Pin
+from uarray import array
+from machine import Pin
 from typing import Any, overload
 
 class Flash:

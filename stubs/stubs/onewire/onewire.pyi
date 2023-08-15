@@ -1,4 +1,4 @@
-from .machine import Pin
+from machine import Pin
 from collections.abc import Sequence
 
 class OneWire:

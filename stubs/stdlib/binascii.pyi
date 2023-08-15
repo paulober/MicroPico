@@ -1,1 +1,1 @@
-from .ubinascii import *
+from ubinascii import *
