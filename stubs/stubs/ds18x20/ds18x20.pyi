@@ -1,8 +1,7 @@
 """DS18x20 temperature sensor driver
 """
 
-from .onewire import OneWire
-
+from onewire import OneWire
 
 class DS18X20:
     def __init__(self, onewire: OneWire) -> None:

@@ -1,1 +1,1 @@
-from .uwebsocket import *
+from uwebsocket import *

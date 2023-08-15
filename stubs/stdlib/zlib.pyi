@@ -1,1 +1,1 @@
-from .uzlib import *
+from uzlib import *

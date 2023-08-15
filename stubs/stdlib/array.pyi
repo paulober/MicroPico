@@ -1,1 +1,1 @@
-from .uarray import *
+from uarray import *

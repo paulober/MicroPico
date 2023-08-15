@@ -1,1 +1,1 @@
-from .uheapq import *
+from uheapq import *

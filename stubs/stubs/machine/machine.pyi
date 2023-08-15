@@ -1,1 +1,1 @@
-from .umachine import *
+from umachine import *
