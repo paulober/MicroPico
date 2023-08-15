@@ -1,6 +1,6 @@
 import sys
 from collections.abc import Iterable, MutableSequence
-from typing import Generic, TypeVar, overload
+from typing import Any, Generic, TypeVar, overload, Union
 
 _IntTypeCode = ["b", "B", "h", "H", "i", "I", "l", "L", "q", "Q"]
 _FloatTypeCode = ["f", "d"]
@@ -15,7 +15,7 @@ if sys.version_info.major >= 3:
 class array(MutableSequence[_T], Generic[_T]):
     typecode: _TypeCode
     itemsize: int
-    def __init__(self: any, typecode: str|_IntTypeCode|_FloatTypeCode|_UnicodeTypeCode, __initializer: bytes|Iterable[_T] = ...) -> None:
+    def __init__(self: Any, typecode: Union[str, _IntTypeCode, _FloatTypeCode, _UnicodeTypeCode], __initializer: Union[bytes, Iterable[_T]] = ...) -> None:
         ...
         
     def append(self, __v: _T) -> None:

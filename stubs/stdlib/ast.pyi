@@ -4,8 +4,7 @@
 import sys
 from _ast import *
 from collections.abc import Iterator
-from typing import Any, TypeVar, overload
-from typing_extensions import Literal
+from typing import Any, TypeVar, overload, Literal, Union, Optional
 
 if sys.version_info >= (3, 8):
     class _ABC(type):
@@ -160,87 +159,87 @@ _T = TypeVar("_T", bound=AST)
 if sys.version_info >= (3, 8):
     @overload
     def parse(
-        source: str | bytes,
-        filename: str | bytes = ...,
+        source: Union[str, bytes],
+        filename: Union[str, bytes] = ...,
         mode: Literal["exec"] = ...,
         *,
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> Module: ...
     @overload
     def parse(
-        source: str | bytes,
-        filename: str | bytes,
+        source: Union[str, bytes],
+        filename: Union[str, bytes],
         mode: Literal["eval"],
         *,
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> Expression: ...
     @overload
     def parse(
-        source: str | bytes,
-        filename: str | bytes,
+        source: Union[str, bytes],
+        filename: Union[str, bytes],
         mode: Literal["func_type"],
         *,
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> FunctionType: ...
     @overload
     def parse(
-        source: str | bytes,
-        filename: str | bytes,
+        source: Union[str, bytes],
+        filename: Union[str, bytes],
         mode: Literal["single"],
         *,
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> Interactive: ...
     @overload
     def parse(
-        source: str | bytes,
+        source: Union[str, bytes],
         *,
         mode: Literal["eval"],
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> Expression: ...
     @overload
     def parse(
-        source: str | bytes,
+        source: Union[str, bytes],
         *,
         mode: Literal["func_type"],
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> FunctionType: ...
     @overload
     def parse(
-        source: str | bytes,
+        source: Union[str, bytes],
         *,
         mode: Literal["single"],
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> Interactive: ...
     @overload
     def parse(
-        source: str | bytes,
-        filename: str | bytes = ...,
+        source: Union[str, bytes],
+        filename: Union[str, bytes] = ...,
         mode: str = ...,
         *,
         type_comments: bool = ...,
-        feature_version: None | int | tuple[int, int] = ...,
+        feature_version: Optional[Union[int, tuple[int, int]]] = ...,
     ) -> AST: ...
 
 else:
     @overload
-    def parse(source: str | bytes, filename: str | bytes = ..., mode: Literal["exec"] = ...) -> Module: ...
+    def parse(source: Union[str, bytes], filename: Union[str, bytes] = ..., mode: Literal["exec"] = ...) -> Module: ...
     @overload
-    def parse(source: str | bytes, filename: str | bytes, mode: Literal["eval"]) -> Expression: ...
+    def parse(source: Union[str, bytes], filename: Union[str, bytes], mode: Literal["eval"]) -> Expression: ...
     @overload
-    def parse(source: str | bytes, filename: str | bytes, mode: Literal["single"]) -> Interactive: ...
+    def parse(source: Union[str, bytes], filename: Union[str, bytes], mode: Literal["single"]) -> Interactive: ...
     @overload
-    def parse(source: str | bytes, *, mode: Literal["eval"]) -> Expression: ...
+    def parse(source: Union[str, bytes], *, mode: Literal["eval"]) -> Expression: ...
     @overload
-    def parse(source: str | bytes, *, mode: Literal["single"]) -> Interactive: ...
+    def parse(source: Union[str, bytes], *, mode: Literal["single"]) -> Interactive: ...
     @overload
-    def parse(source: str | bytes, filename: str | bytes = ..., mode: str = ...) -> AST: ...
+    def parse(source: Union[str, bytes], filename: Union[str, bytes] = ..., mode: str = ...) -> AST: ...
 
 if sys.version_info >= (3, 9):
     def unparse(ast_obj: AST) -> str: ...
@@ -249,21 +248,21 @@ def copy_location(new_node: _T, old_node: AST) -> _T: ...
 
 if sys.version_info >= (3, 9):
     def dump(
-        node: AST, annotate_fields: bool = ..., include_attributes: bool = ..., *, indent: int | str | None = ...
+        node: AST, annotate_fields: bool = ..., include_attributes: bool = ..., *, indent: Optional[Union[int, str]] = ...
     ) -> str: ...
 
 else:
     def dump(node: AST, annotate_fields: bool = ..., include_attributes: bool = ...) -> str: ...
 
 def fix_missing_locations(node: _T) -> _T: ...
-def get_docstring(node: AST, clean: bool = ...) -> str | None: ...
+def get_docstring(node: AST, clean: bool = ...) -> Optional[str]: ...
 def increment_lineno(node: _T, n: int = ...) -> _T: ...
 def iter_child_nodes(node: AST) -> Iterator[AST]: ...
 def iter_fields(node: AST) -> Iterator[tuple[str, Any]]: ...
-def literal_eval(node_or_string: str | AST) -> Any: ...
+def literal_eval(node_or_string: Union[str, AST]) -> Any: ...
 
 if sys.version_info >= (3, 8):
-    def get_source_segment(source: str, node: AST, *, padded: bool = ...) -> str | None: ...
+    def get_source_segment(source: str, node: AST, *, padded: bool = ...) -> Optional[str]: ...
 
 def walk(node: AST) -> Iterator[AST]: ...
 

@@ -1,1 +1,1 @@
-from .urandom import *
+from urandom import *

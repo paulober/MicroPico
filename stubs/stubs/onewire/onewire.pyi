@@ -1,5 +1,6 @@
 from machine import Pin
 from collections.abc import Sequence
+from typing import Union
 
 class OneWire:
     """
@@ -30,7 +31,7 @@ class OneWire:
     def readinto(self, buf: bytearray):
         ...
 
-    def reset(self, required:bool = False) -> bool | int:
+    def reset(self, required:bool = False) -> Union[bool, int]:
         """
         Perform the onewire reset function.
         """
@@ -49,7 +50,7 @@ class OneWire:
         """
         ...
 
-    def write(self, buf:bytearray | str):
+    def write(self, buf: Union[bytearray, str]):
         ...
 
     def writebit(self, value:int) -> None:

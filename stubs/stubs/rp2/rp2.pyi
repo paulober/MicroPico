@@ -1,6 +1,6 @@
 from uarray import array
 from machine import Pin
-from typing import Any, overload
+from typing import Any, overload, Union, Optional
 
 class Flash:
     # Determined from: https://github.com/raspberrypi/micropython/blob/1196871a0f2f974b03915e08cfcc0433de4b8a64/ports/rp2/rp2_flash.c
@@ -23,13 +23,13 @@ class Flash:
         """
         ...
 
-    def readblocks(self, offsetBlocks: int, buffer: bytearray, offset: int | Any | None=None):
+    def readblocks(self, offsetBlocks: int, buffer: bytearray, offset: Optional[Union[int, Any]]=None):
         """
         Read data from the Flash storage.
         """
         ...
 
-    def writeblocks(self, offsetBlocks: int, buffer: bytearray, offset: int | Any | None=None):
+    def writeblocks(self, offsetBlocks: int, buffer: bytearray, offset: Optional[Union[int, Any]]=None):
         """
         Write data to the Flash storage.
         """
@@ -79,7 +79,7 @@ class PIO:
         """
         ...
 
-    def irq(self, handler=None, trigger=IRQ_SM0|IRQ_SM1|IRQ_SM2|IRQ_SM3, hard=False):
+    def irq(self, handler=None, trigger= IRQ_SM0 | IRQ_SM1 | IRQ_SM2 | IRQ_SM3, hard=False):
         """
         Returns the IRQ object for this PIO instance.
 
@@ -99,7 +99,7 @@ class PIO:
         """
         ...
 
-    def state_machine(self, id: int, program: Any|None = None, freq: int|None=-1, *args, **kwargs) -> StateMachine:
+    def state_machine(self, id: int, program: Optional[Any] = None, freq: Optional[int]=-1, *args, **kwargs) -> StateMachine:
         """
         Returns the StateMachine object.
 
@@ -274,6 +274,7 @@ class PIOASMEmit:
     def irq(self, mode: str, index: Any) -> Any:
         ...
     
+    @overload
     def irq(self, index: Any) -> Any:
         """Set or clear an IRQ flag. This instruction 
         takes two forms:
@@ -308,7 +309,7 @@ class PIOASMEmit:
 class StateMachine:
     # Determined from: https://github.com/raspberrypi/micropython/blob/1196871a0f2f974b03915e08cfcc0433de4b8a64/ports/rp2/rp2_pio.c
     # Documentation put together via research and may be flawed!
-    def __init__(self, id, prog, freq: int=-1, *, in_base: Pin | None =None, out_base: Pin | None =None, set_base: Pin | None =None, jmp_pin: Pin | None =None, sideset_base: Pin | None =None, in_shiftdir: int | None =None, out_shiftdir: int | None =None, push_thresh: int | None =None, pull_thresh: int | None =None):
+    def __init__(self, id, prog, freq: int=-1, *, in_base: Optional[Pin] =None, out_base: Optional[Pin] =None, set_base: Optional[Pin] =None, jmp_pin: Optional[Pin] =None, sideset_base: Optional[Pin] =None, in_shiftdir: Optional[int] =None, out_shiftdir: Optional[int] =None, push_thresh: Optional[int] =None, pull_thresh: Optional[int] =None):
         """
         Create a new StateMachine containing two First-In-First-Out (FIFO)
         structures: one for incoming data and another for outgoing data.
@@ -331,7 +332,7 @@ class StateMachine:
         """
         ...
 
-    def init(self, id, prog, freq: int=-1, *, in_base: Pin|None=None, out_base: Pin|None=None, set_base: Pin|None=None, jmp_pin: Pin|None=None, sideset_base: Pin|None=None, in_shiftdir: int|None=None, out_shiftdir: int|None=None, push_thresh: int|None=None, pull_thresh: int|None=None):
+    def init(self, id, prog, freq: int=-1, *, in_base: Optional[Pin]=None, out_base: Optional[Pin]=None, set_base: Optional[Pin]=None, jmp_pin: Optional[Pin]=None, sideset_base: Optional[Pin]=None, in_shiftdir: Optional[int]=None, out_shiftdir: Optional[int]=None, push_thresh: Optional[int]=None, pull_thresh: Optional[int]=None):
         """
         Create a new StateMachine containing two First-In-First-Out (FIFO)
         structures: one for incoming data and another for outgoing data.
@@ -374,7 +375,7 @@ class StateMachine:
         """
         ...
 
-    def get(self, buf: bytes|None=None, shift: int=0):
+    def get(self, buf: Optional[bytes]=None, shift: int=0):
         """
         Get data from the ``StateMachine``.
 
@@ -383,7 +384,7 @@ class StateMachine:
         """
         ...
     
-    def put(self, value: bytes|int | array[int], shift: int=0):
+    def put(self, value: Union[bytes, int, array[int]], shift: int=0):
         """
         Sets data within the ``StateMachine``.
 
@@ -418,9 +419,9 @@ class StateMachine:
         ...
 
 def asm_pio(
-    out_init: int|None = None,
-    set_init: int|None = None,
-    sideset_init: int|None = None,
+    out_init: Optional[int] = None,
+    set_init: Optional[int] = None,
+    sideset_init: Optional[int] = None,
     in_shiftdir: int = 0,
     out_shiftdir: int = 0,
     autopush: bool = False,

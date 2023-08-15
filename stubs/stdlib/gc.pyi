@@ -2,6 +2,7 @@
 
 This module provides control over the garbage collection process.
 """
+from typing import Optional
 
 def collect():
     """
@@ -42,7 +43,7 @@ def mem_free() -> int:
     """
     ...
 
-def threshold(amount:int|None = None) -> int:
+def threshold(amount: Optional[int] = None) -> int:
     """
     Set or query the additional GC allocation threshold. Normally, a 
     collection is triggered only when a new allocation cannot be 

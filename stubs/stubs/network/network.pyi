@@ -1,6 +1,7 @@
 """
 Module: 'network' on micropython-v1.19.1-rp2
 """
+from typing import Union, Optional
 
 AP_IF: int = 1 # type: int
 STAT_CONNECTING: int = 1 # type: int
@@ -29,7 +30,7 @@ class WLAN():
         """
         ...
 
-    def config(self, parameter:str="config('ssid') for example", mac: bytes|None = None, essid: str|None =None, ssid: str|None=None, channel: int|None =None, security: int|None=None, key: str|None=None, password: str|None=None, txpower: int|float|None =None) -> None:
+    def config(self, parameter:str="config('ssid') for example", mac: Optional[bytes] = None, essid: Optional[str] =None, ssid: Optional[str]=None, channel: Optional[int] =None, security: Optional[int]=None, key: Optional[str]=None, password: Optional[str]=None, txpower: Optional[Union[int, float]] =None) -> None:
         """DOT NOT USE config(paramter=...) this is just for config('...') to work
 
         Get or set general network interface parameters. 
@@ -67,7 +68,7 @@ class WLAN():
         """
         ...
 
-    def connect(self, ssid: str|None = None, key: str|None = None, *, bssid: ...=None) -> ...:
+    def connect(self, ssid: Optional[str] = None, key: Optional[str] = None, *, bssid: ...=None) -> ...:
         """Connect to the specified wireless network, using the specified key. 
         If bssid is given then the connection will be restricted to the access-point 
         with that MAC address (the ssid must also be specified in this case).
