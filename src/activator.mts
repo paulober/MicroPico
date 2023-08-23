@@ -49,12 +49,17 @@ export default class Activator {
     context: vscode.ExtensionContext
   ): Promise<UI | undefined> {
     const settings = new Settings(context.workspaceState);
-    const pyCommand = settings.pythonExecutable ?? (await getPythonCommand());
-    settings.pythonExecutable = pyCommand;
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    const pyCommands =
+      (settings.pythonExecutable ? [settings.pythonExecutable] : undefined) ??
+      (await getPythonCommand(workspaceFolder?.uri)).path ??
+      [];
 
-    if (pyCommand === undefined) {
+    if (pyCommands.length === 0) {
       const choice = await vscode.window.showErrorMessage(
-        "Python3 is not installed or not in the system's PATH. Alernatively " +
+        "Python3 is not installed or not in the system's PATH. " +
+          "You can select a python installation thought the " +
+          "vscode Python Extension. Alernatively " +
           "you can set the pythonPath setting to the path of your " +
           "Python3 executable in the settings.",
         "Open Settings"
@@ -66,9 +71,9 @@ export default class Activator {
 
       return;
     }
+    settings.pythonExecutable = pyCommands[0];
 
-    const isInstalled = await installPyserial(pyCommand);
-
+    const isInstalled = await installPyserial(settings.pythonExecutable);
     if (!isInstalled) {
       this.logger.error("Failed to install pyserial pip package.");
       void vscode.window.showErrorMessage(
@@ -102,9 +107,8 @@ export default class Activator {
           "No COM device found. Please check your connection or ports and " +
             "try again. Alternatively you can set the manualComDevice " +
             "setting to the path of your COM device in the settings but " +
-            "make sure to deactivate autoConnect. For Linux users: make " +
-            "sure your user is in dialout group: " +
-            "sudo usermod -a -G dialout $USER",
+            "make sure to deactivate autoConnect. For Linux users: check you " +
+            "sufficient permission to access the device file of the Pico.",
           "Open Settings"
         )
         .then((choice: "Open Settings" | undefined) => {
@@ -121,7 +125,7 @@ export default class Activator {
       this.comDevice ?? "default",
       this.pyboardOnError.bind(this),
       this.pyboardOnExit.bind(this),
-      pyCommand
+      settings.pythonExecutable
     );
 
     this.setupAutoConnect(settings);

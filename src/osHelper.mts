@@ -1,42 +1,43 @@
+import {
+  PythonExtension,
+  type ResolvedEnvironment,
+} from "@vscode/python-extension";
 import { exec } from "child_process";
 import { readFile, stat, writeFile } from "fs/promises";
-import { platform } from "os";
+import type { Uri } from "vscode";
+import { resolveVariables } from "./settings.mjs";
 
-const pythonCommands = {
-  win32: "python.exe",
-  darwin: "python3",
-  linux: "python3",
-};
+export interface IInterpreterDetails {
+  path?: string[];
+  resource?: Uri;
+}
 
-export async function getPythonCommand(): Promise<string | undefined> {
-  const system = platform();
-  let currentPlatform: keyof typeof pythonCommands;
+function checkVersion(environment: ResolvedEnvironment): boolean {
+  const version = environment.version;
 
-  if (system in pythonCommands) {
-    currentPlatform = system as keyof typeof pythonCommands;
-  } else {
-    console.error(`Unsupported platform: ${system}`);
-
-    return undefined;
+  if (version?.major === 3 && version?.minor >= 9) {
+    return true;
   }
 
-  const pythonCommand: string | undefined = pythonCommands[currentPlatform];
+  return false;
+}
 
-  return new Promise(resolve => {
-    exec(
-      `${pythonCommand} --version`,
-      { timeout: 2500 },
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error executing ${pythonCommand}: ${error.message}`);
-          resolve(undefined);
-        } else {
-          console.debug(`Python version: ${stdout || stderr}`);
-          resolve(pythonCommand);
-        }
-      }
-    );
-  });
+export async function getPythonCommand(
+  resource?: Uri
+): Promise<IInterpreterDetails> {
+  const pyApi: PythonExtension = await PythonExtension.api();
+
+  const environment = await pyApi.environments.resolveEnvironment(
+    pyApi.environments.getActiveEnvironmentPath(resource)
+  );
+  if (environment?.executable.uri && checkVersion(environment)) {
+    return {
+      path: resolveVariables([environment.executable.uri.fsPath], resource),
+      resource,
+    };
+  }
+
+  return { path: undefined, resource };
 }
 
 export async function pathExists(path: string): Promise<boolean> {

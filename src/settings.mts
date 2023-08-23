@@ -1,5 +1,5 @@
-import type { Memento, WorkspaceConfiguration } from "vscode";
-import { window, workspace } from "vscode";
+import type { Memento, Uri, WorkspaceConfiguration } from "vscode";
+import { window, workspace as vsWorkspace } from "vscode";
 import { PyboardRunner } from "@paulober/pyboard-serial-com";
 import { extName, getProjectPath } from "./api.mjs";
 import { join, relative } from "path";
@@ -27,7 +27,7 @@ export default class Settings {
   public pythonExecutable?: string;
 
   constructor(context: Memento) {
-    this.config = workspace.getConfiguration(extName);
+    this.config = vsWorkspace.getConfiguration(extName);
 
     this.context = context;
     this.pythonExecutable = this.getString(SettingsKey.pythonPath);
@@ -197,4 +197,34 @@ export default class Settings {
   public getIngoredSyncItems(): string[] {
     return this.getArray(SettingsKey.pyIgnore) || [];
   }
+}
+
+/**
+ * Resolve vscode variables like ${workspaceFolder} in the given value.
+ *
+ * @param value Input
+ * @param workspace The current workspace
+ * @returns The resolved value
+ */
+export function resolveVariables(value: string[], workspace?: Uri): string[] {
+  const substitutions = new Map<string, string>();
+  const home = process.env.HOME || process.env.USERPROFILE;
+  if (home) {
+    substitutions.set("${userHome}", home);
+  }
+  if (workspace) {
+    substitutions.set("${workspaceFolder}", workspace.fsPath);
+  }
+  substitutions.set("${cwd}", process.cwd());
+  (vsWorkspace.workspaceFolders ?? []).forEach(w => {
+    substitutions.set("${workspaceFolder:" + w.name + "}", w.uri.fsPath);
+  });
+
+  return value.map(s => {
+    for (const [key, value] of substitutions) {
+      s = s.replace(key, value);
+    }
+
+    return s;
+  });
 }
