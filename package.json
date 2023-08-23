@@ -20,7 +20,7 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.76.0",
+    "vscode": "^1.78.0",
     "node": ">=16.17.1"
   },
   "keywords": [
@@ -62,6 +62,9 @@
     "arm64",
     "arm"
   ],
+  "extensionDependencies": [
+		"ms-python.python"
+	],
   "minimumNodeVersion": 16,
   "contributes": {
     "commands": [
@@ -516,7 +519,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.x",
     "@types/uuid": "^9.0.2",
-    "@types/vscode": "^1.76.0",
+    "@types/vscode": "^1.78.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "@vscode/test-electron": "^2.3.4",
@@ -530,6 +533,7 @@
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^1.5.3",
+    "@vscode/python-extension": "^1.0.4",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "rimraf": "^5.0.1",
