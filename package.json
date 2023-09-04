@@ -20,7 +20,7 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.78.0",
+    "vscode": "^1.81.1",
     "node": ">=16.17.1"
   },
   "keywords": [
@@ -519,7 +519,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.x",
     "@types/uuid": "^9.0.3",
-    "@types/vscode": "^1.78.0",
+    "@types/vscode": "^1.81.0",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "@vscode/test-electron": "^2.3.4",
