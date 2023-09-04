@@ -195,22 +195,27 @@ def stat(path: str) -> Any:
     """Get the status of a file or directory."""
     ...
 
-def statvfs(path: str) -> tuple[...]:
+def statvfs(path: str) -> tuple[str, str, str, str, str, str, str, str, str, str]:
     """Get the status of a fileystem.
     Returns a tuple with the filesystem information in the following order:
-    - ``f_bsize`` – file system block size
-    - ``f_frsize`` – fragment size
-    - ``f_blocks`` – size of fs in f_frsize units
-    - ``f_bfree`` – number of free blocks
-    - ``f_bavail`` – number of free blocks for unprivileged users
-    - ``f_files`` – number of inodes
-    - ``f_ffree`` – number of free inodes
-    - ``f_favail`` – number of free inodes for unprivileged users
-    - ``f_flag`` – mount flags
-    - ``f_namemax`` – maximum filename length
+    - ``f_bsize`` - file system block size
+    - ``f_frsize`` - fragment size
+    - ``f_blocks`` - size of fs in f_frsize units
+    - ``f_bfree`` - number of free blocks
+    - ``f_bavail`` - number of free blocks for unprivileged users
+    - ``f_files`` - number of inodes
+    - ``f_ffree`` - number of free inodes
+    - ``f_favail`` - number of free inodes for unprivileged users
+    - ``f_flag`` - mount flags
+    - ``f_namemax`` - maximum filename length
     Parameters related to inodes: ``f_files``, ``f_ffree``, ``f_avail`` 
     and the ``f_flags`` parameter may return ``0`` as they can be unavailable 
     in a port-specific implementation.
+    """
+    ...
+
+def sync():
+    """Sync all filesystems.
     """
     ...
 
@@ -223,15 +228,15 @@ def umount(mount_point) -> Any:
     """
     ...
 
-def uname() -> tuple[...]:
+def uname() -> tuple[str, str, str, str, str]:
     """Return a tuple (possibly a named tuple) containing information about 
     the underlying machine and/or its operating system. The tuple has five 
     fields in the following order, each of them being a string:
-    - ``sysname`` – the name of the underlying system
-    - ``nodename`` – the network name (can be the same as ``sysname``)
-    - ``release`` – the version of the underlying system
-    - ``version`` – the MicroPython version and build date
-    - ``machine`` – an identifier for the underlying hardware (eg board, CPU)
+    - ``sysname`` - the name of the underlying system
+    - ``nodename`` - the network name (can be the same as ``sysname``)
+    - ``release`` - the version of the underlying system
+    - ``version`` - the MicroPython version and build date
+    - ``machine`` - an identifier for the underlying hardware (eg board, CPU)
     """
     ...
 
