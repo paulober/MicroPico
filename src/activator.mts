@@ -25,6 +25,9 @@ import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
+import HelpCommand from "./commands/help.mjs";
+import ListCommandsCommand from "./commands/listCommands.mjs";
+import type StateContainer from "./stateContainer.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -32,18 +35,9 @@ const PICO_VARIANTS = ["Pico (H)", "Pico W(H)"];
 const PICO_VARAINTS_PINOUTS = ["pico-pinout.svg", "picow-pinout.svg"];
 
 export default class Activator {
-  private logger: Logger;
-  private pyb?: PyboardRunner;
-  private ui?: UI;
-  private stubs?: Stubs;
-  private picoFs?: PicoWFs;
+  private state: StateContainer = { logger: new Logger("Activator") };
 
-  private autoConnectTimer?: NodeJS.Timer;
-  private comDevice?: string;
-
-  constructor() {
-    this.logger = new Logger("Activator");
-  }
+  constructor() {}
 
   public async activate(
     context: vscode.ExtensionContext
@@ -75,7 +69,7 @@ export default class Activator {
 
     const isInstalled = await installPyserial(settings.pythonExecutable);
     if (!isInstalled) {
-      this.logger.error("Failed to install pyserial pip package.");
+      this.state.logger.error("Failed to install pyserial pip package.");
       void vscode.window.showErrorMessage(
         "Failed to install pyserial pip package. Check that your " +
           "python path in the settings (`micropico.pythonPath`) is " +
@@ -94,13 +88,13 @@ export default class Activator {
       true
     );
 
-    this.stubs = new Stubs();
-    await this.stubs.update();
+    this.state.stubs = new Stubs();
+    await this.state.stubs.update();
 
-    this.comDevice = await settings.getComDevice();
+    this.state.comDevice = await settings.getComDevice();
 
-    if (this.comDevice === undefined || this.comDevice === "") {
-      this.comDevice = undefined;
+    if (this.state.comDevice === undefined || this.state.comDevice === "") {
+      this.state.comDevice = undefined;
 
       void vscode.window
         .showErrorMessage(
@@ -118,11 +112,11 @@ export default class Activator {
         });
     }
 
-    this.ui = new UI(settings);
-    this.ui.init();
+    this.state.ui = new UI(settings);
+    this.state.ui.init();
 
-    this.pyb = new PyboardRunner(
-      this.comDevice ?? "default",
+    this.state.pyb = new PyboardRunner(
+      this.state.comDevice ?? "default",
       this.pyboardOnError.bind(this),
       this.pyboardOnExit.bind(this),
       settings.pythonExecutable
@@ -131,8 +125,8 @@ export default class Activator {
     this.setupAutoConnect(settings);
 
     const terminal = new Terminal(async () => {
-      if (this.pyb?.isPipeConnected()) {
-        const result = await this.pyb?.executeCommand(
+      if (this.state.pyb?.isPipeConnected()) {
+        const result = await this.state.pyb?.executeCommand(
           "\rfrom usys import implementation, version; " +
             "print(version.split('; ')[1] + '; ' + implementation._machine)"
         );
@@ -150,16 +144,16 @@ export default class Activator {
 
       return "No connection to Pico (W) REPL";
     });
-    let commandExecuting = false;
+    this.state.commandExecuting = false;
     terminal.onDidSubmit(async (cmd: string) => {
-      if (commandExecuting) {
-        await this.pyb?.writeToPyboard(cmd);
+      if (this.state.commandExecuting) {
+        await this.state.pyb?.writeToPyboard(cmd);
 
         return;
       }
 
-      commandExecuting = true;
-      await this.pyb?.executeFriendlyCommand(cmd, (data: string) => {
+      this.state.commandExecuting = true;
+      await this.state.pyb?.executeFriendlyCommand(cmd, (data: string) => {
         if (data === "!!JSONDecodeError!!" || data === "!!ERR!!") {
           // write red text into terminal
           terminal?.write("\x1b[31mException occured\x1b[0m");
@@ -170,14 +164,16 @@ export default class Activator {
           terminal?.write(data);
         }
       });
-      commandExecuting = false;
+      this.state.commandExecuting = false;
       terminal?.prompt();
     });
     terminal.onDidRequestTabComp(async (buf: string) => {
       terminal.freeze();
       const nlIdx = buf.lastIndexOf("\n");
       const lastLineTrimmed = buf.slice(nlIdx + 1).trim();
-      const result = await this.pyb?.retrieveTabCompletion(lastLineTrimmed);
+      const result = await this.state.pyb?.retrieveTabCompletion(
+        lastLineTrimmed
+      );
       // to be modified if simple tab completion
       let newUserInp = buf;
       if (
@@ -268,9 +264,9 @@ export default class Activator {
     );
 
     // register fs provider as early as possible
-    this.picoFs = new PicoWFs(this.pyb);
+    this.state.picoFs = new PicoWFs(this.state.pyb);
     context.subscriptions.push(
-      vscode.workspace.registerFileSystemProvider("pico", this.picoFs, {
+      vscode.workspace.registerFileSystemProvider("pico", this.state.picoFs, {
         isCaseSensitive: true,
         isReadonly: false,
       })
@@ -278,44 +274,30 @@ export default class Activator {
 
     context.subscriptions.push({
       dispose: async () => {
-        await this.pyb?.disconnect();
+        await this.state.pyb?.disconnect();
       },
     });
 
     if (
       settings.getBoolean(SettingsKey.openOnStart) &&
-      this.comDevice !== undefined
+      this.state.comDevice !== undefined
     ) {
       await focusTerminal(terminalOptions);
     }
 
     // [Command] help
-    let disposable = vscode.commands.registerCommand(
-      "micropico.help",
-      function () {
-        void vscode.env.openExternal(
-          vscode.Uri.parse(
-            "https://github.com/paulober/MicroPico/blob/main/README.md"
-          )
-        );
-      }
-    );
+    let disposable = new HelpCommand().register();
     context.subscriptions.push(disposable);
 
     // [Command] List Commands
-    disposable = vscode.commands.registerCommand(
-      "micropico.listCommands",
-      () => {
-        this.ui?.showQuickPick();
-      }
-    );
+    disposable = new ListCommandsCommand(this.state).register();
     context.subscriptions.push(disposable);
 
     // [Command] Initialise
     disposable = vscode.commands.registerCommand(
       "micropico.initialise",
       async () => {
-        await this.stubs?.addToWorkspace();
+        await this.state.stubs?.addToWorkspace();
       }
     );
     context.subscriptions.push(disposable);
@@ -324,10 +306,10 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.connect",
       async () => {
-        this.comDevice = await settings.getComDevice();
-        if (this.comDevice !== undefined) {
-          this.ui?.init();
-          this.pyb?.switchDevice(this.comDevice);
+        this.state.comDevice = await settings.getComDevice();
+        if (this.state.comDevice !== undefined) {
+          this.state.ui?.init();
+          this.state.pyb?.switchDevice(this.state.comDevice);
           this.setupAutoConnect(settings);
         }
       }
@@ -338,15 +320,15 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.disconnect",
       async () => {
-        clearInterval(this.autoConnectTimer);
-        await this.pyb?.disconnect();
+        clearInterval(this.state.autoConnectTimer);
+        await this.state.pyb?.disconnect();
       }
     );
     context.subscriptions.push(disposable);
 
     // [Command] Run File
     disposable = vscode.commands.registerCommand("micropico.run", async () => {
-      if (!this.pyb?.isPipeConnected()) {
+      if (!this.state.pyb?.isPipeConnected()) {
         void vscode.window.showWarningMessage(
           "Please connect to the Pico first."
         );
@@ -371,13 +353,13 @@ export default class Activator {
 
       let frozen = false;
       await focusTerminal(terminalOptions);
-      const data = await this.pyb.runFile(file, (data: string) => {
+      const data = await this.state.pyb.runFile(file, (data: string) => {
         // only freeze after operation has started
         if (!frozen) {
-          commandExecuting = true;
+          this.state.commandExecuting = true;
           terminal?.clean(true);
           terminal?.write("\r\n");
-          this.ui?.userOperationStarted();
+          this.state.ui?.userOperationStarted();
           frozen = true;
         }
         if (data.includes("!!ERR!!")) {
@@ -389,12 +371,12 @@ export default class Activator {
           terminal?.write(data);
         }
       });
-      this.ui?.userOperationStopped();
+      this.state.ui?.userOperationStopped();
       if (data.type === PyOutType.commandResult) {
         // const result = data as PyOutCommandResult;
         // TODO: reflect result.result somehow
       }
-      commandExecuting = false;
+      this.state.commandExecuting = false;
       terminal?.melt();
       terminal?.write("\r\n");
       terminal?.prompt();
@@ -404,7 +386,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.remote.run",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -424,7 +406,7 @@ export default class Activator {
 
         let frozen = false;
         await focusTerminal(terminalOptions);
-        await this.pyb.executeCommand(
+        await this.state.pyb.executeCommand(
           "import uos as _pico_uos; " +
             "__pico_dir=_pico_uos.getcwd(); " +
             `_pico_uos.chdir('${dirname(file)}'); ` +
@@ -435,10 +417,10 @@ export default class Activator {
           (data: string) => {
             // only freeze after operation has started
             if (!frozen) {
-              commandExecuting = true;
+              this.state.commandExecuting = true;
               terminal?.clean(true);
               terminal?.write("\r\n");
-              this.ui?.userOperationStarted();
+              this.state.ui?.userOperationStarted();
               frozen = true;
             }
             if (data.length > 0) {
@@ -447,8 +429,8 @@ export default class Activator {
           },
           true
         );
-        this.ui?.userOperationStopped();
-        commandExecuting = false;
+        this.state.ui?.userOperationStopped();
+        this.state.commandExecuting = false;
         terminal?.melt();
         terminal?.write("\r\n");
         terminal?.prompt();
@@ -460,7 +442,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.runselection",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -477,15 +459,15 @@ export default class Activator {
         } else {
           let frozen = false;
           await focusTerminal(terminalOptions);
-          const data = await this.pyb.executeCommand(
+          const data = await this.state.pyb.executeCommand(
             code,
             (data: string) => {
               // only freeze after operation has started
               if (!frozen) {
-                commandExecuting = true;
+                this.state.commandExecuting = true;
                 terminal?.clean(true);
                 terminal?.write("\r\n");
-                this.ui?.userOperationStarted();
+                this.state.ui?.userOperationStarted();
                 frozen = true;
               }
               if (data.length > 0) {
@@ -494,8 +476,8 @@ export default class Activator {
             },
             true
           );
-          commandExecuting = false;
-          this.ui?.userOperationStopped();
+          this.state.commandExecuting = false;
+          this.state.ui?.userOperationStopped();
           if (data.type === PyOutType.commandResult) {
             // const result = data as PyOutCommandResult;
             // TODO: reflect result.result in status bar
@@ -511,7 +493,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.upload",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -545,7 +527,7 @@ export default class Activator {
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
           // TODO: maybe do soft reboot instead of gc for bigger impact
-          await this.pyb?.executeCommand(
+          await this.state.pyb?.executeCommand(
             "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
           );
         }
@@ -561,12 +543,12 @@ export default class Activator {
             token.onCancellationRequested(() => undefined);
 
             let currentFileIndex = -1;
-            const data = await this.pyb?.startUploadingProject(
+            const data = await this.state.pyb?.startUploadingProject(
               syncDir[1],
               settings.getSyncFileTypes(),
               ignoredSyncItems,
               (data: string) => {
-                this.logger.debug("upload progress: " + data);
+                this.state.logger.debug("upload progress: " + data);
                 const status = this.analyseUploadDownloadProgress(data);
 
                 if (status === undefined) {
@@ -604,7 +586,7 @@ export default class Activator {
             progress.report({ increment: 100, message: "Project uploaded." });
             // moved outside if so if not uploaded because file already exists it still resets
             if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
-              //await this.pyb?.softReset();
+              //await this.state.pyb?.softReset();
               await vscode.commands.executeCommand(
                 "micropico.reset.soft.listen"
               );
@@ -619,7 +601,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.uploadFile",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -639,7 +621,7 @@ export default class Activator {
         let pastProgress = 0;
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
-          await this.pyb?.executeCommand(
+          await this.state.pyb?.executeCommand(
             "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
           );
         }
@@ -650,7 +632,7 @@ export default class Activator {
             cancellable: false,
           },
           async (progress /*, token*/) => {
-            const data = await this.pyb?.uploadFiles(
+            const data = await this.state.pyb?.uploadFiles(
               [file],
               "/",
               undefined,
@@ -670,7 +652,7 @@ export default class Activator {
             if (data && data.type === PyOutType.status) {
               const result = data as PyOutStatus;
               if (result.status) {
-                this.picoFs?.fileChanged(
+                this.state.picoFs?.fileChanged(
                   vscode.FileChangeType.Created,
                   vscode.Uri.from({
                     scheme: "pico",
@@ -679,7 +661,7 @@ export default class Activator {
                 );
                 progress.report({ increment: 100 });
                 if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
-                  //await this.pyb?.softReset();
+                  //await this.state.pyb?.softReset();
                   await vscode.commands.executeCommand(
                     "micropico.reset.soft.listen"
                   );
@@ -699,7 +681,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.download",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -725,7 +707,7 @@ export default class Activator {
           },
           async (progress /*, token*/) => {
             let currentFileIndex = -1;
-            const data = await this.pyb?.downloadProject(
+            const data = await this.state.pyb?.downloadProject(
               syncDir[1],
               (data: string) => {
                 const status = this.analyseUploadDownloadProgress(data);
@@ -770,7 +752,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.deleteAllFiles",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -778,7 +760,7 @@ export default class Activator {
           return;
         }
 
-        const data = await this.pyb.deleteFolderRecursive("/");
+        const data = await this.state.pyb.deleteFolderRecursive("/");
         if (data.type === PyOutType.status) {
           const result = data as PyOutStatus;
           if (result.status) {
@@ -813,16 +795,16 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.toggleConnect",
       async () => {
-        if (this.pyb?.isPipeConnected()) {
-          clearInterval(this.autoConnectTimer);
-          await this.pyb?.disconnect();
+        if (this.state.pyb?.isPipeConnected()) {
+          clearInterval(this.state.autoConnectTimer);
+          await this.state.pyb?.disconnect();
         } else {
-          this.comDevice = await settings.getComDevice();
-          if (this.comDevice === undefined) {
+          this.state.comDevice = await settings.getComDevice();
+          if (this.state.comDevice === undefined) {
             void vscode.window.showErrorMessage("No COM device found!");
           } else {
-            this.ui?.init();
-            this.pyb?.switchDevice(this.comDevice);
+            this.state.ui?.init();
+            this.state.pyb?.switchDevice(this.state.comDevice);
             this.setupAutoConnect(settings);
           }
         }
@@ -844,7 +826,7 @@ export default class Activator {
           return;
         }
 
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -938,8 +920,8 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.switchPico",
       async () => {
-        if (this.pyb?.isPipeConnected()) {
-          await this.pyb?.disconnect();
+        if (this.state.pyb?.isPipeConnected()) {
+          await this.state.pyb?.disconnect();
         }
 
         const ports = await PyboardRunner.getPorts(settings.pythonExecutable);
@@ -955,8 +937,8 @@ export default class Activator {
         });
 
         if (port !== undefined) {
-          this.comDevice = port;
-          this.pyb?.switchDevice(this.comDevice);
+          this.state.comDevice = port;
+          this.state.pyb?.switchDevice(this.state.comDevice);
         }
       }
     );
@@ -966,7 +948,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.reset.soft",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -974,7 +956,7 @@ export default class Activator {
           return;
         }
 
-        const result = await this.pyb?.softReset();
+        const result = await this.state.pyb?.softReset();
         if (result.type === PyOutType.commandResult) {
           const fsOps = result as PyOutCommandResult;
           if (fsOps.result) {
@@ -992,7 +974,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.reset.hard",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -1000,7 +982,7 @@ export default class Activator {
           return;
         }
 
-        const result = await this.pyb?.hardReset();
+        const result = await this.state.pyb?.hardReset();
         if (result.type === PyOutType.commandResult) {
           const fsOps = result as PyOutCommandResult;
           if (fsOps.result) {
@@ -1016,7 +998,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.reset.soft.listen",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -1026,19 +1008,21 @@ export default class Activator {
 
         let frozen = false;
         await focusTerminal(terminalOptions);
-        const result: PyOut = await this.pyb?.sendCtrlD((data: string) => {
-          if (!frozen) {
-            commandExecuting = true;
-            //terminal?.freeze();
-            terminal?.clean(true);
-            //terminal?.write("\r\n");
-            this.ui?.userOperationStarted();
-            frozen = true;
+        const result: PyOut = await this.state.pyb?.sendCtrlD(
+          (data: string) => {
+            if (!frozen) {
+              this.state.commandExecuting = true;
+              //terminal?.freeze();
+              terminal?.clean(true);
+              //terminal?.write("\r\n");
+              this.state.ui?.userOperationStarted();
+              frozen = true;
+            }
+            terminal?.write(data);
           }
-          terminal?.write(data);
-        });
-        commandExecuting = false;
-        this.ui?.userOperationStopped();
+        );
+        this.state.commandExecuting = false;
+        this.state.ui?.userOperationStopped();
         if (result.type === PyOutType.commandResult) {
           const fsOps = result as PyOutCommandResult;
           if (fsOps.result) {
@@ -1057,7 +1041,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       "micropico.rtc.sync",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (!this.state.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -1065,7 +1049,7 @@ export default class Activator {
           return;
         }
 
-        await this.pyb?.syncRtc();
+        await this.state.pyb?.syncRtc();
 
         void vscode.window.showInformationMessage("RTC on your Pico synced");
       }
@@ -1075,8 +1059,8 @@ export default class Activator {
       "micropico.universalStop",
       async () => {
         if (
-          !this.pyb?.isPipeConnected() ||
-          !this.ui?.isUserOperationOngoing()
+          !this.state.pyb?.isPipeConnected() ||
+          !this.state.ui?.isUserOperationOngoing()
         ) {
           void vscode.window.showInformationMessage("Nothing to stop.");
 
@@ -1084,7 +1068,7 @@ export default class Activator {
         }
 
         // double ctrl+c to stop any running program
-        await this.pyb?.writeToPyboard("\x03\x03\n");
+        await this.state.pyb?.writeToPyboard("\x03\x03\n");
 
         // wait for the program to stop
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -1102,24 +1086,24 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    return this.ui;
+    return this.state.ui;
   }
 
   private setupAutoConnect(settings: Settings): void {
-    this.autoConnectTimer = setInterval(
+    this.state.autoConnectTimer = setInterval(
       // TODO (important): this should not take longer than 2500ms because
       // then the there would b a hell of a concurrency problem
       () =>
         void (async () => {
           // this could let the PyboardRunner let recognize that it lost connection to
           // the pyboard wrapper and mark the Pico as disconnected
-          await this.pyb?.checkStatus();
-          if (this.pyb?.isPipeConnected()) {
-            this.ui?.refreshState(true);
+          await this.state.pyb?.checkStatus();
+          if (this.state.pyb?.isPipeConnected()) {
+            this.state.ui?.refreshState(true);
 
             return;
           }
-          this.ui?.refreshState(false);
+          this.state.ui?.refreshState(false);
           const autoPort = settings.getBoolean(SettingsKey.autoConnect);
 
           const ports = await PyboardRunner.getPorts(settings.pythonExecutable);
@@ -1128,19 +1112,22 @@ export default class Activator {
           }
 
           // try to connect to previously connected device first
-          if (this.comDevice && ports.ports.includes(this.comDevice)) {
+          if (
+            this.state.comDevice &&
+            ports.ports.includes(this.state.comDevice)
+          ) {
             // try to reconnect
-            this.pyb?.switchDevice(this.comDevice);
+            this.state.pyb?.switchDevice(this.state.comDevice);
             await new Promise(resolve => setTimeout(resolve, 1000));
-            if (this.pyb?.isPipeConnected()) {
+            if (this.state.pyb?.isPipeConnected()) {
               return;
             }
           }
 
           if (autoPort) {
             const port = ports.ports[0];
-            this.comDevice = port;
-            this.pyb?.switchDevice(port);
+            this.state.comDevice = port;
+            this.state.pyb?.switchDevice(port);
           }
         })(),
       2500
@@ -1150,12 +1137,12 @@ export default class Activator {
   private pyboardOnError(data: Buffer | undefined): void {
     if (
       data === undefined &&
-      this.comDevice !== undefined &&
-      this.comDevice !== "" &&
-      this.comDevice !== "default"
+      this.state.comDevice !== undefined &&
+      this.state.comDevice !== "" &&
+      this.state.comDevice !== "default"
     ) {
-      //this.ui?.refreshState(true);
-      this.logger.info("Connection to wrapper successfully established");
+      //this.state.ui?.refreshState(true);
+      this.state.logger.info("Connection to wrapper successfully established");
 
       return;
     } else {
@@ -1166,12 +1153,12 @@ export default class Activator {
   }
 
   private pyboardOnExit(code: number | null): void {
-    this.ui?.refreshState(false);
+    this.state.ui?.refreshState(false);
     if (code === 0 || code === null) {
-      this.logger.info(`Pyboard exited with code 0`);
+      this.state.logger.info(`Pyboard exited with code 0`);
       void vscode.window.showInformationMessage("Disconnected from Pico");
     } else {
-      this.logger.error(`Pyboard exited with code ${code}`);
+      this.state.logger.error(`Pyboard exited with code ${code}`);
       void vscode.window.showErrorMessage("Connection to Pico lost");
     }
   }
