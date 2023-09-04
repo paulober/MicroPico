@@ -7,6 +7,10 @@ const DEL = (count: number): string => `\x1b[${count}D\x1b[1P`;
 // Ctrl+D; Ctrl+E
 const IGNORED_CHARS = ["\x04", "\x05"];
 
+/**
+ * A pseudo terminal (aka vREPL) so the serial connection can be used by
+ * other parts of the extension while the user isn't executing a command in the REPL.
+ */
 export class Terminal implements Pseudoterminal {
   private openingMessageCallback: () => Promise<string>;
 

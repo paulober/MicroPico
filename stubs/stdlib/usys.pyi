@@ -1,6 +1,3 @@
-"""
-Module: 'usys' on micropython-v1.19.1-rp2
-"""
 from typing import Any
 
 argv = [] # type: list
@@ -68,7 +65,7 @@ stdin : Any ## <class 'FileIO'> = <io.FileIO 0>
 """Standard input ``stream``."""
 stdout : Any ## <class 'FileIO'> = <io.FileIO 1>
 """Standard output ``stream``."""
-version = '3.4.0; MicroPython v1.20.0 on 2023-04-26' # type: str
+version = '3.4.0; MicroPython v1.20.0-441-gbf35eefc6 on 2023-09-04' # type: str
 """Python language version that this implementation conforms to, as a string."""
 version_info = () # type: tuple
 """Python language version that this implementation conforms to, as a tuple of ints."""

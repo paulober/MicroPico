@@ -23,6 +23,9 @@ class WLAN():
         """
         ...
 
+    PM_NONE = 16 # type: int
+    PM_PERFORMANCE = 10555714 # type: int
+    PM_POWERSAVE = 17 # type: int
     def active(self, is_active: bool=...) -> bool:
         """Activate (“up”) or deactivate (“down”) network interface, if boolean 
         argument is passed. Otherwise, query current state if no argument is provided. 

@@ -21,7 +21,10 @@ export default {
     plugins: [
         copy({
             targets: [
-                { src: 'node_modules/@paulober/pyboard-serial-com/scripts', dest: 'dist/' },
+                {
+                    src: 'node_modules/@paulober/pyboard-serial-com/scripts',
+                    dest: 'dist/'
+                },
             ],
         }),
         nodeResolve({

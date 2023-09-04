@@ -13,6 +13,7 @@ SOCK_DGRAM = 2 # type: int
 SOCK_RAW = 3 # type: int
 SOCK_STREAM = 1 # type: int
 SOL_SOCKET = 1 # type: int
+SO_BROADCAST = 32 # type: int
 SO_REUSEADDR = 4 # type: int
 
 def callback(*args, **kwargs) -> Any:
