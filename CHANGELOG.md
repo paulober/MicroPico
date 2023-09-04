@@ -9,6 +9,14 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.2.5] - 2023-09-04
+
+# Changed
+- Updated stubs to v1.20.0-441 unstable
+- Minimum VS Code version is now v1.81.1
+- Updated dependencies
+- Added official Python extension as dependency
+
 ## [3.2.4] - 2023-08-16
 
 # Changed
