@@ -60,9 +60,18 @@ pin = Pin("LED", Pin.OUT)
 
 print("LED starts flashing...")
 while True:
-    pin.toggle()
-    sleep(1) # sleep 1sec
+    try:
+        pin.toggle()
+        sleep(1) # sleep 1sec
+    except KeyboardInterrupt:
+        break
+pin.off()
+print("Finished.")
 ```
+
+- To run your program, run `> MicroPico > Run current file on Pico` in your Python file's tab. You can also use the status bar button "Run " at the bottom of VS Code window.
+
+- To stop the execution of the currently running program, run `> MicroPico > Stop execution`. The "Stop" button at the status bar does the same.
 
 ---
 
