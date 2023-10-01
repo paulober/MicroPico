@@ -20,8 +20,8 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.81.1",
-    "node": ">=16.17.1"
+    "vscode": "^1.82.0",
+    "node": ">=18.15.0"
   },
   "keywords": [
     "raspberry",
@@ -65,7 +65,7 @@
   "extensionDependencies": [
 		"ms-python.python"
 	],
-  "minimumNodeVersion": 16,
+  "minimumNodeVersion": 18,
   "contributes": {
     "commands": [
       {
@@ -522,7 +522,7 @@
     "@types/fs-extra": "^11.0.1",
     "@types/lodash": "^4.14.197",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^16.x",
+    "@types/node": "^18.x",
     "@types/uuid": "^9.0.3",
     "@types/vscode": "^1.81.0",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
