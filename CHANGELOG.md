@@ -9,6 +9,15 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.2.6] - 2023-10-01
+
+# Added
+- Fix #134, Support stopping execution with VS Code command (#13 by @eplusx)
+
+# Changed
+- Minimum VS Code version is now v1.82.0
+- Updated dependencies
+
 ## [3.2.5] - 2023-09-04
 
 # Changed

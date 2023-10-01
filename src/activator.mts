@@ -38,7 +38,7 @@ export default class Activator {
   private stubs?: Stubs;
   private picoFs?: PicoWFs;
 
-  private autoConnectTimer?: NodeJS.Timer;
+  private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
 
   constructor() {
