@@ -114,6 +114,11 @@
         "category": "MicroPico"
       },
       {
+        "command": "micropico.universalStop",
+        "title": "Stop execution",
+        "category": "MicroPico"
+      },
+      {
         "command": "micropico.runselection",
         "title": "Run current selection on Pico",
         "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python",
