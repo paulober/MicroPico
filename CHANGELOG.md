@@ -10,7 +10,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
-## [3.3.0] - 2023-10-11
+## [3.3.0] aka. [3.3.1] - 2023-10-11
 
 # Changed
 - Updated dependencies
