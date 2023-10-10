@@ -9,7 +9,7 @@
 Works with:
 | Platform | x64 | arm64 |
 | :------- | :-: | :---: |
-| Windows  | ✅   | ✅     |
+| Windows  | ✅   | ❌     |
 | macOS    | ✅   | ✅     |
 | Linux    | ✅   | ✅     |
 
