@@ -7,11 +7,11 @@
 > __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO_W-20230904-unstable-v1.20.0-441-gbf35eefc6.uf2](https://micropython.org/resources/firmware/RPI_PICO_W-20230904-unstable-v1.20.0-441-gbf35eefc6.uf2)__
 
 Works with:
-| Platform | x64 | arm64 | armhf |
-| :------- | :-: | :---: | :---: |
-| Windows  | ✅   | ✅     | ❌     |
-| macOS    | ✅   | ✅     | ❌     |
-| Linux    | ✅   | ✅     | ✅     |
+| Platform | x64 | arm64 |
+| :------- | :-: | :---: |
+| Windows  | ✅   | ✅     |
+| macOS    | ✅   | ✅     |
+| Linux    | ✅   | ✅     |
 
 ## Features
 
