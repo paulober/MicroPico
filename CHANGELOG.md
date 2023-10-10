@@ -5,9 +5,24 @@ All notable changes to the "MicroPico" extension will be documented in this file
 >_Based on structure recommendations from [Keep a Changelog](http://keepachangelog.com/)._
 
 ## Known issues
+- vREPL tab-completion on Windows isn't inline. (that's also cool but different to macOS or Linux behaviour)
 - Run current file does not include modules that are localy imported and in current workspace, unless you upload the python file containing the module via the upload file or project feature first. (since ever)
 
 ---
+
+## [3.3.0] - 2023-10-11
+
+# Changed
+- Updated dependencies
+- Upgraded to `pyboard-serial-com` `v2.0.0`
+- Stubs updated to v1.21.0 stable
+
+# Removed
+- Dependency on the VS Code Python extension
+- Dependency on `pyserial` pip package
+- Dependency on Python beeing installed on the host system
+- `micropico.pythonPath` setting
+- Support for the armhf architecture
 
 ## [3.2.6] - 2023-10-01
 

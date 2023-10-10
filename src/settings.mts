@@ -16,7 +16,6 @@ export enum SettingsKey {
   statusbarButtons = "statusbarButtons",
   gcBeforeUpload = "gcBeforeUpload",
   softResetAfterUpload = "softResetAfterUpload",
-  pythonPath = "pythonPath",
 }
 
 export type Setting = string | boolean | string[] | null | undefined;
@@ -24,13 +23,11 @@ export type Setting = string | boolean | string[] | null | undefined;
 export default class Settings {
   private config: WorkspaceConfiguration;
   public context: Memento;
-  public pythonExecutable?: string;
 
   constructor(context: Memento) {
     this.config = vsWorkspace.getConfiguration(extName);
 
     this.context = context;
-    this.pythonExecutable = this.getString(SettingsKey.pythonPath);
   }
 
   public get(key: SettingsKey): Setting {
@@ -72,7 +69,7 @@ export default class Settings {
     if (this.getBoolean(SettingsKey.autoConnect) === true) {
       try {
         process.env.NODE_ENV = "production";
-        const ports = await PyboardRunner.getPorts(this.pythonExecutable);
+        const ports = await PyboardRunner.getPorts();
         if (ports.ports.length > 0) {
           return ports.ports[0];
         }

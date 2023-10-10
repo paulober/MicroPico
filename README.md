@@ -7,11 +7,11 @@
 > __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO_W-20230904-unstable-v1.20.0-441-gbf35eefc6.uf2](https://micropython.org/resources/firmware/RPI_PICO_W-20230904-unstable-v1.20.0-441-gbf35eefc6.uf2)__
 
 Works with:
-| Platform | x64 | arm64 | armhf |
-| :------- | :-: | :---: | :---: |
-| Windows  | ✅   | ✅     | ❌     |
-| macOS    | ✅   | ✅     | ❌     |
-| Linux    | ✅   | ✅     | ✅     |
+| Platform | x64 | arm64 |
+| :------- | :-: | :---: |
+| Windows  | ✅   | ✅     |
+| macOS    | ✅   | ✅     |
+| Linux    | ✅   | ✅     |
 
 ## Features
 
@@ -27,9 +27,6 @@ Works with:
 * [MicroPython firmware](https://micropython.org/download) flashed onto the Raspberry Pi Pico (W):
     - See [Raspberry Pi docs](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython) for help.
 
-* [Python 3.9 or newer (with pip)](https://www.python.org/downloads/) (user install; Microsoft Store version not supported but may work) installed on your system and in your PATH.
-* [`pyserial` pip package](https://pypi.org/project/pyserial/): `pip install pyserial`
-
 Visual Studio Code extensions:
 * `ms-python.python` | [\[Install\]](vscode://extension/ms-python.python) [\[Show\]](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
 * `visualstudioexptteam.vscodeintellicode` | [\[Install\]](vscode://extension/visualstudioexptteam.vscodeintellicode) [\[Show\]](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
@@ -43,11 +40,6 @@ On most Linux installations the device file of the Pico serial port is owned by 
 ## Getting started
 
 - First of all open a folder and run `> MicroPico > Configure Project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the auto-completion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in [\#Requirements](#requirements).
-
-- If you have trouble running `> MicroPico > Configure Project`, try setting following settings in your global VSCode `settings.json`:
-```json
-"micropico.pythonPath": "/path/to/your/python/executable/python3"
-```
 
 - Have the onboard LED flashing in under 5 minutes:
 > Note that [accessing the onboard LED is slightly different for the Pico W compared with the Pico (Page 15 Chapter 3.4)](https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf). So, you can use the following script in place of `flash.py`:
@@ -90,7 +82,6 @@ This extension contributes the following settings:
 * `micropico.statusbarButtons`: Select which buttons to show in the statusbar (DO NOT CHANGE, unless you know what you are doing)
 * `micropico.gcBeforeUpload`: Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
 * `micropico.softResetAfterUpload`: Soft-resets your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
-* `micropico.pythonPath`: Path to the Python interpreter. Defaults to null so it will try to auto-detect a suitable python installation. NOTE: Must be deleted from global settings.json when switing between operating systems and settings-sync is enabled!
 
 ## Extension Context Keys
 

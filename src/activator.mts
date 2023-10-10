@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { getPythonCommand, installPyserial } from "./osHelper.mjs";
 import UI from "./ui.mjs";
 import {
   TERMINAL_NAME,
@@ -49,43 +48,6 @@ export default class Activator {
     context: vscode.ExtensionContext
   ): Promise<UI | undefined> {
     const settings = new Settings(context.workspaceState);
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    const pyCommands =
-      (settings.pythonExecutable ? [settings.pythonExecutable] : undefined) ??
-      (await getPythonCommand(workspaceFolder?.uri)).path ??
-      [];
-
-    if (pyCommands.length === 0) {
-      const choice = await vscode.window.showErrorMessage(
-        "Python3 is not installed or not in the system's PATH. " +
-          "You can select a python installation thought the " +
-          "vscode Python Extension. Alernatively " +
-          "you can set the pythonPath setting to the path of your " +
-          "Python3 executable in the settings.",
-        "Open Settings"
-      );
-
-      if (choice === "Open Settings") {
-        openSettings();
-      }
-
-      return;
-    }
-    settings.pythonExecutable = pyCommands[0];
-
-    const isInstalled = await installPyserial(settings.pythonExecutable);
-    if (!isInstalled) {
-      this.logger.error("Failed to install pyserial pip package.");
-      void vscode.window.showErrorMessage(
-        "Failed to install pyserial pip package. Check that your " +
-          "python path in the settings (`micropico.pythonPath`) is " +
-          "pointing to the correct python executable."
-      );
-      throw new Error(
-        "[MicroPico] Faild to install pyserial pip package. " +
-          "Manual install required!"
-      );
-    }
 
     // execute async not await
     void vscode.commands.executeCommand(
@@ -124,8 +86,7 @@ export default class Activator {
     this.pyb = new PyboardRunner(
       this.comDevice ?? "default",
       this.pyboardOnError.bind(this),
-      this.pyboardOnExit.bind(this),
-      settings.pythonExecutable
+      this.pyboardOnExit.bind(this)
     );
 
     this.setupAutoConnect(settings);
@@ -942,7 +903,7 @@ export default class Activator {
           await this.pyb?.disconnect();
         }
 
-        const ports = await PyboardRunner.getPorts(settings.pythonExecutable);
+        const ports = await PyboardRunner.getPorts();
         if (ports.ports.length === 0) {
           void vscode.window.showErrorMessage("No connected Pico found!");
         }
@@ -1122,7 +1083,7 @@ export default class Activator {
           this.ui?.refreshState(false);
           const autoPort = settings.getBoolean(SettingsKey.autoConnect);
 
-          const ports = await PyboardRunner.getPorts(settings.pythonExecutable);
+          const ports = await PyboardRunner.getPorts();
           if (ports.ports.length === 0) {
             return;
           }
