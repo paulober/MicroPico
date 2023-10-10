@@ -18,7 +18,7 @@ labels: 'bug'
 
 
 ## Any logs, error output, etc?
-*(To get extension logs see Terminal > Output > Extension Host and copy output concerning pico-w-go)*
+*(To get extension logs see Terminal > Output > Extension Host and copy output concerning pico-w-go or micropico)*
 *(If it’s long, please paste to https://gist.github.com and insert the link here)*
 
 
