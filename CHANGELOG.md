@@ -20,7 +20,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 # Removed
 - Dependency on the VS Code Python extension
 - Dependency on `pyserial` pip package
-- Dependency on Python beeing installed on the host system
+- Dependency on Python being installed on the host system
 - `micropico.pythonPath` setting
 - Support for the armhf architecture
 
