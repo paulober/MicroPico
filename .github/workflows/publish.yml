@@ -35,7 +35,7 @@ jobs:
       - name: Package
         run: npx @vscode/vsce package --no-yarn
 
-      - run: npx @vscode/vsce publish --no-yarn --target win32-x64 win32-arm64 linux-x64 linux-arm64 linux-armhf darwin-x64 darwin-arm64
+      - run: npx @vscode/vsce publish --no-yarn --target win32-x64 linux-x64 linux-arm64 darwin-x64 darwin-arm64
         name: Publish
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
