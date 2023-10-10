@@ -59,8 +59,7 @@
   ],
   "cpu": [
     "x64",
-    "arm64",
-    "arm"
+    "arm64"
   ],
   "extensionDependencies": [
 		"ms-python.python"
@@ -515,24 +514,24 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.4",
-    "@rollup/plugin-node-resolve": "^15.2.1",
-    "@rollup/plugin-terser": "^0.4.3",
-    "@rollup/plugin-typescript": "^11.1.4",
+    "@rollup/plugin-commonjs": "^25.0.5",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
     "@types/fs-extra": "^11.0.2",
     "@types/lodash": "^4.14.199",
     "@types/mocha": "^10.0.2",
     "@types/node": "^18.x",
-    "@types/uuid": "^9.0.4",
+    "@types/uuid": "^9.0.5",
     "@types/vscode": "^1.82.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.3",
-    "@typescript-eslint/parser": "^6.7.3",
-    "@vscode/test-electron": "^2.3.4",
-    "eslint": "^8.50.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.5",
+    "@typescript-eslint/parser": "^6.7.5",
+    "@vscode/test-electron": "^2.3.5",
+    "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "rollup": "^3.29.4",
+    "rollup": "^4.0.2",
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.2.2"
   },
