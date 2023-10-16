@@ -14,7 +14,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 # Changed
 - Fixes an issue concerning multiline vREPL inputs
-- Some minor improvmements
+- Some minor improvemements
 
 ## [3.3.2] - 2023-10-16
 
