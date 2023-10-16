@@ -503,7 +503,7 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.5",
+    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
@@ -520,12 +520,12 @@
     "eslint-config-prettier": "^9.0.0",
     "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "rollup": "^4.0.2",
+    "rollup": "^4.1.4",
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^2.0.0",
+    "@paulober/pyboard-serial-com": "^2.0.1",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "rimraf": "^5.0.5",
