@@ -2,7 +2,7 @@ import { type ExtensionContext, commands } from "vscode";
 import Activator from "./activator.mjs";
 import type UI from "./ui.mjs";
 import { ContextKeys } from "./models/contextKeys.mjs";
-import { renameUtilRun } from "./extRenameUtil.mjs";
+import { renameActivationFile } from "./extRenameUtil.mjs";
 
 let view: UI | undefined;
 
@@ -16,7 +16,7 @@ let view: UI | undefined;
  */
 export async function activate(context: ExtensionContext): Promise<void> {
   // execute utitlity for extension rename transition process
-  await renameUtilRun();
+  await renameActivationFile();
 
   // activate extension
   const activator = new Activator();
