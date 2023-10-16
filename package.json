@@ -340,7 +340,8 @@
             "**/.DS_Store",
             "**/project.pico-go",
             "**/env",
-            "**/venv"
+            "**/venv",
+            "**/.venv"
           ],
           "order": 8
         },

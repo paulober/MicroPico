@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import UI from "./ui.mjs";
 import {
   TERMINAL_NAME,
+  commandPrefix,
   focusTerminal,
   getFocusedFile,
   getSelectedCodeOrLine,
@@ -191,7 +192,7 @@ export default class Activator {
 
     // register terminal profile provider
     context.subscriptions.push(
-      vscode.window.registerTerminalProfileProvider("micropico.vrepl", {
+      vscode.window.registerTerminalProfileProvider(commandPrefix + "vrepl", {
         provideTerminalProfile: () =>
           new vscode.TerminalProfile(terminalOptions),
       })
@@ -252,7 +253,7 @@ export default class Activator {
 
     // [Command] help
     let disposable = vscode.commands.registerCommand(
-      "micropico.help",
+      commandPrefix + "help",
       function () {
         void vscode.env.openExternal(
           vscode.Uri.parse(
@@ -265,7 +266,7 @@ export default class Activator {
 
     // [Command] List Commands
     disposable = vscode.commands.registerCommand(
-      "micropico.listCommands",
+      commandPrefix + "listCommands",
       () => {
         this.ui?.showQuickPick();
       }
@@ -274,7 +275,7 @@ export default class Activator {
 
     // [Command] Initialise
     disposable = vscode.commands.registerCommand(
-      "micropico.initialise",
+      commandPrefix + "initialise",
       async () => {
         await this.stubs?.addToWorkspace();
       }
@@ -283,7 +284,7 @@ export default class Activator {
 
     // [Command] Connect
     disposable = vscode.commands.registerCommand(
-      "micropico.connect",
+      commandPrefix + "connect",
       async () => {
         this.comDevice = await settings.getComDevice();
         if (this.comDevice !== undefined) {
@@ -297,7 +298,7 @@ export default class Activator {
 
     // [Command] Disconnect
     disposable = vscode.commands.registerCommand(
-      "micropico.disconnect",
+      commandPrefix + "disconnect",
       async () => {
         clearInterval(this.autoConnectTimer);
         await this.pyb?.disconnect();
@@ -306,64 +307,68 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     // [Command] Run File
-    disposable = vscode.commands.registerCommand("micropico.run", async () => {
-      if (!this.pyb?.isPipeConnected()) {
-        void vscode.window.showWarningMessage(
-          "Please connect to the Pico first."
-        );
-
-        return;
-      }
-
-      let file = await getFocusedFile();
-
-      if (file === undefined) {
-        file = await getFocusedFile(true);
-        if (file === undefined) {
-          void vscode.window.showWarningMessage("No file open and focused.");
-
-          return;
-        } else {
-          void vscode.commands.executeCommand("micropico.remote.run");
-
-          return;
-        }
-      }
-
-      let frozen = false;
-      await focusTerminal(terminalOptions);
-      const data = await this.pyb.runFile(file, (data: string) => {
-        // only freeze after operation has started
-        if (!frozen) {
-          commandExecuting = true;
-          terminal?.clean(true);
-          terminal?.write("\r\n");
-          this.ui?.userOperationStarted();
-          frozen = true;
-        }
-        if (data.includes("!!ERR!!")) {
-          // write red text into terminal
-          terminal?.write(
-            "\x1b[31mException occured (maybe a connection loss)\x1b[0m\r\n"
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "run",
+      async () => {
+        if (!this.pyb?.isPipeConnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
           );
-        } else if (data.length > 0) {
-          terminal?.write(data);
+
+          return;
         }
-      });
-      this.ui?.userOperationStopped();
-      if (data.type === PyOutType.commandResult) {
-        // const result = data as PyOutCommandResult;
-        // TODO: reflect result.result somehow
+
+        let file = await getFocusedFile();
+
+        if (file === undefined) {
+          file = await getFocusedFile(true);
+          if (file === undefined) {
+            void vscode.window.showWarningMessage("No file open and focused.");
+
+            return;
+          } else {
+            void vscode.commands.executeCommand(commandPrefix + "remote.run");
+
+            return;
+          }
+        }
+
+        let frozen = false;
+        await focusTerminal(terminalOptions);
+        const data = await this.pyb.runFile(file, (data: string) => {
+          // only freeze after operation has started
+          if (!frozen) {
+            commandExecuting = true;
+            terminal?.clean(true);
+            terminal?.write("\r\n");
+            this.ui?.userOperationStarted();
+            frozen = true;
+          }
+          if (data.includes("!!ERR!!")) {
+            // write red text into terminal
+            terminal?.write(
+              "\x1b[31mException occured (maybe a connection loss)\x1b[0m\r\n"
+            );
+          } else if (data.length > 0) {
+            terminal?.write(data);
+          }
+        });
+        this.ui?.userOperationStopped();
+        if (data.type === PyOutType.commandResult) {
+          if (!(data as PyOutCommandResult).result) {
+            this.logger.warn("Failed to execute script on Pico.");
+          }
+        }
+        commandExecuting = false;
+        terminal?.melt();
+        terminal?.write("\r\n");
+        terminal?.prompt();
       }
-      commandExecuting = false;
-      terminal?.melt();
-      terminal?.write("\r\n");
-      terminal?.prompt();
-    });
+    );
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      "micropico.remote.run",
+      commandPrefix + "remote.run",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -419,7 +424,7 @@ export default class Activator {
 
     // [Command] Run Selection
     disposable = vscode.commands.registerCommand(
-      "micropico.runselection",
+      commandPrefix + "runselection",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -470,7 +475,7 @@ export default class Activator {
 
     // [Command] Upload project
     disposable = vscode.commands.registerCommand(
-      "micropico.upload",
+      commandPrefix + "upload",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -501,7 +506,7 @@ export default class Activator {
 
             return acc;
           },
-          ["**/.picowgo", "**/.micropico", "**/.DS_Store"]
+          ["**/.picowgo", "**/.micropico", "**/.micropico", "**/.DS_Store"]
         );
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
@@ -567,7 +572,7 @@ export default class Activator {
             if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
               //await this.pyb?.softReset();
               await vscode.commands.executeCommand(
-                "micropico.reset.soft.listen"
+                commandPrefix + "reset.soft.listen"
               );
             }
           }
@@ -578,7 +583,7 @@ export default class Activator {
 
     // [Command] Upload file
     disposable = vscode.commands.registerCommand(
-      "micropico.uploadFile",
+      commandPrefix + "uploadFile",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -642,7 +647,7 @@ export default class Activator {
                 if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
                   //await this.pyb?.softReset();
                   await vscode.commands.executeCommand(
-                    "micropico.reset.soft.listen"
+                    commandPrefix + "reset.soft.listen"
                   );
                 }
               } else {
@@ -658,7 +663,7 @@ export default class Activator {
     // [Command] Download project
     // TODO: maybe add diffent warning methods for overwritten files in syncFolder
     disposable = vscode.commands.registerCommand(
-      "micropico.download",
+      commandPrefix + "download",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -729,7 +734,7 @@ export default class Activator {
 
     // [Command] Delete all files on Pico
     disposable = vscode.commands.registerCommand(
-      "micropico.deleteAllFiles",
+      commandPrefix + "deleteAllFiles",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -758,21 +763,21 @@ export default class Activator {
 
     // [Command] Global settings
     disposable = vscode.commands.registerCommand(
-      "micropico.globalSettings",
+      commandPrefix + "globalSettings",
       openSettings
     );
     context.subscriptions.push(disposable);
 
     // [Command] Workspace settings
     disposable = vscode.commands.registerCommand(
-      "micropico.workspaceSettings",
+      commandPrefix + "workspaceSettings",
       () => openSettings(true)
     );
     context.subscriptions.push(disposable);
 
     // [Command] Toggle connection
     disposable = vscode.commands.registerCommand(
-      "micropico.toggleConnect",
+      commandPrefix + "toggleConnect",
       async () => {
         if (this.pyb?.isPipeConnected()) {
           clearInterval(this.autoConnectTimer);
@@ -793,7 +798,7 @@ export default class Activator {
 
     // [Command] Toggle virutal file-system
     disposable = vscode.commands.registerCommand(
-      "micropico.toggleFileSystem",
+      commandPrefix + "toggleFileSystem",
       () => {
         const findWorkspace = vscode.workspace.workspaceFolders?.find(
           folder => folder.uri.scheme === "pico"
@@ -829,7 +834,7 @@ export default class Activator {
 
     // [Command] Open pin map
     disposable = vscode.commands.registerCommand(
-      "micropico.extra.pins",
+      commandPrefix + "extra.pins",
       async () => {
         const picoVariant = await vscode.window.showQuickPick(PICO_VARIANTS, {
           canPickMany: false,
@@ -843,7 +848,7 @@ export default class Activator {
         }
 
         const panel = vscode.window.createWebviewPanel(
-          "micropico.pinoout",
+          commandPrefix + "pinoout",
           `${PICO_VARIANTS[variantIdx]} Pinout`,
           vscode.ViewColumn.Active,
           {
@@ -875,7 +880,7 @@ export default class Activator {
 
     // [Command] List all serial ports a Pico is connected to
     disposable = vscode.commands.registerCommand(
-      "micropico.extra.getSerial",
+      commandPrefix + "extra.getSerial",
       async () => {
         const ports = await PyboardRunner.getPorts();
         if (ports.ports.length > 1) {
@@ -897,7 +902,7 @@ export default class Activator {
 
     // [Command] Switch Pico
     disposable = vscode.commands.registerCommand(
-      "micropico.switchPico",
+      commandPrefix + "switchPico",
       async () => {
         if (this.pyb?.isPipeConnected()) {
           await this.pyb?.disconnect();
@@ -925,7 +930,7 @@ export default class Activator {
 
     // [Command] Soft reset pico
     disposable = vscode.commands.registerCommand(
-      "micropico.reset.soft",
+      commandPrefix + "reset.soft",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -951,7 +956,7 @@ export default class Activator {
 
     // [Command] Hard reset pico
     disposable = vscode.commands.registerCommand(
-      "micropico.reset.hard",
+      commandPrefix + "reset.hard",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -975,7 +980,7 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      "micropico.reset.soft.listen",
+      commandPrefix + "reset.soft.listen",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -1016,7 +1021,7 @@ export default class Activator {
     );
 
     disposable = vscode.commands.registerCommand(
-      "micropico.rtc.sync",
+      commandPrefix + "rtc.sync",
       async () => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
@@ -1033,7 +1038,7 @@ export default class Activator {
     );
 
     disposable = vscode.commands.registerCommand(
-      "micropico.universalStop",
+      commandPrefix + "universalStop",
       async () => {
         if (
           !this.pyb?.isPipeConnected() ||
@@ -1054,7 +1059,7 @@ export default class Activator {
 
     // [Command] Check for firmware updates
     disposable = vscode.commands.registerCommand(
-      "micropico.extra.firmwareUpdates",
+      commandPrefix + "extra.firmwareUpdates",
       () => {
         void vscode.env.openExternal(
           vscode.Uri.parse("https://micropython.org/download/")
