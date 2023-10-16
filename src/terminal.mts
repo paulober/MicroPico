@@ -148,6 +148,11 @@ export class Terminal implements Pseudoterminal {
       }
 
       if (char === "\r") {
+        // don't allow multiline imput while we're waiting for a prompt
+        if (!this.waitingForPrompt) {
+          this.checkMultilineMode();
+        }
+
         if (
           this.multilineMode &&
           this.buffer.split("\n").pop()?.trim() === ""
@@ -210,11 +215,6 @@ export class Terminal implements Pseudoterminal {
         }
         this.writeEmitter.fire(char);
         this.xCursor++;
-
-        // don't allow multiline imput while we're waiting for a prompt
-        if (!this.waitingForPrompt) {
-          this.checkMultilineMode();
-        }
       }
     }
   }
