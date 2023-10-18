@@ -104,7 +104,7 @@ export default class Activator {
             (result as PyOutCommandWithResponse).response +
             "\x1b[0m" +
             'Type "help()" for more information or ' +
-            ".cls/.clear to clear the terminal." +
+            ".help for custom vREPL commands." +
             "\r\n".repeat(2)
           );
         }
