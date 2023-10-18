@@ -34,8 +34,7 @@ for platform in "${platforms[@]}"; do
   rm -r "dist/scripts/wrapper_$platform"
 done
 
-# Find all .vsix files and join them into a space-separated string
-package_paths=$(find . -name "*.vsix" -type f -exec echo -n "{} " \;)
-
-# Publish the packages
-npx @vscode/vsce publish --packagePath "$package_paths"
+# Find all .vsix files and publish them one by one
+find . -name "*.vsix" -type f | while read -r package_path; do
+  npx @vscode/vsce publish --packagePath "$package_path"
+done
