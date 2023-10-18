@@ -19,7 +19,7 @@ export default {
         'vscode',
     ],
     plugins: [
-        copy({
+        !isProduction && copy({
             targets: [
                 {
                     src: 'node_modules/@paulober/pyboard-serial-com/scripts',

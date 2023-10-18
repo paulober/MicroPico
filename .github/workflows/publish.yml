@@ -38,16 +38,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # not needed because of publish
-      - name: Package
-        run: npx @vscode/vsce package --no-yarn
-
       - name: Publish
-        run: npx @vscode/vsce publish --no-yarn --target win32-x64 linux-x64 linux-arm64 darwin-x64 darwin-arm64
+        run: ./scripts/publish.sh
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
       
-      - name: Upload Artifact
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Visual Studio Code extension package
