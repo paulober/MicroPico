@@ -25,3 +25,4 @@ azure-pipelines.yml
 !dist/*.cjs
 !dist/scripts/*.py
 dist/scripts/__pycache__
+!mpy_stubs/

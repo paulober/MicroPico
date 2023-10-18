@@ -8,6 +8,7 @@ on:
     paths-ignore:
       - ".idea/**"
       - ".vscode/**"
+      - "scripts/**"
       - "**/*.md"
       - ".prettierrc.json"
       - "LICENSE"
@@ -24,17 +25,22 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup node
+      - name: Setup Node v18.15.x
         uses: actions/setup-node@v3
         with:
           node-version: "18.15.x"
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python v3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install NPM Dependencies And Download Stubs
         shell: bash
         run: |
           sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
@@ -43,4 +49,4 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package Extension
-        run: npx @vscode/vsce package --no-yarn -o pico-w-go-${{ github.sha }}.vsix
+        run: npx @vscode/vsce package --no-yarn -o micropico-${{ github.sha }}.vsix

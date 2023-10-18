@@ -309,6 +309,23 @@ export class Terminal implements Pseudoterminal {
       this.prompt();
 
       return;
+    } else if (input === ".ls") {
+      this.writeEmitter.fire("\r\n");
+      this.waitingForPrompt = true;
+      this.history.add(input);
+      this.submitEmitter.fire("import uos; uos.listdir()\n");
+
+      return;
+    } else if (input === ".help") {
+      this.writeEmitter.fire("\r\n");
+      this.writeEmitter.fire("Available vREPL commands:\r\n");
+      this.writeEmitter.fire(".cls/.clear - clear screen and prompt\r\n");
+      this.writeEmitter.fire(".empty - clean vREPL\r\n");
+      this.writeEmitter.fire(".ls - list files on Pico\r\n");
+      this.writeEmitter.fire(".help - show this help\r\n");
+      this.prompt();
+
+      return;
     }
 
     if (this.waitingForPrompt) {

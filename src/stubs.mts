@@ -6,7 +6,7 @@ import {
   recommendedExtensions,
   shouldRecommendExtensions,
 } from "./api.mjs";
-import { mkdir, readFile, symlink } from "fs/promises";
+import { mkdir, readdir, symlink } from "fs/promises";
 import { pathExists, readJsonFile, writeJsonFile } from "./osHelper.mjs";
 import { copy, emptyDir } from "fs-extra";
 import Logger from "./logger.mjs";
@@ -19,37 +19,76 @@ export default class Stubs {
     this.logger = new Logger("Stubs");
   }
 
+  private async updateSettings(): Promise<void> {
+    const workspace = getProjectPath();
+
+    if (workspace === undefined) {
+      return;
+    }
+
+    // the path to the .vscode folder in the project folder
+    const vsc = join(workspace, ".vscode");
+
+    // check if .vscode folder exists if not create it
+    if (!(await pathExists(vsc))) {
+      await mkdir(vsc);
+    }
+
+    // update to new vscode settings for new stubs if old stubs are still installed
+    // TODO: maybe remove in later versions
+    await this.addSettings(vsc, true);
+  }
+
   public async update(): Promise<void> {
     const configFolder = getVsCodeUserPath();
-    const stubsFolder = join(configFolder, "Pico-W-Stub");
+    const installedStubsFolder = join(configFolder, "Pico-W-Stub");
 
-    // ensure config folder exists
-    await mkdir(configFolder, { recursive: true });
+    // TODO: remove in later versions
+    await this.updateSettings();
 
-    const existingVersionFile = join(stubsFolder, "version.json");
-    const currentVersionFile = resolve(
-      join(__dirname, "..", "stubs", "version.json")
-    );
+    if (!(await pathExists(join(installedStubsFolder, "version.json")))) {
+      // ensure config folder exists
+      await mkdir(configFolder, { recursive: true });
 
-    const currentVersion = JSON.parse(
-      await readFile(currentVersionFile, "utf8")
-    ) as { version: string };
+      let installedVersion = "";
+      let currentVersion = "";
 
-    // Check if the existing version file exists and if the version is the same
-    if (await pathExists(existingVersionFile)) {
-      const existingVersion = JSON.parse(
-        await readFile(existingVersionFile, "utf8")
-      ) as { version: string };
+      if (await pathExists(installedStubsFolder)) {
+        const installedMatchingFolders = (
+          await readdir(installedStubsFolder)
+        ).filter(name => name.match(/micropython_rp2.*\.dist-info/));
 
-      if (existingVersion.version === currentVersion.version) {
+        if (installedMatchingFolders.length > 0) {
+          installedVersion = installedMatchingFolders[0];
+        }
+      }
+
+      const currentFolder = join(__dirname, "..", "mpy_stubs");
+
+      if (await pathExists(currentFolder)) {
+        const currentMatchingFolders = (await readdir(currentFolder)).filter(
+          name => name.match(/micropython_rp2.*\.dist-info/)
+        );
+
+        if (currentMatchingFolders.length > 0) {
+          currentVersion = currentMatchingFolders[0];
+        }
+      }
+
+      // Check if the existing version file exists and if the version is the same
+      if (installedVersion === currentVersion) {
+        this.logger.info("Installed stubs are already up to date!");
+
         return;
       }
     }
 
     try {
       // update stubs folder
-      await emptyDir(stubsFolder);
-      await copy(join(__dirname, "..", "stubs"), stubsFolder);
+      await emptyDir(installedStubsFolder);
+      await copy(join(__dirname, "..", "mpy_stubs"), installedStubsFolder);
+
+      this.logger.info("Updated stubs successfully!");
     } catch (error) {
       const msg: string =
         typeof error === "string" ? error : (error as Error).message;
@@ -126,10 +165,13 @@ export default class Stubs {
     await writeJsonFile(extensionsFilePath, extensions);
   }
 
-  private async addSettings(vsc: string): Promise<void> {
+  private async addSettings(
+    vsc: string,
+    justUpdate: boolean = false
+  ): Promise<void> {
     const settingsFilePath = join(vsc, "settings.json");
     const stubsPath = join(".vscode", "Pico-W-Stub");
-    const defaultSettings = {
+    const defaultSettings: { [key: string]: string | boolean | object } = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.linting.enabled": true,
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -137,10 +179,17 @@ export default class Stubs {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.analysis.typeCheckingMode": "basic",
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      "micropico.syncFolder": "",
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      "micropico.openOnStart": true,
+      "python.analysis.diagnosticSeverityOverrides": {
+        reportMissingModuleSource: "none",
+      },
     };
+
+    if (!justUpdate) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      defaultSettings["micropico.syncFolder"] = "";
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      defaultSettings["micropico.openOnStart"] = true;
+    }
 
     interface ISettings {
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -158,7 +207,7 @@ export default class Stubs {
     );
     settings["python.analysis.extraPaths"] = _.union(
       settings["python.analysis.extraPaths"] || [],
-      [join(stubsPath, "stubs")]
+      [stubsPath]
     );
 
     await writeJsonFile(settingsFilePath, settings);

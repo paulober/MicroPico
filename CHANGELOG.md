@@ -10,6 +10,14 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.4.0] - 2023-10-18
+
+# Changed
+- Reduced extension size on some platforms
+- Upgraded to `pyboard-serial-com` `v2.0.2`
+- Replaced `Pico-W-Stub` with [micropython-stubs](https://github.com/Josverl/micropython-stubs) for MicroPython v1.20.0 (Thanks to @Josverl)
+- Added `.ls` and `.help` custom commands to vREPL
+
 ## [3.3.3] - 2023-10-16
 
 # Changed
