@@ -15,15 +15,22 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+
+      - name: Setup Node v18.15.x
+        uses: actions/setup-node@v3
         with:
           node-version: '18.15.x'
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: NPM install
+      - name: Setup Python v3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install NPM dependencies And Download Stubs
         shell: bash
         run: |
           sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
@@ -35,18 +42,18 @@ jobs:
       - name: Package
         run: npx @vscode/vsce package --no-yarn
 
-      - run: npx @vscode/vsce publish --no-yarn --target win32-x64 linux-x64 linux-arm64 darwin-x64 darwin-arm64
-        name: Publish
+      - name: Publish
+        run: npx @vscode/vsce publish --no-yarn --target win32-x64 linux-x64 linux-arm64 darwin-x64 darwin-arm64
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
       
-      - name: Upload artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: Visual Studio Code extension package
           path: pico-w-go-*.vsix
 
-      - name: Upload artifact to release
+      - name: Upload Artifact To Release
         #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/Pico-W-Go/releases/$RELEASE_ID/assets 
         run: gh release upload $RELEASE_TAG_NAME pico-w-go-*.vsix
         env:

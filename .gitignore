@@ -478,3 +478,4 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/node,python,webstorm,visualstudiocode,macos
 
 *.zip
+mpy_stubs/
