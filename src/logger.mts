@@ -3,7 +3,7 @@ import type { LogOutputChannel } from "vscode";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 
-// TODOL: warn for production
+// TODO: warn for production
 const logLevel: LogLevel = "debug";
 
 // ANSI escape code for red color
