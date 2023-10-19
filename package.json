@@ -493,7 +493,7 @@
   "scripts": {
     "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
     "vscode:prepublish": "npm run package",
-    "postinstall": "python3 -m pip install -U micropython-rp2-pico_w-stubs --target ./mpy_stubs --no-user",
+    "postinstall": "python3 -m pip install -U micropython-rp2-rpi_pico_w-stubs --target ./mpy_stubs --no-user",
     "compile-uninstaller": "rollup -c uninstall.rollup.config.mjs",
     "compile": "rollup -c && npm run compile-uninstaller",
     "watch": "rollup -cw",
