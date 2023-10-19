@@ -10,6 +10,14 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.4.1] - 2023-10-19
+
+# Changed
+- Upgraded to `pyboard-serial-com` `v2.0.3` (Fixes #144)
+- Updated stubs to MicroPython v1.21.0 stable
+- Updated dependencies
+- Adds back linux `armhf` support
+
 ## [3.4.0] - 2023-10-18
 
 # Changed
