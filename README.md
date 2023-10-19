@@ -6,11 +6,11 @@
 > NOTE: Support for MPY v1.21.0 will be added in the next few days.
 
 Works with:
-| Platform | x64 | arm64 |
-| :------- | :-: | :---: |
-| Windows  | ✅   | ❌     |
-| macOS    | ✅   | ✅     |
-| Linux    | ✅   | ✅     |
+| Platform | x64 | arm64 | armhf |
+| :------- | :-: | :---: | :---: |
+| Windows  | ✅   | ❌     | ❌     |
+| macOS    | ✅   | ✅     | ❌     |
+| Linux    | ✅   | ✅     | ✅     |
 
 ## Features
 

@@ -10,7 +10,7 @@ npm run package
 mkdir -p dist/scripts
 
 # Define an array of platforms
-platforms=("win32" "macOS_arm64" "macOS_amd64" "linux_arm64" "linux_amd64")
+platforms=("win32" "macOS_arm64" "macOS_amd64" "linux_arm64" "linux_armhf" "linux_amd64")
 
 # Loop through the platforms
 for platform in "${platforms[@]}"; do
@@ -26,6 +26,8 @@ for platform in "${platforms[@]}"; do
     npx @vscode/vsce package --no-yarn --target "darwin-x64"
   elif [ "$platform" == "linux_arm64" ]; then
     npx @vscode/vsce package --no-yarn --target "linux-arm64"
+  elif [ "$platform" == "linux_armhf" ]; then
+    npx @vscode/vsce package --no-yarn --target "linux-armhf"
   elif [ "$platform" == "linux_amd64" ]; then
     npx @vscode/vsce package --no-yarn --target "linux-x64"
   fi
