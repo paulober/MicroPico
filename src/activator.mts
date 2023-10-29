@@ -1086,6 +1086,7 @@ export default class Activator {
             return;
           }
           this.ui?.refreshState(false);
+          settings.reload();
           const autoPort = settings.getBoolean(SettingsKey.autoConnect);
 
           const ports = await PyboardRunner.getPorts();
