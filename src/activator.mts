@@ -25,6 +25,7 @@ import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
+import Panel from "./panel.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -171,6 +172,7 @@ export default class Activator {
         .find(term => term.creationOptions.name === TERMINAL_NAME)
         ?.dispose();
     } catch {
+      // TODO: use vscode warning
       console.warn("Failed to dispose old terminals on reactivation.");
     }
 
@@ -227,6 +229,11 @@ export default class Activator {
             .forEach(t => t.dispose());
         }
       })
+    );
+
+    const panelProvider = new Panel(context.extensionUri, terminal);
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(Panel.viewId, panelProvider)
     );
 
     // register fs provider as early as possible
@@ -506,7 +513,7 @@ export default class Activator {
 
             return acc;
           },
-          ["**/.picowgo", "**/.micropico", "**/.micropico", "**/.DS_Store"]
+          ["**/.picowgo", "**/.micropico", "**/.DS_Store"]
         );
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {

@@ -408,6 +408,24 @@
           "id": "micropico.vrepl"
         }
       ]
+    },
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "micropico-vrepl-panel",
+          "title": "MicroPico",
+          "icon": "./images/logo-256.png"
+        }
+      ]
+    },
+    "views": {
+      "micropico-vrepl-panel": [
+        {
+          "id": "micropico.vrepl-panel",
+          "name": "vREPL",
+          "type": "webview"
+        }
+      ]
     }
   },
   "statusBar": [
