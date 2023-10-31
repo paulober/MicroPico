@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/paulober/MicroPico/blob/main/CHANGELOG.md
     about: Functionality that has changed significantly between versions of MicroPico or known issues.
   - name: Intellisense, auto-complete and linting issues
-    url: https://github.com/paulober/Pico-W-Stub/issues
-    about: These belong in the Pico-W-Stub project rather than MicroPico.
+    url: https://github.com/Josverl/micropython-stubs/issues
+    about: These belong in the Micropython-Stubs project by Josverl rather than MicroPico.
