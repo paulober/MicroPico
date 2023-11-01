@@ -19,12 +19,31 @@ export default {
         'vscode',
     ],
     plugins: [
-        !isProduction && copy({
+        /* In production the required scripts platform version needs to be copied manually */
+        copy({
             targets: [
-                {
+                !isProduction && {
                     src: 'node_modules/@paulober/pyboard-serial-com/scripts',
                     dest: 'dist/'
                 },
+                {
+                    src: 'node_modules/xterm/lib/*.js',
+                    dest: 'panel/xterm/lib',
+                    extglob: true
+                },
+                {
+                    src: 'node_modules/xterm/css/*.css',
+                    dest: 'panel/xterm/css',
+                    extglob: true
+                },
+                {
+                    src: 'node_modules/xterm/LICENSE',
+                    dest: 'panel/xterm'
+                },
+                {
+                    src: 'node_modules/xterm/README.md',
+                    dest: 'panel/xterm'
+                }
             ],
         }),
         nodeResolve({

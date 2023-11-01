@@ -479,3 +479,4 @@ fabric.properties
 
 *.zip
 mpy_stubs/
+panel/xterm

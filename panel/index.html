@@ -1,66 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}'; style-src ${webview.cspSource};">
 
-    <style>
-        /* Basic styling for the webview */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* Styling for the terminal area */
-        #terminal {
-            flex-grow: 1;
-            background-color: transparent;
-            color: white;
-            padding: 10px;
-            overflow-y: scroll;
-        }
-
-        #terminal p {
-            margin: 0;
-            white-space: pre-wrap;
-        }
-
-        /* Styling for the input field and submit button */
-        #input-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 0;
-            margin-bottom: 10px;
-        }
-
-        #input-field {
-            flex-grow: 1;
-            padding: 5px;
-            border: 0.5px solid #b0b0b0;
-            border-radius: 5px;
-            margin-right: 10px;
-            background-color: transparent;
-            color: white;
-        }
-
-        #submit-button {
-            padding: 5px 10px;
-            background-color: #007ACC;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #submit-button:hover {
-            background-color: #005EAA;
-        }
-    </style>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="${xtermCSS}" />
+    <script nonce="${nonce}" src="${xtermJS}"></script>
+    <link rel="stylesheet" href="${styleCSS}" />
 </head>
 
 <body>
@@ -69,46 +17,6 @@
         <input type="text" id="input-field" placeholder="Type a command...">
         <button id="submit-button">Submit</button>
     </div>
-    <script>
-        const terminal = document.getElementById("terminal");
-        const inputField = document.getElementById("input-field");
-        const submitButton = document.getElementById("submit-button");
-
-        const vscode = acquireVsCodeApi();
-
-        function writeToTerminal(text) {
-            const p = document.createElement("p");
-            p.textContent = text;
-            terminal.appendChild(p);
-        }
-
-        // Handle user input and display it in the terminal
-        function handleInput() {
-            const command = inputField.value;
-            //writeToTerminal("> " + command);
-            vscode.postMessage({ type: 'commandSubmit', content: command });
-            inputField.value = ""; // Clear the input field
-            // You can execute the command here or process it as needed
-        }
-
-        submitButton.addEventListener("click", handleInput);
-        inputField.addEventListener("keyup", (event) => {
-            if (event.key === "Enter") {
-                handleInput();
-            }
-        });
-
-        // Handle messages sent from the extension to the webview
-        window.addEventListener('message', event => {
-            const message = event.data; // The json data that the extension sent
-            switch (message.type) {
-                case 'input':
-                    {
-                        writeToTerminal(message.data);
-                        break;
-                    }
-            }
-        });
-    </script>
+    <script nonce="${nonce}" src="${mainJS}"></script>
 </body>
 </html>
