@@ -42,6 +42,7 @@ jobs:
         run: ./scripts/publish.sh
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          OVSX_PAT: ${{ secrets.OPEN_VSX_TOKEN }}
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3

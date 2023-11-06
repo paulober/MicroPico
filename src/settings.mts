@@ -30,6 +30,10 @@ export default class Settings {
     this.context = context;
   }
 
+  public reload(): void {
+    this.config = vsWorkspace.getConfiguration(extName);
+  }
+
   public get(key: SettingsKey): Setting {
     return this.config.get(key);
   }

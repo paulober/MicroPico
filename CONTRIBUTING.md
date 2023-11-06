@@ -7,9 +7,9 @@ In order to install `paulober/pyboard-serial-com` sub-package you first have con
 
 ### - Project setup
 - Fork the repository into your private account
-- Create a branch with following naming scheeme `fix-<issue-id>-<short-title-of-the-issue>`
+- Create a branch based on the `develop` branch with following naming scheeme `fix-<issue-id>-<short-title-of-the-issue>`
 - Download your fork of the repository (Github.cli recommended)
-- `cd Pico-W-Go`
+- `cd MicroPico`
 - Switch to your newly created branch (`git checkout <branch-name>` for example)
 - `npm install`
 
@@ -20,4 +20,4 @@ After the fix is complete do some extensive testing if all what could be affecte
 - Now squash all your commits and name the final commit something like `Fix #<issue-id>, <Short title of the issue>`
     - The description of the squash commit should contain a list (description) of all the changes you've made
 
-- Push and create a pull request to the develop branch of paulober/Pico-W-Go
+- Push and create a pull request to the develop branch of paulober/MicroPico
