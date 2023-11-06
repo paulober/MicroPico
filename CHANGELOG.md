@@ -10,6 +10,13 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.4.2] - 2023-11-07
+
+# Changed
+- Upgraded to `pyboard-serial-com` `v2.0.4`, Linux `arm64` and `armhf` releases are now backwards compatible with `GLIBC_2.31` (Fixes #159)
+- Updated dependencies
+- Reload settings before auto-connect to detect settings changes concerning the port
+
 ## [3.4.1] - 2023-10-19
 
 # Changed
