@@ -3,8 +3,8 @@
 # This script's purpose is to publish the VSCode extension to the VSCode Marketplace 
 # and package binaries for each platform to reduced vsix size
 
-# Run npm run package
-npm run package
+# Run npm run package (not needed as prepublish script already runs it)
+#npm run package
 
 # Create a folder dist/scripts if it doesn't exist
 mkdir -p dist/scripts
