@@ -527,7 +527,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^2.0.4",
+    "@paulober/pyboard-serial-com": "^2.0.5",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "rimraf": "^5.0.5",
