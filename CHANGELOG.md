@@ -10,6 +10,12 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.4.3] - 2023-11-10
+
+# Changed
+- Upgraded to `pyboard-serial-com` `v2.0.4`, the Linux `amd64` release is now backwards compatible with `GLIBC_2.31` (Fixes #161)
+- Updated dependencies
+
 ## [3.4.2] - 2023-11-07
 
 # Changed
