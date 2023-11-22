@@ -59,7 +59,8 @@
   ],
   "cpu": [
     "x64",
-    "arm64"
+    "arm64",
+    "arm"
   ],
   "minimumNodeVersion": 18,
   "contributes": {
@@ -163,6 +164,11 @@
       {
         "command": "micropico.extra.firmwareUpdates",
         "title": "Help > Check for firmware updates",
+        "category": "MicroPico"
+      },
+      {
+        "command": "micropico.extra.switchStubs",
+        "title": "Extra > Switch stubs",
         "category": "MicroPico"
       },
       {
@@ -506,6 +512,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
@@ -529,6 +536,7 @@
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^2.0.5",
+    "axios": "^1.6.2",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "rimraf": "^5.0.5",

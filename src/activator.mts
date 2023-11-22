@@ -9,7 +9,13 @@ import {
   openSettings,
   writeIntoClipboard,
 } from "./api.mjs";
-import Stubs from "./stubs.mjs";
+import Stubs, {
+  displayStringToStubPort,
+  fetchAvailableStubsVersions,
+  installIncludedStubs,
+  installStubsByVersion,
+  stubPortToDisplayString,
+} from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
 import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
 import type {
@@ -1064,6 +1070,73 @@ export default class Activator {
         void vscode.env.openExternal(
           vscode.Uri.parse("https://micropython.org/download/")
         );
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    // [Command] Check for firmware updates
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "extra.switchStubs",
+      async () => {
+        const versions: string[] = [];
+
+        Object.entries(await fetchAvailableStubsVersions()).forEach(
+          ([key, values]) => {
+            // Map each value to "key - value" and push to resultArray
+            versions.push(...values.map(value => `${key} - ${value}`));
+          }
+        );
+
+        // show quick pick
+        const version = await vscode.window.showQuickPick(
+          ["Included", ...versions],
+          {
+            canPickMany: false,
+            placeHolder: "Select the stubs version you want to use",
+            ignoreFocusOut: false,
+          }
+        );
+
+        if (version === undefined) {
+          return;
+        }
+
+        if (version.toLowerCase() === "included") {
+          await installIncludedStubs();
+
+          void vscode.window.showInformationMessage("Included stubs selected.");
+        } else {
+          await vscode.window.withProgress(
+            {
+              location: vscode.ProgressLocation.Notification,
+              title: "Downloading stubs, this may take a while...",
+              cancellable: false,
+            },
+            async (progress, token) => {
+              // cancellation is not possible
+              token.onCancellationRequested(() => undefined);
+              const versionParts = version.split(" - ");
+
+              // TODO: implement cancellation
+              const result = await installStubsByVersion(
+                versionParts[1],
+                displayStringToStubPort(versionParts[0])
+              );
+
+              if (result) {
+                progress.report({
+                  increment: 100,
+                  message: "Stubs installed.",
+                });
+                void vscode.window.showInformationMessage("Stubs installed.");
+              } else {
+                void vscode.window.showErrorMessage(
+                  "Stubs installation failed."
+                );
+              }
+            }
+          );
+        }
       }
     );
     context.subscriptions.push(disposable);
