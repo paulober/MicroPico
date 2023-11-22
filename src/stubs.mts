@@ -19,32 +19,9 @@ export default class Stubs {
     this.logger = new Logger("Stubs");
   }
 
-  private async updateSettings(): Promise<void> {
-    const workspace = getProjectPath();
-
-    if (workspace === undefined) {
-      return;
-    }
-
-    // the path to the .vscode folder in the project folder
-    const vsc = join(workspace, ".vscode");
-
-    // check if .vscode folder exists if not create it
-    if (!(await pathExists(vsc))) {
-      await mkdir(vsc);
-    }
-
-    // update to new vscode settings for new stubs if old stubs are still installed
-    // TODO: maybe remove in later versions
-    await this.addSettings(vsc, true);
-  }
-
   public async update(): Promise<void> {
     const configFolder = getVsCodeUserPath();
     const installedStubsFolder = join(configFolder, "Pico-W-Stub");
-
-    // TODO: remove in later versions
-    await this.updateSettings();
 
     if (!(await pathExists(join(installedStubsFolder, "version.json")))) {
       // ensure config folder exists
