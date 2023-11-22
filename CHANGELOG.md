@@ -10,6 +10,17 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.5.0] - 2023-11-22
+
+# Added
+- `micropico.extra.switchStubs` command to switch between MicroPython stubs for different MicroPython versions and ports (RPi Pico, RPi Pico (W) and ESP32) (Thanks to @Josverl) (Fixes #164)
+
+# Changed
+- Updated dependencies
+
+# Removed
+- Settings auto-update workaround from the extension renaming process (Fixes #164)
+
 ## [3.4.3] - 2023-11-10
 
 # Changed

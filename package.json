@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
-  "version": "3.4.3",
+  "version": "3.5.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/MicroPico/blob/main/README.md",
@@ -59,7 +59,8 @@
   ],
   "cpu": [
     "x64",
-    "arm64"
+    "arm64",
+    "arm"
   ],
   "minimumNodeVersion": 18,
   "contributes": {
@@ -163,6 +164,11 @@
       {
         "command": "micropico.extra.firmwareUpdates",
         "title": "Help > Check for firmware updates",
+        "category": "MicroPico"
+      },
+      {
+        "command": "micropico.extra.switchStubs",
+        "title": "Extra > Switch stubs",
         "category": "MicroPico"
       },
       {
@@ -506,31 +512,35 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/fs-extra": "^11.0.4",
-    "@types/lodash": "^4.14.201",
-    "@types/mocha": "^10.0.4",
+    "@types/lodash": "^4.14.202",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^18.x",
     "@types/uuid": "^9.0.7",
     "@types/vscode": "^1.82.0",
-    "@typescript-eslint/eslint-plugin": "^6.10.0",
-    "@typescript-eslint/parser": "^6.10.0",
-    "@vscode/test-electron": "^2.3.6",
-    "eslint": "^8.53.0",
+    "@types/which": "^3.0.3",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "@vscode/test-electron": "^2.3.7",
+    "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
     "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "rollup": "^4.3.0",
+    "rollup": "^4.5.1",
     "rollup-plugin-copy": "^3.5.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^2.0.5",
+    "axios": "^1.6.2",
     "fs-extra": "^11.1.1",
     "lodash": "^4.17.21",
     "rimraf": "^5.0.5",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "which": "^4.0.0"
   }
 }

@@ -3,6 +3,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
+import json from '@rollup/plugin-json';
 
 const isProduction = process.env.BUILD === 'production';
 
@@ -35,5 +36,7 @@ export default {
             tsconfig: 'tsconfig.json',
         }),
         isProduction && terser(),
+        // required by axios
+        json(),
     ],
 };

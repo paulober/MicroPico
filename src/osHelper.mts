@@ -1,4 +1,6 @@
+import { lstat } from "fs";
 import { readFile, stat, writeFile } from "fs/promises";
+import { rimrafSync } from "rimraf";
 
 export async function pathExists(path: string): Promise<boolean> {
   try {
@@ -41,4 +43,21 @@ export async function writeJsonFile<T>(
       `[MicroPico] [OSHelper] Error writing to ${path}: ${message}`
     );
   }
+}
+
+export function removeJunction(junctionPath: string): Promise<boolean> {
+  return new Promise(resolve => {
+    lstat(junctionPath, (err, stats) => {
+      if (err) {
+        //reject(err);
+        resolve(false);
+      } else if (stats.isSymbolicLink()) {
+        const result = rimrafSync(junctionPath);
+        resolve(result);
+      } else {
+        //reject(new Error(`${junctionPath} is not a directory junction.`));
+        resolve(false);
+      }
+    });
+  });
 }

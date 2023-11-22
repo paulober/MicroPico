@@ -7,10 +7,18 @@ import {
   shouldRecommendExtensions,
 } from "./api.mjs";
 import { mkdir, readdir, symlink } from "fs/promises";
-import { pathExists, readJsonFile, writeJsonFile } from "./osHelper.mjs";
-import { copy, emptyDir } from "fs-extra";
+import {
+  pathExists,
+  readJsonFile,
+  removeJunction,
+  writeJsonFile,
+} from "./osHelper.mjs";
+import { copy, emptyDir, mkdirpSync } from "fs-extra";
 import Logger from "./logger.mjs";
 import _ from "lodash";
+import which from "which";
+import { execSync } from "child_process";
+import axios, { HttpStatusCode } from "axios";
 
 export default class Stubs {
   private logger: Logger;
@@ -19,32 +27,9 @@ export default class Stubs {
     this.logger = new Logger("Stubs");
   }
 
-  private async updateSettings(): Promise<void> {
-    const workspace = getProjectPath();
-
-    if (workspace === undefined) {
-      return;
-    }
-
-    // the path to the .vscode folder in the project folder
-    const vsc = join(workspace, ".vscode");
-
-    // check if .vscode folder exists if not create it
-    if (!(await pathExists(vsc))) {
-      await mkdir(vsc);
-    }
-
-    // update to new vscode settings for new stubs if old stubs are still installed
-    // TODO: maybe remove in later versions
-    await this.addSettings(vsc, true);
-  }
-
   public async update(): Promise<void> {
     const configFolder = getVsCodeUserPath();
     const installedStubsFolder = join(configFolder, "Pico-W-Stub");
-
-    // TODO: remove in later versions
-    await this.updateSettings();
 
     if (!(await pathExists(join(installedStubsFolder, "version.json")))) {
       // ensure config folder exists
@@ -222,4 +207,146 @@ export default class Stubs {
       });
     }
   }
+}
+
+/**
+ * Install the included stubs to current Pico project.
+ *
+ * @returns
+ */
+export async function installIncludedStubs(): Promise<void> {
+  const workspaceFolder = getProjectPath();
+  if (workspaceFolder === undefined) {
+    return;
+  }
+  const vsc = join(workspaceFolder, ".vscode");
+  const stubsPath = join(vsc, "Pico-W-Stub");
+  if (await pathExists(stubsPath)) {
+    await removeJunction(stubsPath);
+  }
+  const configFolder = getVsCodeUserPath();
+  await symlink(
+    resolve(join(configFolder, "Pico-W-Stub")),
+    stubsPath,
+    "junction"
+  );
+}
+
+const STUB_PORTS = [
+  "micropython-rp2-rpi_pico_w-stubs",
+  "micropython-rp2-rpi_pico-stubs",
+  "micropython-esp32-stubs",
+];
+
+export function stubPortToDisplayString(port: string): string {
+  switch (port) {
+    case "micropython-rp2-rpi_pico_w-stubs":
+      return "RPi Pico (W)";
+    case "micropython-rp2-rpi_pico-stubs":
+      return "RPi Pico";
+    case "micropython-esp32-stubs":
+      return "ESP32";
+    default:
+      return port;
+  }
+}
+
+export function displayStringToStubPort(displayString: string): string {
+  switch (displayString) {
+    case "RPi Pico (W)":
+      return "micropython-rp2-rpi_pico_w-stubs";
+    case "RPi Pico":
+      return "micropython-rp2-rpi_pico-stubs";
+    case "ESP32":
+      return "micropython-esp32-stubs";
+    default:
+      return displayString;
+  }
+}
+
+// TODO: option to choose stubs distrbution
+export async function installStubsByVersion(
+  version: string,
+  port: string
+): Promise<boolean> {
+  // check if pip is available
+  const pip: string | null = await which("pip", { nothrow: true });
+
+  if (pip === null) {
+    void window.showErrorMessage(
+      "pip is required (in PATH) to install" +
+        " stubs different from the included ones."
+    );
+
+    return false;
+  }
+
+  const configFolder = getVsCodeUserPath();
+  const target = resolve(
+    join(configFolder, "MicroPico-Stubs", `${port}==${version}`)
+  );
+  mkdirpSync(target);
+
+  // install stubs with pip vscode user directory
+  const result = execSync(
+    `${pip} install ${port}==${version} ` + `--target "${target}" --no-user`
+  );
+
+  // check result
+  if (result.toString("utf-8").includes("Successfully installed")) {
+    const workspaceFolder = getProjectPath();
+    if (workspaceFolder === undefined) {
+      return false;
+    }
+    const vsc = join(workspaceFolder, ".vscode");
+    const stubsPath = join(vsc, "Pico-W-Stub");
+    // delete stubsPath folder if it exists
+    if (await pathExists(stubsPath)) {
+      await removeJunction(stubsPath);
+    }
+
+    // relink
+    await symlink(target, stubsPath, "junction");
+
+    return true;
+  }
+
+  return false;
+}
+
+// TODO: support for other stubs distributions
+export async function fetchAvailableStubsVersions(): Promise<{
+  [key: string]: string[];
+}> {
+  const versions: { [key: string]: string[] } = {};
+
+  for (const port of STUB_PORTS) {
+    const stubsVersions = await fetchAvailableStubsVersionsForPort(port);
+
+    versions[port] = stubsVersions.reverse();
+  }
+
+  return versions;
+}
+
+async function fetchAvailableStubsVersionsForPort(
+  port: string
+): Promise<string[]> {
+  try {
+    const response = await axios.get(`https://pypi.org/pypi/${port}/json`);
+
+    if (response.status === HttpStatusCode.Ok.valueOf()) {
+      const releases = (
+        response.data as { releases: { [key: string]: object } }
+      ).releases;
+
+      return Object.keys(releases);
+    }
+  } catch (error) {
+    //const msg: string =
+    //  typeof error === "string" ? error : (error as Error).message;
+    // console.error(`Fetching available stubs versions failed: ${msg}`);
+  }
+
+  return [];
 }
