@@ -2,7 +2,7 @@
 
 "MicroPico" is a Visual Studio Code extension designed to simplify and accelerate the development of MicroPython projects for the Raspberry Pi Pico and Pico W boards. This tool streamlines the coding process, providing code highlighting, auto-completion, code snippets, and project management features, all tailored for the seamless development experience with MicroPython on Raspberry Pi Pico and Pico W microcontrollers.
 
-> __Auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO_W-20231005-v1.21.0.uf2](https://micropython.org/resources/firmware/RPI_PICO_W-20231005-v1.21.0.uf2) from the [micropython-stubs project](https://github.com/Josverl/micropython-stubs)__
+> __Included auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO_W-20231005-v1.21.0.uf2](https://micropython.org/resources/firmware/RPI_PICO_W-20231005-v1.21.0.uf2) from the [micropython-stubs project](https://github.com/Josverl/micropython-stubs)__
 
 Works with:
 | Platform | x64 | arm64 | armhf |
@@ -17,6 +17,7 @@ Works with:
 - Pseudo terminal integration for communication with MicroPython REPL on a Pico (w) board (with support for tab-completion)
 - Running / Transferring files to / from your board
 - Built-in virtual-workspace provider for Raspberry Pi Pico (W) boards
+- Switch between auto-completion and IntelliSense for MicroPython ports RPi Pico, RPi Pico (W) and ESP32 (requires pip installed an in PATH)
 
 ![Preview](images/preview.gif)
 

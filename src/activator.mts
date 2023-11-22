@@ -1083,7 +1083,11 @@ export default class Activator {
         Object.entries(await fetchAvailableStubsVersions()).forEach(
           ([key, values]) => {
             // Map each value to "key - value" and push to resultArray
-            versions.push(...values.map(value => `${key} - ${value}`));
+            versions.push(
+              ...values.map(
+                value => `${stubPortToDisplayString(key)} - ${value}`
+              )
+            );
           }
         );
 
