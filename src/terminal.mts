@@ -191,8 +191,12 @@ export class Terminal implements Pseudoterminal {
 
         this.submitEmitter.fire(char);
       } else if (char === "\t") {
-        // Tab
-        this.handleTab();
+        if (this.multilineMode) {
+          this.handleInput("    ");
+        } else {
+          // Tab
+          this.handleTab();
+        }
       } else {
         if (IGNORED_CHARS.includes(char)) {
           return;
