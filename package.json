@@ -83,13 +83,13 @@
       {
         "command": "micropico.upload",
         "title": "Upload project to Pico",
-        "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
+        "enablement": "micropico.isConnected && (resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.uploadFile",
         "title": "Upload current file to Pico",
-        "enablement": "resourceScheme != pico && isFileSystemResource",
+        "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource",
         "category": "MicroPico"
       },
       {
@@ -101,7 +101,7 @@
       {
         "command": "micropico.run",
         "title": "Run current file on Pico",
-        "enablement": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
+        "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
         "category": "MicroPico"
       },
       {
@@ -118,7 +118,7 @@
       {
         "command": "micropico.runselection",
         "title": "Run current selection on Pico",
-        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python",
+        "enablement": "micropico.isConnected && !inQuickOpen && !listFocus && editorLangId == python",
         "category": "MicroPico"
       },
       {
