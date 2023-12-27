@@ -10,6 +10,21 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.6.0] - 2023-12-27
+
+# Added
+- `micropico.executeOnConnect` setting to execute a script on the Pico after connecting ([#153](https://github.com/paulober/MicroPico/issues/153) and [#176](https://github.com/paulober/MicroPico/issues/176))
+- `micropico.importOnConnect` setting to import a module in vREPL after connecting ([#153](https://github.com/paulober/MicroPico/issues/153))
+- MicroPico Device Controler for managing wifi connection and to install mip packages (experimental)
+- Upload-file command is now available in the explorer context menu
+
+# Changed
+- Fix #172, Documentation mentions sync button
+- Fixes dynamic command enablement
+- Fixes tab in multiline input in vREPL does trigger autocomplete and does not indent
+- Adjusts settings scopes
+- Updated dependencies
+
 ## [3.5.0] - 2023-11-22
 
 # Added
