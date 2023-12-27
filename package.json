@@ -437,6 +437,14 @@
           "title": "Soft-reset after upload",
           "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
           "order": 12
+        },
+        "micropico.executeOnConnect": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "title": "Script to execute on connect",
+          "description": "Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable.",
+          "order": 13
         }
       }
     },

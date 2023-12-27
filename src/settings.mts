@@ -16,6 +16,7 @@ export enum SettingsKey {
   statusbarButtons = "statusbarButtons",
   gcBeforeUpload = "gcBeforeUpload",
   softResetAfterUpload = "softResetAfterUpload",
+  executeOnConnect = "executeOnConnect",
 }
 
 export type Setting = string | boolean | string[] | null | undefined;
