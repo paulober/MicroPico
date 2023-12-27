@@ -82,6 +82,7 @@ This extension contributes the following settings:
 * `micropico.gcBeforeUpload`: Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
 * `micropico.softResetAfterUpload`: Soft-resets your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
 * `micropico.executeOnConnect`: Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable. (must be relative to the root of the Pico's filesystem; doesn't need to begin with a slash; overrides `micropico.openOnStart` setting)
+* `micropico.importOnConnect`: A MicroPython module to import in vREPL on connect. Leave empty to disable.
 
 ## Extension Context Keys
 

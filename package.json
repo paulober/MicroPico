@@ -445,6 +445,14 @@
           "title": "Script to execute on connect",
           "description": "Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable.",
           "order": 13
+        },
+        "micropico.importOnConnect": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "title": "MicroPython module to import on connect",
+          "description": "A MicroPython module to import in vREPL on connect. Leave empty to disable.",
+          "order": 14
         }
       }
     },

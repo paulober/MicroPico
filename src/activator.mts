@@ -1212,6 +1212,16 @@ export default class Activator {
                   scriptToExecute
                 );
               }
+
+              const moduleToImport = settings.getString(
+                SettingsKey.importOnConnect
+              );
+              if (
+                moduleToImport !== undefined &&
+                moduleToImport.trim() !== ""
+              ) {
+                await this.pyb?.executeCommand(`import ${moduleToImport}`);
+              }
             }
             this.ui?.refreshState(true);
 

@@ -17,6 +17,7 @@ export enum SettingsKey {
   gcBeforeUpload = "gcBeforeUpload",
   softResetAfterUpload = "softResetAfterUpload",
   executeOnConnect = "executeOnConnect",
+  importOnConnect = "importOnConnect",
 }
 
 export type Setting = string | boolean | string[] | null | undefined;
