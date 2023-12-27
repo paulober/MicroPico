@@ -17,60 +17,72 @@ import Logger from "../logger.mjs";
 import type PackagesWebviewProvider from "./packagesWebview.mjs";
 
 const DETECT_WIFIS_SCRIPT = `
-from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
-from ujson import dumps as __pico_dumps
-__pico_wlan = __pico_WLAN(__pico_STA_IF)
-__pico_wlan.active(True)
-__pico_available_networks = __pico_wlan.scan()
-__pico_networks = {n[0].decode('utf-8'): n[3] for n in __pico_available_networks}
-#don't deactivate cause it will disconnect from the wifi if connected
-#__pico_wlan.active(False)
-del __pico_wlan
-del __pico_available_networks
-del __pico_STA_IF
-del __pico_WLAN
-print(__pico_dumps(__pico_networks))
-del __pico_networks
-del __pico_dumps
+try:
+    from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
+    from ujson import dumps as __pico_dumps
+    __pico_wlan = __pico_WLAN(__pico_STA_IF)
+    __pico_wlan.active(True)
+    __pico_available_networks = __pico_wlan.scan()
+    __pico_networks = {n[0].decode('utf-8'): n[3] for n in __pico_available_networks}
+    #don't deactivate cause it will disconnect from the wifi if connected
+    #__pico_wlan.active(False)
+    del __pico_wlan
+    del __pico_available_networks
+    del __pico_STA_IF
+    del __pico_WLAN
+    print(__pico_dumps(__pico_networks))
+    del __pico_networks
+    del __pico_dumps
+except Exception as e:
+    pass
 `;
 
 const CONNECT_TO_WIFI_SCRIPT = (element: Wifi, password: string): string => `
-from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
-__pico_wlan = __pico_WLAN(__pico_STA_IF)
-__pico_wlan.active(True)
-__pico_wlan.connect('${element.label}', '${password}')
-# check if successfully connected
-__pico_connected = __pico_wlan.isconnected()
-print(__pico_connected)
-del __pico_wlan
-del __pico_STA_IF
-del __pico_WLAN
+try:
+    from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
+    __pico_wlan = __pico_WLAN(__pico_STA_IF)
+    __pico_wlan.active(True)
+    __pico_wlan.connect('${element.label}', '${password}')
+    # check if successfully connected
+    __pico_connected = __pico_wlan.isconnected()
+    print(__pico_connected)
+    del __pico_wlan
+    del __pico_STA_IF
+    del __pico_WLAN
+except Exception as e:
+    pass
 `;
 
 const DISCONNECT_FROM_WIFI_SCRIPT = `
-from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
-__pico_wlan = __pico_WLAN(__pico_STA_IF)
-__pico_wlan.active(True)
-__pico_wlan.disconnect()
-__pico_wlan.active(False)
-del __pico_wlan
-del __pico_STA_IF
-del __pico_WLAN
+try:
+    from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
+    __pico_wlan = __pico_WLAN(__pico_STA_IF)
+    __pico_wlan.active(True)
+    __pico_wlan.disconnect()
+    __pico_wlan.active(False)
+    del __pico_wlan
+    del __pico_STA_IF
+    del __pico_WLAN
+except Exception as e:
+    pass
 `;
 
 const CHECK_CONNECTION_SCRIPT = `
-from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
-__pico_wlan = __pico_WLAN(__pico_STA_IF)
-__pico_wlan.active(True)
-__pico_connected = __pico_wlan.isconnected()
-if __pico_connected:
-    print(f'{str(__pico_connected)}_{__pico_wlan.config("ssid")}')
-else:
-    print(__pico_connected)
-del __pico_connected
-del __pico_wlan
-del __pico_STA_IF
-del __pico_WLAN
+try:
+    from network import WLAN as __pico_WLAN, STA_IF as __pico_STA_IF
+    __pico_wlan = __pico_WLAN(__pico_STA_IF)
+    __pico_wlan.active(True)
+    __pico_connected = __pico_wlan.isconnected()
+    if __pico_connected:
+        print(f'{str(__pico_connected)}_{__pico_wlan.config("ssid")}')
+    else:
+        print(__pico_connected)
+    del __pico_connected
+    del __pico_wlan
+    del __pico_STA_IF
+    del __pico_WLAN
+except Exception as e:
+    pass
 `;
 
 export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
@@ -247,9 +259,15 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
     const networks = await this.pyb.executeCommand(DETECT_WIFIS_SCRIPT);
 
     if (networks.type === PyOutType.commandWithResponse) {
-      const wifis: { [key: string]: string } = JSON.parse(
-        (networks as PyOutCommandWithResponse).response
-      ) as { [key: string]: string };
+      const response = (networks as PyOutCommandWithResponse).response;
+
+      if (response.trimEnd() === "") {
+        return [];
+      }
+
+      const wifis: { [key: string]: string } = JSON.parse(response) as {
+        [key: string]: string;
+      };
 
       return Object.keys(wifis)
         .map(

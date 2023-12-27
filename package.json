@@ -469,12 +469,12 @@
       "micropico-device-controller": [
         {
           "id": "micropico-device-wifi",
-          "name": "Wifi",
+          "name": "Wifi (Pico-W only)",
           "type": "tree"
         },
         {
           "id": "micropico-device-packages",
-          "name": "Packages",
+          "name": "Packages (Pico-W only)",
           "type": "webview"
         }
       ]

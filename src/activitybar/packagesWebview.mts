@@ -25,9 +25,12 @@ del __pico_listdir
 
 // TODO: may also check if the library no exists in /lib
 const INSTALL_PACKAGE_SCRIPT = (pkg: string): string => `
-from mip import install as __pico_install
-__pico_install('${pkg}')
-del __pico_install
+try:
+    from mip import install as __pico_install
+    __pico_install('${pkg}')
+    del __pico_install
+except Exception as e:
+    pass
 `;
 
 interface WebviewMessage {
@@ -68,11 +71,12 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
     );
 
     if (installedPackages.type === PyOutType.commandWithResponse) {
-      return (
-        (JSON.parse(
-          (installedPackages as PyOutCommandWithResponse).response.trimEnd()
-        ) as string[]) ?? []
-      );
+      const response = (installedPackages as PyOutCommandWithResponse).response;
+      if (response.trimEnd() === "") {
+        return [];
+      }
+
+      return (JSON.parse(response.trimEnd()) as string[]) ?? [];
     }
 
     return [];
