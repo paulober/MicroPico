@@ -27,6 +27,7 @@ export default class UI {
   private visible = false;
   private initialized = false;
   private userOperationOngoing = false;
+  private lastState = false;
 
   private items: { [key: string]: StatusBarItem } = {};
 
@@ -96,11 +97,16 @@ export default class UI {
   }
 
   private setState(connected: boolean): void {
+    this.lastState = connected;
     this.setButton(
       "status",
       connected ? "check" : "chrome-close",
       connected ? "Pico Connected" : "Pico Disconnected"
     );
+  }
+
+  public getState(): boolean {
+    return this.lastState;
   }
 
   public refreshState(force: boolean): void {

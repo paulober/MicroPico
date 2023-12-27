@@ -31,6 +31,10 @@ import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
+import DeviceWifiProvider, {
+  type Wifi,
+} from "./activitybar/deviceWifiTree.mjs";
+import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -375,7 +379,7 @@ export default class Activator {
 
     disposable = vscode.commands.registerCommand(
       commandPrefix + "remote.run",
-      async () => {
+      async (fileOverride?: string | vscode.Uri) => {
         if (!this.pyb?.isPipeConnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
@@ -384,7 +388,10 @@ export default class Activator {
           return;
         }
 
-        const file = await getFocusedFile(true);
+        const file =
+          (fileOverride !== undefined && typeof fileOverride === "string"
+            ? fileOverride
+            : undefined) ?? (await getFocusedFile(true));
 
         if (file === undefined) {
           void vscode.window.showWarningMessage(
@@ -400,7 +407,7 @@ export default class Activator {
           "import uos as _pico_uos; " +
             "__pico_dir=_pico_uos.getcwd(); " +
             `_pico_uos.chdir('${dirname(file)}'); ` +
-            `execfile('${file}'); ` +
+            `execfile('${basename(file)}'); ` +
             "_pico_uos.chdir(__pico_dir); " +
             "del __pico_dir; " +
             "del _pico_uos",
@@ -615,6 +622,7 @@ export default class Activator {
             "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
           );
         }
+
         void vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
@@ -1145,6 +1153,38 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
+    const packagesWebviewProvider = new PackagesWebviewProvider(
+      this.pyb,
+      context.extensionUri
+    );
+    const deviceWifiProvider = new DeviceWifiProvider(
+      this.pyb,
+      packagesWebviewProvider,
+      // TODO: maybe use extensionUri
+      context.extensionPath
+    );
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "device-wifi.refresh",
+      async () => {
+        await deviceWifiProvider.checkConnection();
+      }
+    );
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "device-wifi.itemClicked",
+      deviceWifiProvider.elementSelected.bind(deviceWifiProvider)
+    );
+    context.subscriptions.push(disposable);
+
+    vscode.window.registerWebviewViewProvider(
+      PackagesWebviewProvider.viewType,
+      packagesWebviewProvider
+    );
+    vscode.window.registerTreeDataProvider(
+      DeviceWifiProvider.viewType,
+      deviceWifiProvider
+    );
+
     return this.ui;
   }
 
@@ -1158,6 +1198,31 @@ export default class Activator {
           // the pyboard wrapper and mark the Pico as disconnected
           await this.pyb?.checkStatus();
           if (this.pyb?.isPipeConnected()) {
+            // ensure that the script is only executed once
+            if (this.ui?.getState() === false) {
+              const scriptToExecute = settings.getString(
+                SettingsKey.executeOnConnect
+              );
+              if (
+                scriptToExecute !== undefined &&
+                scriptToExecute.trim() !== ""
+              ) {
+                void vscode.commands.executeCommand(
+                  commandPrefix + "remote.run",
+                  scriptToExecute
+                );
+              }
+
+              const moduleToImport = settings.getString(
+                SettingsKey.importOnConnect
+              );
+              if (
+                moduleToImport !== undefined &&
+                moduleToImport.trim() !== ""
+              ) {
+                await this.pyb?.executeCommand(`import ${moduleToImport}`);
+              }
+            }
             this.ui?.refreshState(true);
 
             return;

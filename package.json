@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/MicroPico/blob/main/README.md",
@@ -20,7 +20,7 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.82.0",
+    "vscode": "^1.83.0",
     "node": ">=18.15.0"
   },
   "keywords": [
@@ -38,7 +38,7 @@
   ],
   "capabilities": {
     "virtualWorkspaces": {
-      "supported": false,
+      "supported": "limited",
       "description": "MicroPico does not support as first workspace a virtual one but contributes a virtual workspace for the Pico (W)."
     },
     "untrustedWorkspaces": {
@@ -83,13 +83,13 @@
       {
         "command": "micropico.upload",
         "title": "Upload project to Pico",
-        "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
+        "enablement": "micropico.isConnected && (resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.uploadFile",
         "title": "Upload current file to Pico",
-        "enablement": "resourceScheme != pico && isFileSystemResource",
+        "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource",
         "category": "MicroPico"
       },
       {
@@ -101,7 +101,7 @@
       {
         "command": "micropico.run",
         "title": "Run current file on Pico",
-        "enablement": "resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
+        "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
         "category": "MicroPico"
       },
       {
@@ -118,7 +118,7 @@
       {
         "command": "micropico.runselection",
         "title": "Run current selection on Pico",
-        "enablement": "!inQuickOpen && !listFocus && isFileSystemResource && editorLangId == python",
+        "enablement": "micropico.isConnected && !inQuickOpen && !listFocus && editorLangId == python",
         "category": "MicroPico"
       },
       {
@@ -195,12 +195,31 @@
         "command": "micropico.rtc.sync",
         "title": "Sync RTC",
         "category": "MicroPico"
+      },
+      {
+        "command": "micropico.device-wifi.itemClicked",
+        "title": "Wifi > Connect",
+        "category": "MicroPico"
+      },
+      {
+        "command": "micropico.device-wifi.refresh",
+        "title": "Scan",
+        "icon": {
+          "dark": "images/refresh-dark.svg",
+          "light": "images/refresh-light.svg"
+        },
+        "enablement": "view == micropico-device-wifi"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "micropico.upload",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico"
+        },
+        {
+          "command": "micropico.uploadFile",
           "group": "micropico",
           "when": "micropico.isActivated && resourceScheme != pico"
         },
@@ -263,6 +282,13 @@
           "group": "micropico",
           "when": "micropico.isActivated && resourceScheme == pico"
         }
+      ],
+      "view/title": [
+        {
+          "command": "micropico.device-wifi.refresh",
+          "when": "view == micropico-device-wifi",
+          "group": "navigation@0"
+        }
       ]
     },
     "configuration": {
@@ -270,22 +296,23 @@
       "properties": {
         "micropico.autoConnect": {
           "type": "boolean",
+          "scope": "resource",
           "default": true,
-          "scope": "machine",
           "title": "Autoconnect on USB",
           "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
           "order": 2
         },
         "micropico.manualComDevice": {
           "type": "string",
+          "scope": "resource",
           "default": "",
-          "scope": "machine",
           "title": "Manual COM device",
           "description": "If autoConnect is set to false MicroPico will automatically connect to the serial port specified here.",
           "order": 3
         },
         "micropico.syncFolder": {
           "type": "string",
+          "scope": "resource",
           "default": "",
           "title": "Sync Folder",
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
@@ -293,6 +320,7 @@
         },
         "micropico.additionalSyncFolders": {
           "type": "array",
+          "scope": "resource",
           "items": {
             "type": "string",
             "uniqueItems": true
@@ -305,12 +333,14 @@
         "micropico.syncAllFileTypes": {
           "type": "boolean",
           "default": false,
+          "scope": "resource",
           "title": "Upload all file types",
           "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
           "order": 6
         },
         "micropico.syncFileTypes": {
           "type": "array",
+          "scope": "resource",
           "items": {
             "type": "string",
             "uniqueItems": true
@@ -332,6 +362,7 @@
         },
         "micropico.pyIgnore": {
           "title": "Pyignore list",
+          "scope": "resource",
           "markdownDescription": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `micropico.additionalSyncFolders` setting or the value from `micropico.syncFolder`.",
           "type": "array",
           "items": {
@@ -354,14 +385,15 @@
         "micropico.openOnStart": {
           "type": "boolean",
           "default": false,
-          "scope": "machine",
+          "scope": "machine-overridable",
           "title": "Open on start",
-          "description": "Automatically open the MicroPico console after starting VS Code. Could cause random terminal freezes on Linux.",
+          "description": "Automatically open the MicroPico vREPL after starting VS Code. Could cause random terminal freezes on Linux.",
           "order": 9
         },
         "micropico.statusbarButtons": {
           "type": "array",
           "title": "Statusbar buttons",
+          "scope": "resource",
           "description": "Select which buttons to show in the statusbar",
           "items": {
             "type": "string",
@@ -401,9 +433,26 @@
         "micropico.softResetAfterUpload": {
           "type": "boolean",
           "default": false,
+          "scope": "resource",
           "title": "Soft-reset after upload",
           "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
           "order": 12
+        },
+        "micropico.executeOnConnect": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "title": "Script to execute on connect",
+          "description": "Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable.",
+          "order": 13
+        },
+        "micropico.importOnConnect": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "title": "MicroPython module to import on connect",
+          "description": "A MicroPython module to import in vREPL on connect. Leave empty to disable.",
+          "order": 14
         }
       }
     },
@@ -412,6 +461,29 @@
         {
           "title": "Pico (W) vREPL",
           "id": "micropico.vrepl"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "micropico-device-controller",
+          "title": "MicroPico Device Controller (experimental)",
+          "icon": "images/logo-black.png"
+        }
+      ]
+    },
+    "views": {
+      "micropico-device-controller": [
+        {
+          "id": "micropico-device-wifi",
+          "name": "Wifi (Pico-W only)",
+          "type": "tree"
+        },
+        {
+          "id": "micropico-device-packages",
+          "name": "Packages (Pico-W only)",
+          "type": "webview"
         }
       ]
     }
@@ -512,7 +584,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-json": "^6.0.1",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
@@ -521,23 +593,23 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.x",
     "@types/uuid": "^9.0.7",
-    "@types/vscode": "^1.82.0",
+    "@types/vscode": "^1.83.0",
     "@types/which": "^3.0.3",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0",
-    "@vscode/test-electron": "^2.3.7",
-    "eslint": "^8.54.0",
-    "eslint-config-prettier": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
     "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "rollup": "^4.5.1",
+    "rollup": "^4.9.1",
     "rollup-plugin-copy": "^3.5.0",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^2.0.5",
-    "axios": "^1.6.2",
-    "fs-extra": "^11.1.1",
+    "axios": "^1.6.3",
+    "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
     "rimraf": "^5.0.5",
     "uuid": "^9.0.1",
