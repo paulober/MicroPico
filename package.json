@@ -219,6 +219,11 @@
           "when": "micropico.isActivated && resourceScheme != pico"
         },
         {
+          "command": "micropico.uploadFile",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme != pico"
+        },
+        {
           "command": "micropico.download",
           "group": "micropico",
           "when": "micropico.isActivated && resourceScheme == pico"
