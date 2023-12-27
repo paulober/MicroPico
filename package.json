@@ -195,6 +195,20 @@
         "command": "micropico.rtc.sync",
         "title": "Sync RTC",
         "category": "MicroPico"
+      },
+      {
+        "command": "micropico.device-wifi.itemClicked",
+        "title": "Wifi > Connect",
+        "category": "MicroPico"
+      },
+      {
+        "command": "micropico.device-wifi.refresh",
+        "title": "Scan",
+        "icon": {
+          "dark": "images/refresh-dark.svg",
+          "light": "images/refresh-light.svg"
+        },
+        "enablement": "view == micropico-device-wifi"
       }
     ],
     "menus": {
@@ -262,6 +276,13 @@
           "command": "micropico.download",
           "group": "micropico",
           "when": "micropico.isActivated && resourceScheme == pico"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "micropico.device-wifi.refresh",
+          "when": "view == micropico-device-wifi",
+          "group": "navigation@0"
         }
       ]
     },
@@ -412,6 +433,29 @@
         {
           "title": "Pico (W) vREPL",
           "id": "micropico.vrepl"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "micropico-device-controller",
+          "title": "MicroPico Device Controller (experimental)",
+          "icon": "images/logo-black.png"
+        }
+      ]
+    },
+    "views": {
+      "micropico-device-controller": [
+        {
+          "id": "micropico-device-wifi",
+          "name": "Wifi",
+          "type": "tree"
+        },
+        {
+          "id": "micropico-device-packages",
+          "name": "Packages",
+          "type": "webview"
         }
       ]
     }

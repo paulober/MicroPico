@@ -192,6 +192,8 @@ export class Terminal implements Pseudoterminal {
         this.submitEmitter.fire(char);
       } else if (char === "\t") {
         if (this.multilineMode) {
+          // Tab is treated as 4 spaces in multiline mode and not
+          // for autocompletion like in normal mode
           this.handleInput("    ");
         } else {
           // Tab

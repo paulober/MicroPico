@@ -1,0 +1,49 @@
+body {
+    flex: 1;
+}
+
+.input-div {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 4px;
+    padding: 5px;
+    margin: 0 0 4px;
+    align-items: center;
+}
+
+button:disabled {
+    color: var(--vscode-disabledForeground);
+}
+
+ul:disabled {
+    color: var(--vscode-disabledForeground);
+}
+
+input {
+    display: flex;
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, transparent);
+    border-radius: 4px;
+    padding: 5px;
+    margin: 0 0 4px;
+    align-items: center;
+    color: var(--vscode-input-foreground);
+}
+
+input:disabled {
+    color: var(--vscode-disabledForeground);
+}
+
+ul {
+    list-style-type: square;
+}

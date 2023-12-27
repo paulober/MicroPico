@@ -31,6 +31,10 @@ import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
+import DeviceWifiProvider, {
+  type Wifi,
+} from "./activitybar/deviceWifiTree.mjs";
+import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -615,6 +619,7 @@ export default class Activator {
             "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
           );
         }
+
         void vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
@@ -1144,6 +1149,38 @@ export default class Activator {
       }
     );
     context.subscriptions.push(disposable);
+
+    const packagesWebviewProvider = new PackagesWebviewProvider(
+      this.pyb,
+      context.extensionUri
+    );
+    const deviceWifiProvider = new DeviceWifiProvider(
+      this.pyb,
+      packagesWebviewProvider,
+      // TODO: maybe use extensionUri
+      context.extensionPath
+    );
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "device-wifi.refresh",
+      async () => {
+        await deviceWifiProvider.checkConnection();
+      }
+    );
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "device-wifi.itemClicked",
+      deviceWifiProvider.elementSelected.bind(deviceWifiProvider)
+    );
+    context.subscriptions.push(disposable);
+
+    vscode.window.registerWebviewViewProvider(
+      PackagesWebviewProvider.viewType,
+      packagesWebviewProvider
+    );
+    vscode.window.registerTreeDataProvider(
+      DeviceWifiProvider.viewType,
+      deviceWifiProvider
+    );
 
     return this.ui;
   }

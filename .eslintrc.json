@@ -37,7 +37,8 @@
         "out",
         "dist",
         "**/*.d.ts",
-        "./vscodeUninstall.mjs"
+        "./vscodeUninstall.mjs",
+        "web"
     ],
     "env": {
         "node": true,
