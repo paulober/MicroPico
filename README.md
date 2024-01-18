@@ -70,6 +70,11 @@ print("Finished.")
 
 ---
 
+## Problems with Anti-Virus Software (mostly Windows)
+
+Sometimes after a new release of `pyboard-serial-com` (the underlying npm packge for communication with the board) some anti-virus software might block the execution of the extension.
+To fix this, make sure to update your local anti-virus definitions. If this doesn't help, open a new issue on GitHub and/or report the false-positive to your anti-virus vendor. Depending on the anti-virus software you are using, you might be able to whitelist the exectuable in pyboard-serial-com that is blocked by your anti-virus software.
+
 ## Extension Settings
 
 This extension contributes the following settings:
