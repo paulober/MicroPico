@@ -1,6 +1,8 @@
 # MicroPico Visual Studio Code Extension (aka Pico-W-Go)
 
-"MicroPico" is a Visual Studio Code extension designed to simplify and accelerate the development of MicroPython projects for the Raspberry Pi Pico and Pico W boards. This tool streamlines the coding process, providing code highlighting, auto-completion, code snippets, and project management features, all tailored for the seamless development experience with MicroPython on Raspberry Pi Pico and Pico W microcontrollers.
+**New Feature:** Experimental `ESP32-WROOM-32` support! (_Use the `Switch Stubs` command to get auto-completion for the `ESP32` port of MicroPython._)
+
+**MicroPico** is a Visual Studio Code extension designed to simplify and accelerate the development of MicroPython projects for the Raspberry Pi Pico and Pico W boards. This tool streamlines the coding process, providing code highlighting, auto-completion, code snippets, and project management features, all tailored for the seamless development experience with MicroPython on Raspberry Pi Pico and Pico W microcontrollers.
 
 > __Included auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO_W-20231005-v1.21.0.uf2](https://micropython.org/resources/firmware/RPI_PICO_W-20231005-v1.21.0.uf2) from the [micropython-stubs project](https://github.com/Josverl/micropython-stubs)__
 
@@ -14,11 +16,12 @@ Works with:
 ## Features
 
 - Auto-completion with docs
-- Pseudo terminal integration for communication with MicroPython REPL on a Pico (w) board (with support for tab-completion)
+- Pseudo terminal integration for communication with MicroPython REPL on a `Pico (w)` board (with support for tab-completion)
 - Running / Transferring files to / from your board
-- Built-in virtual-workspace provider for Raspberry Pi Pico (W) boards (does disable Pylance auto-completion)
-- Switch between auto-completion and IntelliSense for MicroPython ports RPi Pico, RPi Pico (W) and ESP32 (requires pip installed an in PATH)
-- Device Manager UI for managing wifi connection and installing mip packages (only on Pico-W; experimental)
+- Built-in virtual-workspace provider for Raspberry Pi `Pico (W)` boards (does disable Pylance auto-completion)
+- Switch between auto-completion and IntelliSense for MicroPython ports `RPi Pico`, `RPi Pico (W)` and `ESP32` (requires pip installed an in PATH)
+- Device Manager UI for managing wifi connection and installing mip packages (only on `Pico-W`; experimental)
+- `ESP32-WROOM-32` support (experimental)
 
 ![Preview](images/preview.gif)
 

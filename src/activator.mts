@@ -96,6 +96,7 @@ export default class Activator {
 
     this.pyb = new PyboardRunner(
       this.comDevice ?? "default",
+      115200,
       this.pyboardOnError.bind(this),
       this.pyboardOnExit.bind(this)
     );
