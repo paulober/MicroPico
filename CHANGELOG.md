@@ -10,6 +10,15 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.7.0] - 2024-01-18
+
+# Added
+- `ESP32-WROOM-32` support (experimental)
+
+# Changed
+- Upgraded to `pyboard-serial-com` `v3.0.0`,
+- Updated dependencies
+
 ## [3.6.0] - 2023-12-27
 
 # Added

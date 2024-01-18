@@ -31,9 +31,7 @@ import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
-import DeviceWifiProvider, {
-  type Wifi,
-} from "./activitybar/deviceWifiTree.mjs";
+import DeviceWifiProvider from "./activitybar/deviceWifiTree.mjs";
 import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
@@ -96,6 +94,7 @@ export default class Activator {
 
     this.pyb = new PyboardRunner(
       this.comDevice ?? "default",
+      115200,
       this.pyboardOnError.bind(this),
       this.pyboardOnExit.bind(this)
     );
