@@ -10,6 +10,11 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.7.2] - 2024-01-21
+
+# Added
+- `ESP32-C3` and `Teensy 4.0` support (experimental) (Fixes #96)
+
 ## [3.7.1] - 2024-01-20
 
 # Changed
