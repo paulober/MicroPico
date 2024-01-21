@@ -1,6 +1,6 @@
 # MicroPico Visual Studio Code Extension (aka Pico-W-Go)
 
-**New Feature:** Experimental `ESP32-WROOM-32` support! (_Use the `Switch Stubs` command to get auto-completion for the `ESP32` port of MicroPython._)
+**New Feature:** Experimental `ESP32-WROOM-32`, `ESP32-C3` and `Teensy 4.0` support! (_Use the `Switch Stubs` command to get auto-completion for the `ESP32` port of MicroPython._)
 
 **MicroPico** is a Visual Studio Code extension designed to simplify and accelerate the development of MicroPython projects for the Raspberry Pi Pico and Pico W boards. This tool streamlines the coding process, providing code highlighting, auto-completion, code snippets, and project management features, all tailored for the seamless development experience with MicroPython on Raspberry Pi Pico and Pico W microcontrollers.
 
@@ -21,7 +21,7 @@ Works with:
 - Built-in virtual-workspace provider for Raspberry Pi `Pico (W)` boards (does disable Pylance auto-completion)
 - Switch between auto-completion and IntelliSense for MicroPython ports `RPi Pico`, `RPi Pico (W)` and `ESP32` (requires pip installed an in PATH)
 - Device Manager UI for managing wifi connection and installing mip packages (only on `Pico-W`; experimental)
-- `ESP32-WROOM-32` support (experimental)
+- `ESP32-WROOM-32`, `ESP32-C3` and `Teensy 4.0` support (experimental)
 
 ![Preview](images/preview.gif)
 
