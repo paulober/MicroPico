@@ -602,12 +602,12 @@
     "eslint-config-prettier": "^9.1.0",
     "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "rollup": "^4.9.5",
+    "rollup": "^4.9.6",
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^3.0.4",
+    "@paulober/pyboard-serial-com": "^3.0.5",
     "axios": "^1.6.5",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
