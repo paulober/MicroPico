@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
-  "version": "3.7.2",
+  "version": "3.7.3",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/MicroPico/blob/main/README.md",
@@ -602,12 +602,12 @@
     "eslint-config-prettier": "^9.1.0",
     "glob": "^9.3.4",
     "mocha": "^10.2.0",
-    "rollup": "^4.9.5",
+    "rollup": "^4.9.6",
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^3.0.3",
+    "@paulober/pyboard-serial-com": "^3.0.5",
     "axios": "^1.6.5",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
