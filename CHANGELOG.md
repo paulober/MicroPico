@@ -10,6 +10,11 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.7.4] - 2024-01-23
+
+# Changed
+- Upgraded to `pyboard-serial-com` `v3.0.6`,
+
 ## [3.7.3] - 2024-01-21
 
 # Changed
