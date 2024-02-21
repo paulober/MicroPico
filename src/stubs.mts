@@ -289,7 +289,8 @@ export async function installStubsByVersion(
 
   // install stubs with pip vscode user directory
   const result = execSync(
-    `${pip} install ${port}==${version} ` + `--target "${target}" --no-user`
+    `&"${pip}" install ${port}==${version} ` + `--target "${target}" --no-user`,
+    process.platform === "win32" ? { shell: "powershell" } : {}
   );
 
   // check result
