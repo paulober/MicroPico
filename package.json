@@ -20,8 +20,8 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.83.0",
-    "node": ">=18.15.0"
+    "vscode": "^1.86.2",
+    "node": ">=18.17.0"
   },
   "keywords": [
     "raspberry",
