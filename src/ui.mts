@@ -60,26 +60,6 @@ export default class UI {
    * Show the quick pick menu for Pico-W-Go contributed commands.
    */
   public showQuickPick(): void {
-    /*const items: QuickPickItem[] = pkg.contributes.commands
-      .filter(item => item.command !== "pico-w-go.listCommands")
-      .map(item => ({
-        label: item.title,
-        kind: QuickPickItemKind.Default,
-        description: "",
-
-        // custom property
-        cmd: item.command,
-      }));
-
-    window
-      .showQuickPick(items, { placeHolder: "Select Action" })
-      .then(function (selected) {
-        if (selected !== undefined) {
-          commands.executeCommand(
-            (selected as { cmd: string } & QuickPickItem).cmd
-          );
-        }
-      });*/
     void commands.executeCommand("workbench.action.quickOpen", "> MicroPico: ");
   }
 

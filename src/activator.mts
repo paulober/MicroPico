@@ -1195,6 +1195,7 @@ export default class Activator {
         void (async () => {
           // this could let the PyboardRunner let recognize that it lost connection to
           // the pyboard wrapper and mark the Pico as disconnected
+          // O(1)
           await this.pyb?.checkStatus();
           if (this.pyb?.isPipeConnected()) {
             // ensure that the script is only executed once
@@ -1264,6 +1265,9 @@ export default class Activator {
     ) {
       //this.ui?.refreshState(true);
       this.logger.info("Connection to wrapper successfully established");
+      void vscode.window.showInformationMessage(
+        "Connection to Pico established."
+      );
 
       return;
     } else {
@@ -1277,8 +1281,11 @@ export default class Activator {
     this.ui?.refreshState(false);
     if (code === 0 || code === null) {
       this.logger.info(`Pyboard exited with code 0`);
-      void vscode.window.showInformationMessage("Disconnected from Pico");
-    } else {
+      if (this.comDevice !== undefined) {
+        void vscode.window.showInformationMessage("Disconnected from Pico");
+      }
+    } else if (this.pyb?.isBoardConnected()) {
+      // true if the connection was lost after a board has been connected successfully
       this.logger.error(`Pyboard exited with code ${code}`);
       void vscode.window.showErrorMessage("Connection to Pico lost");
     }
