@@ -10,6 +10,16 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.7.5] - 2024-02-22
+
+### Changed
+- Upgraded to `pyboard-serial-com` `v3.0.7`,
+- Updated dependencies
+- Fixed #202, Switch stubs Windows shell error
+- Fixed #193, Notifications cleanup
+- Min VS Code version is now `v1.86.2`
+- Updated stubs to MicroPython v1.22.1 stable (Thanks to @Josverl [`micropython-rp2-rpi_pico_w-stubs`](https://github.com/Josverl/micropython-stubs/releases/tag/v1.22.0))
+
 ## [3.7.4] - 2024-01-23
 
 # Changed
