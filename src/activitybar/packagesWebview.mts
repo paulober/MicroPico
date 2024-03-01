@@ -144,6 +144,10 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
     );
 
     const installedPackages = await this._getInstalledPackages();
+    /* clean up the package names */
+    installedPackages.forEach((pkg, i) => {
+      installedPackages[i] = pkg.replace(".mpy", "").replace(".py", "");
+    });
 
     // Restrict the webview to only load specific scripts
     const nonce = getNonce();
@@ -167,7 +171,7 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
         <div style="width: 100%;" class="input-div">
           ${
             this._isDisabled
-              ? "<p>Your Pico must be connected to Wifi for this feature to work</p>"
+              ? "<p>Your board must be connected to Wifi for this feature to work</p>"
               : `
           <input type="text" id="packageInput" placeholder="mip package" style=""/>
           <button id="installButton"><strong>Install</strong></button>`
