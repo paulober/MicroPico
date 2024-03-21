@@ -1266,7 +1266,7 @@ export default class Activator {
       //this.ui?.refreshState(true);
       this.logger.info("Connection to wrapper successfully established");
       void vscode.window.showInformationMessage(
-        "Connection to Pico established."
+        "Connection to board established."
       );
 
       return;

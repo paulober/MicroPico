@@ -232,19 +232,21 @@ export async function installIncludedStubs(): Promise<void> {
   );
 }
 
-const STUB_PORTS = [
-  "micropython-rp2-rpi_pico_w-stubs",
-  "micropython-rp2-rpi_pico-stubs",
-  "micropython-esp32-stubs",
-];
+enum StubPorts {
+  picoW = "micropython-rp2-rpi_pico_w-stubs",
+  pico = "micropython-rp2-rpi_pico-stubs",
+  esp32 = "micropython-esp32-stubs",
+}
+
+const STUB_PORTS: string[] = [StubPorts.picoW, StubPorts.pico, StubPorts.esp32];
 
 export function stubPortToDisplayString(port: string): string {
   switch (port) {
-    case "micropython-rp2-rpi_pico_w-stubs":
+    case StubPorts.picoW as string:
       return "RPi Pico (W)";
-    case "micropython-rp2-rpi_pico-stubs":
+    case StubPorts.pico as string:
       return "RPi Pico";
-    case "micropython-esp32-stubs":
+    case StubPorts.esp32 as string:
       return "ESP32";
     default:
       return port;
@@ -254,11 +256,11 @@ export function stubPortToDisplayString(port: string): string {
 export function displayStringToStubPort(displayString: string): string {
   switch (displayString) {
     case "RPi Pico (W)":
-      return "micropython-rp2-rpi_pico_w-stubs";
+      return StubPorts.picoW;
     case "RPi Pico":
-      return "micropython-rp2-rpi_pico-stubs";
+      return StubPorts.pico;
     case "ESP32":
-      return "micropython-esp32-stubs";
+      return StubPorts.esp32;
     default:
       return displayString;
   }
