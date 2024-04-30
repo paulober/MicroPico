@@ -26,8 +26,12 @@ function getVsCodeUserPath() {
 }
 
 const stubsFolder = join(getVsCodeUserPath(), "Pico-W-Stub");
+const newStubsFolder = join(homedir(), ".micropico-stubs")
 
 const result = await rimraf(stubsFolder, { glob: false });
 console.log("Pico-W-Stub uninstall result: ", result ? "success" : "failure");
+
+const result2 = await rimraf(newStubsFolder, { glob: false });
+console.log("New stubs uninstall result: ", result2 ? "success" : "failure");
 
 /* eslint-enable */
