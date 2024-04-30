@@ -1,5 +1,6 @@
 import { homedir } from "os";
 import { join } from "path";
+import { join as joinPosix } from "path/posix";
 import { TextDecoder } from "util";
 import {
   commands,
@@ -73,6 +74,34 @@ export function getVsCodeUserPath(): string {
   }
 
   return join(folder, "Code", "User");
+}
+
+export function getStubsBasePath(): string {
+  return join(homedir(), ".micropico-stubs");
+}
+
+export function getStubsBasePathPosix(): string {
+  return joinPosix(homedir(), ".micropico-stubs");
+}
+
+export function getIncludedStubsPath(): string {
+  return join(getStubsBasePath(), "included");
+}
+
+export function settingsStubsBasePath(): string {
+  return joinPosix("~", ".micropico-stubs");
+}
+
+export function getStubsPathForVersion(version: string): string {
+  return join(getStubsBasePath(), version);
+}
+
+export function getStubsPathForVersionPosix(version: string): string {
+  return joinPosix(getStubsBasePathPosix(), version);
+}
+
+export function settingsStubsPathForVersion(version: string): string {
+  return join(settingsStubsBasePath(), version);
 }
 
 /**
