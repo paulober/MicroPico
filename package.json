@@ -602,9 +602,9 @@
     "eslint-config-prettier": "^9.1.0",
     "glob": "^9.3.4",
     "mocha": "^10.3.0",
-    "rollup": "^4.13.0",
+    "rollup": "^4.17.1",
     "rollup-plugin-copy": "^3.5.0",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^3.0.7",
