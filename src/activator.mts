@@ -66,7 +66,7 @@ export default class Activator {
     );
 
     this.stubs = new Stubs();
-    await this.stubs.update();
+    await this.stubs.update(settings);
 
     this.comDevice = await settings.getComDevice();
 
@@ -354,6 +354,14 @@ export default class Activator {
             frozen = true;
           }
           if (data.includes("!!ERR!!")) {
+            this.logger.error(
+              "Exception occured (maybe a connection loss). " +
+                `Message dump: ${data}`
+            );
+            console.log(
+              "Exception occured (maybe a connection loss). " +
+                `Message dump: ${data}`
+            );
             // write red text into terminal
             terminal?.write(
               "\x1b[31mException occured (maybe a connection loss)\x1b[0m\r\n"
@@ -1113,7 +1121,7 @@ export default class Activator {
         }
 
         if (version.toLowerCase() === "included") {
-          await installIncludedStubs();
+          await installIncludedStubs(settings);
 
           void vscode.window.showInformationMessage("Included stubs selected.");
         } else {
@@ -1131,7 +1139,8 @@ export default class Activator {
               // TODO: implement cancellation
               const result = await installStubsByVersion(
                 versionParts[1],
-                displayStringToStubPort(versionParts[0])
+                displayStringToStubPort(versionParts[0]),
+                settings
               );
 
               if (result) {
@@ -1266,7 +1275,7 @@ export default class Activator {
       //this.ui?.refreshState(true);
       this.logger.info("Connection to wrapper successfully established");
       void vscode.window.showInformationMessage(
-        "Connection to Pico established."
+        "Connection to board established."
       );
 
       return;

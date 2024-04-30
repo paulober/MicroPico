@@ -1,12 +1,14 @@
 import { commands, window } from "vscode";
-import { join, resolve } from "path";
+import { join } from "path";
 import {
   getProjectPath,
-  getVsCodeUserPath,
+  getStubsPathForVersion,
+  getStubsPathForVersionPosix,
   recommendedExtensions,
+  settingsStubsPathForVersion,
   shouldRecommendExtensions,
 } from "./api.mjs";
-import { mkdir, readdir, symlink } from "fs/promises";
+import { mkdir, readdir } from "fs/promises";
 import {
   pathExists,
   readJsonFile,
@@ -19,6 +21,7 @@ import _ from "lodash";
 import which from "which";
 import { execSync } from "child_process";
 import axios, { HttpStatusCode } from "axios";
+import type Settings from "./settings.mjs";
 
 export default class Stubs {
   private logger: Logger;
@@ -27,13 +30,17 @@ export default class Stubs {
     this.logger = new Logger("Stubs");
   }
 
-  public async update(): Promise<void> {
-    const configFolder = getVsCodeUserPath();
-    const installedStubsFolder = join(configFolder, "Pico-W-Stub");
+  /**
+   * Update localy installed included stubs to the latest version.
+   *
+   * @returns
+   */
+  public async update(settings: Settings): Promise<void> {
+    const installedStubsFolder = getStubsPathForVersion("included");
 
     if (!(await pathExists(join(installedStubsFolder, "version.json")))) {
       // ensure config folder exists
-      await mkdir(configFolder, { recursive: true });
+      await mkdir(installedStubsFolder, { recursive: true });
 
       let installedVersion = "";
       let currentVersion = "";
@@ -64,6 +71,12 @@ export default class Stubs {
       if (installedVersion === currentVersion) {
         this.logger.info("Installed stubs are already up to date!");
 
+        // TODO: remove in future versions, only to convert legacy projects
+        const workspace = getProjectPath();
+        if (workspace) {
+          await this.removeLegacyStubs(join(workspace, ".vscode"), settings);
+        }
+
         return;
       }
     }
@@ -74,6 +87,12 @@ export default class Stubs {
       await copy(join(__dirname, "..", "mpy_stubs"), installedStubsFolder);
 
       this.logger.info("Updated stubs successfully!");
+
+      // TODO: remove in future versions, only to convert legacy projects
+      const workspace = getProjectPath();
+      if (workspace) {
+        await this.removeLegacyStubs(join(workspace, ".vscode"), settings);
+      }
     } catch (error) {
       const msg: string =
         typeof error === "string" ? error : (error as Error).message;
@@ -104,7 +123,7 @@ export default class Stubs {
       await mkdir(vsc);
     }
 
-    await this.addStubs(vsc);
+    await this.removeLegacyStubs(vsc);
     await this.addExtensions(vsc);
     await this.addSettings(vsc);
     await this.addProjectFile(workspace);
@@ -119,19 +138,21 @@ export default class Stubs {
   }
 
   /**
-   * Add stubs to the VS Code user folder
+   * Remove stubs junction from the VS Code workspace folder
    *
    * @param vsc The path to the vscode config folder in current workspace
    */
-  private async addStubs(vsc: string): Promise<void> {
+  private async removeLegacyStubs(
+    vsc: string,
+    settings: Settings | undefined = undefined
+  ): Promise<void> {
     const stubsPath = join(vsc, "Pico-W-Stub");
-    if (!(await pathExists(stubsPath))) {
-      const configFolder = getVsCodeUserPath();
-      await symlink(
-        resolve(join(configFolder, "Pico-W-Stub")),
-        stubsPath,
-        "junction"
-      );
+    if (await pathExists(stubsPath)) {
+      await removeJunction(stubsPath);
+
+      if (settings) {
+        await installIncludedStubs(settings);
+      }
     }
   }
 
@@ -155,7 +176,7 @@ export default class Stubs {
     justUpdate: boolean = false
   ): Promise<void> {
     const settingsFilePath = join(vsc, "settings.json");
-    const stubsPath = join(".vscode", "Pico-W-Stub");
+    const stubsPath = settingsStubsPathForVersion("included");
     const defaultSettings: { [key: string]: string | boolean | object } = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.linting.enabled": true,
@@ -214,37 +235,25 @@ export default class Stubs {
  *
  * @returns
  */
-export async function installIncludedStubs(): Promise<void> {
-  const workspaceFolder = getProjectPath();
-  if (workspaceFolder === undefined) {
-    return;
-  }
-  const vsc = join(workspaceFolder, ".vscode");
-  const stubsPath = join(vsc, "Pico-W-Stub");
-  if (await pathExists(stubsPath)) {
-    await removeJunction(stubsPath);
-  }
-  const configFolder = getVsCodeUserPath();
-  await symlink(
-    resolve(join(configFolder, "Pico-W-Stub")),
-    stubsPath,
-    "junction"
-  );
+export async function installIncludedStubs(settings: Settings): Promise<void> {
+  await settings.updateStubsPath(settingsStubsPathForVersion("included"));
 }
 
-const STUB_PORTS = [
-  "micropython-rp2-rpi_pico_w-stubs",
-  "micropython-rp2-rpi_pico-stubs",
-  "micropython-esp32-stubs",
-];
+enum StubPorts {
+  picoW = "micropython-rp2-rpi_pico_w-stubs",
+  pico = "micropython-rp2-rpi_pico-stubs",
+  esp32 = "micropython-esp32-stubs",
+}
+
+const STUB_PORTS: string[] = [StubPorts.picoW, StubPorts.pico, StubPorts.esp32];
 
 export function stubPortToDisplayString(port: string): string {
   switch (port) {
-    case "micropython-rp2-rpi_pico_w-stubs":
+    case StubPorts.picoW as string:
       return "RPi Pico (W)";
-    case "micropython-rp2-rpi_pico-stubs":
+    case StubPorts.pico as string:
       return "RPi Pico";
-    case "micropython-esp32-stubs":
+    case StubPorts.esp32 as string:
       return "ESP32";
     default:
       return port;
@@ -254,11 +263,11 @@ export function stubPortToDisplayString(port: string): string {
 export function displayStringToStubPort(displayString: string): string {
   switch (displayString) {
     case "RPi Pico (W)":
-      return "micropython-rp2-rpi_pico_w-stubs";
+      return StubPorts.picoW;
     case "RPi Pico":
-      return "micropython-rp2-rpi_pico-stubs";
+      return StubPorts.pico;
     case "ESP32":
-      return "micropython-esp32-stubs";
+      return StubPorts.esp32;
     default:
       return displayString;
   }
@@ -267,7 +276,8 @@ export function displayStringToStubPort(displayString: string): string {
 // TODO: option to choose stubs distrbution
 export async function installStubsByVersion(
   version: string,
-  port: string
+  port: string,
+  settings: Settings
 ): Promise<boolean> {
   // check if pip is available
   const pip: string | null = await which("pip", { nothrow: true });
@@ -281,35 +291,21 @@ export async function installStubsByVersion(
     return false;
   }
 
-  const configFolder = getVsCodeUserPath();
-  const target = resolve(
-    join(configFolder, "MicroPico-Stubs", `${port}==${version}`)
-  );
+  const folderName = `${port}==${version}`;
+  const target = getStubsPathForVersionPosix(folderName);
   mkdirpSync(target);
 
   // install stubs with pip vscode user directory
   const result = execSync(
-    `&"${pip}" install ${port}==${version} ` + `--target "${target}" --no-user`,
+    `${
+      process.platform === "win32" ? "&" : ""
+    }"${pip}" install ${port}==${version} ` + `--target "${target}" --no-user`,
     process.platform === "win32" ? { shell: "powershell" } : {}
   );
 
   // check result
   if (result.toString("utf-8").includes("Successfully installed")) {
-    const workspaceFolder = getProjectPath();
-    if (workspaceFolder === undefined) {
-      return false;
-    }
-    const vsc = join(workspaceFolder, ".vscode");
-    const stubsPath = join(vsc, "Pico-W-Stub");
-    // delete stubsPath folder if it exists
-    if (await pathExists(stubsPath)) {
-      await removeJunction(stubsPath);
-    }
-
-    // relink
-    await symlink(target, stubsPath, "junction");
-
-    return true;
+    return settings.updateStubsPath(settingsStubsPathForVersion(folderName));
   }
 
   return false;

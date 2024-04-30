@@ -1,7 +1,7 @@
 import type { Memento, Uri, WorkspaceConfiguration } from "vscode";
 import { window, workspace as vsWorkspace } from "vscode";
 import { PyboardRunner } from "@paulober/pyboard-serial-com";
-import { extName, getProjectPath } from "./api.mjs";
+import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
 import { join, relative } from "path";
 
 export enum SettingsKey {
@@ -24,10 +24,12 @@ export type Setting = string | boolean | string[] | null | undefined;
 
 export default class Settings {
   private config: WorkspaceConfiguration;
+  private pythonConfig: WorkspaceConfiguration;
   public context: Memento;
 
   constructor(context: Memento) {
     this.config = vsWorkspace.getConfiguration(extName);
+    this.pythonConfig = vsWorkspace.getConfiguration("python.analysis");
 
     this.context = context;
   }
@@ -36,7 +38,11 @@ export default class Settings {
     this.config = vsWorkspace.getConfiguration(extName);
   }
 
-  public get(key: SettingsKey): Setting {
+  public reloadPython(): void {
+    this.pythonConfig = vsWorkspace.getConfiguration("python.analysis");
+  }
+
+  public get(key: SettingsKey | string): Setting {
     return this.config.get(key);
   }
 
@@ -58,8 +64,18 @@ export default class Settings {
     return Array.isArray(value) ? value : undefined;
   }
 
-  public update<T>(key: SettingsKey, value: T): Thenable<void> {
+  public getArrayPython(key: string): string[] | undefined {
+    const value = this.pythonConfig.get(key);
+
+    return Array.isArray(value) ? value : undefined;
+  }
+
+  public update<T>(key: SettingsKey | string, value: T): Thenable<void> {
     return this.config.update(key, value, true);
+  }
+
+  public updatePython<T>(key: string, value: T): Thenable<void> {
+    return this.pythonConfig.update(key, value, null);
   }
 
   // helpers
@@ -199,6 +215,40 @@ export default class Settings {
 
   public getIngoredSyncItems(): string[] {
     return this.getArray(SettingsKey.pyIgnore) || [];
+  }
+
+  public async updateStubsPath(newStubs: string): Promise<boolean> {
+    // catch if stubs where updated before after starting the extension
+    this.reloadPython();
+
+    const typeshedPaths = this.getArrayPython("typeshedPaths");
+    const extraPaths = this.getArrayPython("extraPaths");
+
+    if (typeshedPaths === undefined || extraPaths === undefined) {
+      return false;
+    }
+
+    // Remove paths starting with '~/.micropico-stubs'
+    const filteredTypeshedPaths = typeshedPaths.filter(
+      path =>
+        !path.startsWith(settingsStubsBasePath()) &&
+        !path.includes("Pico-W-Stub")
+    );
+    const filteredExtraPaths = extraPaths.filter(
+      path =>
+        !path.startsWith(settingsStubsBasePath()) &&
+        !path.includes("Pico-W-Stub")
+    );
+
+    // Add newStubs to both arrays
+    filteredTypeshedPaths.push(newStubs);
+    filteredExtraPaths.push(newStubs);
+
+    // Update the settings with the modified arrays
+    await this.updatePython("typeshedPaths", filteredTypeshedPaths);
+    await this.updatePython("extraPaths", filteredExtraPaths);
+
+    return true;
   }
 }
 
