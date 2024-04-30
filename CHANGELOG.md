@@ -10,6 +10,12 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.7.6] - 2024-04-30
+
+### Changed
+- Updated dependencies
+- Fixed #215 and #209, Failed to switch stubs on Linux and macOS / use stubs on external drive
+
 ## [3.7.5] - 2024-02-22
 
 ### Changed
