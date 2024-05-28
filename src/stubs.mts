@@ -279,32 +279,60 @@ export async function installStubsByVersion(
   port: string,
   settings: Settings
 ): Promise<boolean> {
+  const pip3: string | null = await which("pip3", { nothrow: true });
   // check if pip is available
   const pip: string | null = await which("pip", { nothrow: true });
 
-  if (pip === null) {
-    void window.showErrorMessage(
-      "pip is required (in PATH) to install" +
-        " stubs different from the included ones."
-    );
+  let command = "";
+  // if not available check for python prefixed installations
+  if (pip3 === null && pip === null) {
+    const python3: string | null = await which("python3", { nothrow: true });
+    // windows py launcher
+    const py: string | null = await which("py", { nothrow: true });
 
-    return false;
+    // if (py ?? python) -m pip returns sth containing "No module named" -> not installed
+
+    const pyCmd = python3 ?? py;
+    if (pyCmd !== null) {
+      // TODO: check windows pylauncher compatibility
+      const result = execSync(pyCmd + " -m pip");
+      if (result.toString("utf-8").toLowerCase().includes("no module named")) {
+        void window.showErrorMessage(
+          `pip module is required (in ${pyCmd}) to install` +
+            " stubs different from the included ones."
+        );
+
+        return false;
+      }
+      command = `${pyCmd} -m pip`;
+    } else {
+      void window.showErrorMessage(
+        "python3 or py is required (in PATH) to install" +
+          " stubs different from the included ones."
+      );
+
+      return false;
+    }
+  } else {
+    command = pip3 ?? pip;
   }
 
   const folderName = `${port}==${version}`;
   const target = getStubsPathForVersionPosix(folderName);
   mkdirpSync(target);
 
+  const isWin = process.platform === "win32";
   // install stubs with pip vscode user directory
   const result = execSync(
-    `${
-      process.platform === "win32" ? "&" : ""
-    }"${pip}" install ${port}==${version} ` + `--target "${target}" --no-user`,
-    process.platform === "win32" ? { shell: "powershell" } : {}
+    `${isWin ? "&" : ""}"${command}" install ${port}==${version} ` +
+      `--target "${target}" --no-user`,
+    isWin ? { shell: "powershell" } : {}
   );
 
   // check result
-  if (result.toString("utf-8").includes("Successfully installed")) {
+  if (
+    result.toString("utf-8").toLowerCase().includes("successfully installed")
+  ) {
     return settings.updateStubsPath(settingsStubsPathForVersion(folderName));
   }
 
