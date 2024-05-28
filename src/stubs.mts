@@ -246,7 +246,7 @@ enum StubPorts {
   esp32s3 = "micropython-esp32-esp32_generic_s3-stubs",
 }
 
-const STUB_PORTS: string[] = [
+export const STUB_PORTS: string[] = [
   StubPorts.picoW,
   StubPorts.pico,
   StubPorts.esp32,
@@ -349,16 +349,24 @@ export async function installStubsByVersion(
   return false;
 }
 
-// TODO: support for other stubs distributions
-export async function fetchAvailableStubsVersions(): Promise<{
+export async function fetchAvailableStubsVersions(
+  displayPort?: string
+): Promise<{
   [key: string]: string[];
 }> {
   const versions: { [key: string]: string[] } = {};
 
-  for (const port of STUB_PORTS) {
-    const stubsVersions = await fetchAvailableStubsVersionsForPort(port);
+  if (displayPort !== undefined) {
+    const stubPort = displayStringToStubPort(displayPort);
+    const stubsVersions = await fetchAvailableStubsVersionsForPort(stubPort);
 
-    versions[port] = stubsVersions.reverse();
+    versions[stubPort] = stubsVersions.reverse();
+  } else {
+    for (const port of STUB_PORTS) {
+      const stubsVersions = await fetchAvailableStubsVersionsForPort(port);
+
+      versions[port] = stubsVersions.reverse();
+    }
   }
 
   return versions;

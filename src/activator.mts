@@ -14,6 +14,7 @@ import Stubs, {
   fetchAvailableStubsVersions,
   installIncludedStubs,
   installStubsByVersion,
+  STUB_PORTS,
   stubPortToDisplayString,
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
@@ -1093,38 +1094,52 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "extra.switchStubs",
       async () => {
-        const versions: string[] = [];
-
-        Object.entries(await fetchAvailableStubsVersions()).forEach(
-          ([key, values]) => {
-            // Map each value to "key - value" and push to resultArray
-            versions.push(
-              ...values.map(
-                value => `${stubPortToDisplayString(key)} - ${value}`
-              )
-            );
-          }
-        );
-
-        // show quick pick
-        const version = await vscode.window.showQuickPick(
-          ["Included", ...versions],
+        // let use chose between stub port
+        const stubPort = await vscode.window.showQuickPick(
+          ["Included", ...STUB_PORTS.map(stubPortToDisplayString)],
           {
             canPickMany: false,
-            placeHolder: "Select the stubs version you want to use",
+            placeHolder: "Select the stubs port you want to use",
             ignoreFocusOut: false,
           }
         );
 
-        if (version === undefined) {
+        if (stubPort === undefined) {
           return;
         }
 
-        if (version.toLowerCase() === "included") {
+        if (stubPort.toLowerCase() === "included") {
           await installIncludedStubs(settings);
 
           void vscode.window.showInformationMessage("Included stubs selected.");
         } else {
+          const availableStubVersions = await fetchAvailableStubsVersions(
+            stubPort
+          );
+          const versions: string[] = [];
+
+          Object.entries(availableStubVersions).forEach(([key, values]) => {
+            // Map each value to "key - value" and push to resultArray
+            versions.push(
+              ...values.map(value =>
+                Object.keys(availableStubVersions).length > 1
+                  ? `${stubPortToDisplayString(key)} - ${value}`
+                  : value
+              )
+            );
+          });
+
+          // show quick pick
+          const version = await vscode.window.showQuickPick(versions, {
+            canPickMany: false,
+            placeHolder: "Select the stubs version you want to use",
+            ignoreFocusOut: false,
+          });
+
+          if (version === undefined) {
+            return;
+          }
+
           await vscode.window.withProgress(
             {
               location: vscode.ProgressLocation.Notification,
