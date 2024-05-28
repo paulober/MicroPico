@@ -243,9 +243,15 @@ enum StubPorts {
   picoW = "micropython-rp2-rpi_pico_w-stubs",
   pico = "micropython-rp2-rpi_pico-stubs",
   esp32 = "micropython-esp32-stubs",
+  esp32s3 = "micropython-esp32-esp32_generic_s3-stubs",
 }
 
-const STUB_PORTS: string[] = [StubPorts.picoW, StubPorts.pico, StubPorts.esp32];
+const STUB_PORTS: string[] = [
+  StubPorts.picoW,
+  StubPorts.pico,
+  StubPorts.esp32,
+  StubPorts.esp32s3,
+];
 
 export function stubPortToDisplayString(port: string): string {
   switch (port) {
@@ -255,6 +261,8 @@ export function stubPortToDisplayString(port: string): string {
       return "RPi Pico";
     case StubPorts.esp32 as string:
       return "ESP32";
+    case StubPorts.esp32s3 as string:
+      return "ESP32S3";
     default:
       return port;
   }
@@ -268,6 +276,8 @@ export function displayStringToStubPort(displayString: string): string {
       return StubPorts.pico;
     case "ESP32":
       return StubPorts.esp32;
+    case "ESP32S3":
+      return StubPorts.esp32s3;
     default:
       return displayString;
   }
