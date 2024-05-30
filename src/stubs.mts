@@ -243,9 +243,15 @@ enum StubPorts {
   picoW = "micropython-rp2-rpi_pico_w-stubs",
   pico = "micropython-rp2-rpi_pico-stubs",
   esp32 = "micropython-esp32-stubs",
+  esp32s3 = "micropython-esp32-esp32_generic_s3-stubs",
 }
 
-const STUB_PORTS: string[] = [StubPorts.picoW, StubPorts.pico, StubPorts.esp32];
+export const STUB_PORTS: string[] = [
+  StubPorts.picoW,
+  StubPorts.pico,
+  StubPorts.esp32,
+  StubPorts.esp32s3,
+];
 
 export function stubPortToDisplayString(port: string): string {
   switch (port) {
@@ -255,6 +261,8 @@ export function stubPortToDisplayString(port: string): string {
       return "RPi Pico";
     case StubPorts.esp32 as string:
       return "ESP32";
+    case StubPorts.esp32s3 as string:
+      return "ESP32S3";
     default:
       return port;
   }
@@ -268,6 +276,8 @@ export function displayStringToStubPort(displayString: string): string {
       return StubPorts.pico;
     case "ESP32":
       return StubPorts.esp32;
+    case "ESP32S3":
+      return StubPorts.esp32s3;
     default:
       return displayString;
   }
@@ -279,48 +289,84 @@ export async function installStubsByVersion(
   port: string,
   settings: Settings
 ): Promise<boolean> {
+  const pip3: string | null = await which("pip3", { nothrow: true });
   // check if pip is available
   const pip: string | null = await which("pip", { nothrow: true });
 
-  if (pip === null) {
-    void window.showErrorMessage(
-      "pip is required (in PATH) to install" +
-        " stubs different from the included ones."
-    );
+  let command = "";
+  // if not available check for python prefixed installations
+  if (pip3 === null && pip === null) {
+    const python3: string | null = await which("python3", { nothrow: true });
+    // windows py launcher
+    const py: string | null = await which("py", { nothrow: true });
 
-    return false;
+    // if (py ?? python) -m pip returns sth containing "No module named" -> not installed
+
+    const pyCmd = python3 ?? py;
+    if (pyCmd !== null) {
+      // TODO: check windows pylauncher compatibility
+      const result = execSync(pyCmd + " -m pip");
+      if (result.toString("utf-8").toLowerCase().includes("no module named")) {
+        void window.showErrorMessage(
+          `pip module is required (in ${pyCmd}) to install` +
+            " stubs different from the included ones."
+        );
+
+        return false;
+      }
+      command = `${pyCmd} -m pip`;
+    } else {
+      void window.showErrorMessage(
+        "python3 or py is required (in PATH) to install" +
+          " stubs different from the included ones."
+      );
+
+      return false;
+    }
+  } else {
+    command = pip3 ?? pip;
   }
 
   const folderName = `${port}==${version}`;
   const target = getStubsPathForVersionPosix(folderName);
   mkdirpSync(target);
 
+  const isWin = process.platform === "win32";
   // install stubs with pip vscode user directory
   const result = execSync(
-    `${
-      process.platform === "win32" ? "&" : ""
-    }"${pip}" install ${port}==${version} ` + `--target "${target}" --no-user`,
-    process.platform === "win32" ? { shell: "powershell" } : {}
+    `${isWin ? "&" : ""}"${command}" install ${port}==${version} ` +
+      `--target "${target}" --no-user`,
+    isWin ? { shell: "powershell" } : {}
   );
 
   // check result
-  if (result.toString("utf-8").includes("Successfully installed")) {
+  if (
+    result.toString("utf-8").toLowerCase().includes("successfully installed")
+  ) {
     return settings.updateStubsPath(settingsStubsPathForVersion(folderName));
   }
 
   return false;
 }
 
-// TODO: support for other stubs distributions
-export async function fetchAvailableStubsVersions(): Promise<{
+export async function fetchAvailableStubsVersions(
+  displayPort?: string
+): Promise<{
   [key: string]: string[];
 }> {
   const versions: { [key: string]: string[] } = {};
 
-  for (const port of STUB_PORTS) {
-    const stubsVersions = await fetchAvailableStubsVersionsForPort(port);
+  if (displayPort !== undefined) {
+    const stubPort = displayStringToStubPort(displayPort);
+    const stubsVersions = await fetchAvailableStubsVersionsForPort(stubPort);
 
-    versions[port] = stubsVersions.reverse();
+    versions[stubPort] = stubsVersions.reverse();
+  } else {
+    for (const port of STUB_PORTS) {
+      const stubsVersions = await fetchAvailableStubsVersionsForPort(port);
+
+      versions[port] = stubsVersions.reverse();
+    }
   }
 
   return versions;

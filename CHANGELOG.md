@@ -10,6 +10,19 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.7.7] - 2024-05-30
+
+### Added
+- `ESP32-S3` stubs to select
+
+### Changed
+- Updated dependencies
+- Upgraded to `pyboard-serial-com` `v3.0.8`
+- Better support for pip not in PATH scenarios
+- Uninstaller supports now new stubs path
+- Simplified stubs selection
+- Update VS Code minimum version to `v1.89.0`
+
 ## [3.7.6] - 2024-04-30
 
 ### Changed
