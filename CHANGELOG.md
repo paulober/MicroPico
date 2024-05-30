@@ -21,6 +21,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 - Better support for pip not in PATH scenarios
 - Uninstaller supports now new stubs path
 - Simplified stubs selection
+- Update VS Code minimum version to `v1.89.0`
 
 ## [3.7.6] - 2024-04-30
 
