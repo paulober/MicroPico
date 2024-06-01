@@ -17,18 +17,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node v18.15.x
-        uses: actions/setup-node@v3
+      - name: Setup Node v18.18.x
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.15.x'
+          node-version: '18.18.x'
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Python v3.11
-        uses: actions/setup-python@v4
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install NPM dependencies And Download Stubs
         shell: bash
@@ -45,13 +45,13 @@ jobs:
           OVSX_PAT: ${{ secrets.OPEN_VSX_TOKEN }}
       
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Visual Studio Code extension package
           path: pico-w-go-*.vsix
 
       - name: Upload Artifact To Release
-        #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/Pico-W-Go/releases/$RELEASE_ID/assets 
+        #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/MicroPico/releases/$RELEASE_ID/assets 
         run: gh release upload $RELEASE_TAG_NAME pico-w-go-*.vsix
         env:
           #RELEASE_ID: ${{ github.event.release.id }}
