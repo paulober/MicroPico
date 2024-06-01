@@ -27,18 +27,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node v18.15.x
-        uses: actions/setup-node@v3
+      - name: Setup Node v18.18.x
+        uses: actions/setup-node@v4
         with:
-          node-version: "18.15.x"
+          node-version: "18.18.x"
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Setup Python v3.11
-        uses: actions/setup-python@v4
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install NPM Dependencies And Download Stubs
         shell: bash
