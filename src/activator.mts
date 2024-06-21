@@ -1122,9 +1122,7 @@ export default class Activator {
             // Map each value to "key - value" and push to resultArray
             versions.push(
               ...values.map(value =>
-                Object.keys(availableStubVersions).length > 1
-                  ? `${stubPortToDisplayString(key)} - ${value}`
-                  : value
+                `${stubPortToDisplayString(key)} - ${value}`
               )
             );
           });
