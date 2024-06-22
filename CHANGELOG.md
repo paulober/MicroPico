@@ -10,7 +10,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
-## [3.8.0] - 2024-06-22
+## [3.8.0] / [3.8.1] - 2024-06-22
 
 ### Added
 - Stubs auto-install feature to install selected stubs for a first opened project if not present
