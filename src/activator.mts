@@ -1122,7 +1122,13 @@ export default class Activator {
             // Map each value to "key - value" and push to resultArray
             versions.push(
               ...values.map(value =>
-                `${stubPortToDisplayString(key)} - ${value}`
+                // differentiate between multiple stub ports and single
+                // to reduce UI clutter for version selection
+                // after a user selected a certain port already
+                // but still support multiple ports per selection
+                Object.keys(availableStubVersions).length > 1
+                  ? `${stubPortToDisplayString(key)} - ${value}`
+                  : value
               )
             );
           });
@@ -1147,12 +1153,16 @@ export default class Activator {
             async (progress, token) => {
               // cancellation is not possible
               token.onCancellationRequested(() => undefined);
-              const versionParts = version.split(" - ");
+              const versionParts = version.includes(" - ")
+                ? version.split(" - ")
+                : [Object.keys(availableStubVersions)[0], version];
 
               // TODO: implement cancellation
               const result = await installStubsByVersion(
                 versionParts[1],
-                displayStringToStubPort(versionParts[0]),
+                version.includes(" - ")
+                  ? displayStringToStubPort(versionParts[0])
+                  : versionParts[0],
                 settings
               );
 
