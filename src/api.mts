@@ -101,7 +101,7 @@ export function getStubsPathForVersionPosix(version: string): string {
 }
 
 export function settingsStubsPathForVersion(version: string): string {
-  return join(settingsStubsBasePath(), version);
+  return joinPosix(settingsStubsBasePath(), version);
 }
 
 /**
