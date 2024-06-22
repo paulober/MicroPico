@@ -41,5 +41,5 @@ find . -name "*.vsix" -type f | while read -r package_path; do
   # Publish the VSCode extension to the VSCode Marketplace
   npx @vscode/vsce publish --packagePath "$package_path"
   # Publish the VSCode extension to the Open VSX Registry
-  npx ovsx publish "$package_path" -p "$OVSX_PAT"
+  #npx ovsx publish "$package_path" -p "$OVSX_PAT"
 done
