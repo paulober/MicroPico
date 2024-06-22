@@ -527,7 +527,7 @@ export default class Activator {
 
             return acc;
           },
-          ["**/.picowgo", "**/.micropico", "**/.micropico", "**/.DS_Store"]
+          ["**/.picowgo", "**/.micropico", "**/.DS_Store"]
         );
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
