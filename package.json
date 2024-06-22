@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
-  "version": "3.7.8",
+  "version": "3.8.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/MicroPico/blob/main/README.md",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paulober/MicroPico"
+    "url": "git+https://github.com/paulober/MicroPico.git"
   },
   "icon": "images/logo-256.png",
   "galleryBanner": {
