@@ -13,9 +13,11 @@ import Stubs, {
   displayStringToStubPort,
   fetchAvailableStubsVersions,
   installIncludedStubs,
+  installStubsByPipVersion,
   installStubsByVersion,
   STUB_PORTS,
   stubPortToDisplayString,
+  stubsInstalled,
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
 import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
@@ -1215,6 +1217,46 @@ export default class Activator {
       DeviceWifiProvider.viewType,
       deviceWifiProvider
     );
+
+    // auto install selected stubs of a project they aren't installed yet
+    // retuns null if stubs are installed and the pip package name plus version if not
+    const stubsInstalledResult: string | null = await stubsInstalled(settings);
+    if (stubsInstalledResult !== null) {
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title:
+            "Downloading stubs for current project, " +
+            "this may take a while...",
+          cancellable: false,
+        },
+        async (progress, token) => {
+          // cancellation is not possible
+          token.onCancellationRequested(() => undefined);
+
+          // TODO: implement cancellation
+          const result = await installStubsByPipVersion(
+            stubsInstalledResult,
+            settings
+          );
+
+          if (result) {
+            progress.report({
+              increment: 100,
+              message: "Stubs installed successfully.",
+            });
+            void vscode.window.showInformationMessage(
+              "Stubs installed successfully."
+            );
+          } else {
+            void vscode.window.showErrorMessage(
+              "Stubs installation failed. " +
+                "Selecting a different version might help."
+            );
+          }
+        }
+      );
+    }
 
     return this.ui;
   }

@@ -351,6 +351,18 @@ export async function installStubsByVersion(
   return false;
 }
 
+export async function installStubsByPipVersion(
+  pipPackageWithVersion: string,
+  settings: Settings
+): Promise<boolean> {
+  const versionParts = pipPackageWithVersion.split("==");
+  if (versionParts.length !== 2) {
+    return false;
+  }
+
+  return installStubsByVersion(versionParts[1], versionParts[0], settings);
+}
+
 export async function fetchAvailableStubsVersions(
   displayPort?: string
 ): Promise<{
@@ -394,4 +406,20 @@ async function fetchAvailableStubsVersionsForPort(
   }
 
   return [];
+}
+
+export async function stubsInstalled(
+  settings: Settings
+): Promise<string | null> {
+  const selectedStubsVersion = settings.getSelectedStubsVersion();
+  if (
+    selectedStubsVersion?.toLowerCase() === "included" ||
+    selectedStubsVersion === undefined
+  ) {
+    return null;
+  }
+
+  return !(await pathExists(getStubsPathForVersion(selectedStubsVersion)))
+    ? selectedStubsVersion
+    : null;
 }
