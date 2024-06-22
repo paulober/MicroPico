@@ -22,6 +22,7 @@ import which from "which";
 import { execSync } from "child_process";
 import axios, { HttpStatusCode } from "axios";
 import type Settings from "./settings.mjs";
+import { strict as assert } from "assert";
 
 export default class Stubs {
   private logger: Logger;
@@ -324,7 +325,8 @@ export async function installStubsByVersion(
       return false;
     }
   } else {
-    command = pip3 ?? pip;
+    assert(pip3 !== null || pip !== null);
+    command = (pip3 ?? pip)!;
   }
 
   const folderName = `${port}==${version}`;
@@ -347,6 +349,18 @@ export async function installStubsByVersion(
   }
 
   return false;
+}
+
+export async function installStubsByPipVersion(
+  pipPackageWithVersion: string,
+  settings: Settings
+): Promise<boolean> {
+  const versionParts = pipPackageWithVersion.split("==");
+  if (versionParts.length !== 2) {
+    return false;
+  }
+
+  return installStubsByVersion(versionParts[1], versionParts[0], settings);
 }
 
 export async function fetchAvailableStubsVersions(
@@ -392,4 +406,20 @@ async function fetchAvailableStubsVersionsForPort(
   }
 
   return [];
+}
+
+export async function stubsInstalled(
+  settings: Settings
+): Promise<string | null> {
+  const selectedStubsVersion = settings.getSelectedStubsVersion();
+  if (
+    selectedStubsVersion?.toLowerCase() === "included" ||
+    selectedStubsVersion === undefined
+  ) {
+    return null;
+  }
+
+  return !(await pathExists(getStubsPathForVersion(selectedStubsVersion)))
+    ? selectedStubsVersion
+    : null;
 }

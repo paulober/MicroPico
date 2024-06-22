@@ -250,6 +250,27 @@ export default class Settings {
 
     return true;
   }
+
+  public getSelectedStubsVersion(): string | undefined {
+    const typeshedPaths = this.getArrayPython("typeshedPaths");
+    const extraPaths = this.getArrayPython("extraPaths");
+
+    if (typeshedPaths === undefined && extraPaths === undefined) {
+      return;
+    }
+
+    let typeshedStubsPath = typeshedPaths?.find(path =>
+      path.includes(settingsStubsBasePath())
+    );
+    if (typeshedStubsPath === undefined) {
+      typeshedStubsPath = extraPaths?.find(path =>
+        path.includes(settingsStubsBasePath())
+      );
+    }
+    const version = typeshedStubsPath?.split("/").pop();
+
+    return version;
+  }
 }
 
 /**

@@ -10,6 +10,21 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.8.0] - 2024-06-22
+
+### Added
+- Stubs auto-install feature to install selected stubs for a first opened project if not present
+
+### Changed
+- Upgraded to `pyboard-serial-com` `v3.1.0`,
+- Updated dependencies
+- Fixed #230, Update included stubs to v1.23.0 stable 
+- Fixed #226, Pylance doesn't work after reopening
+- Fixed #227, Switch stubs error (Thanks to @wtakuo for #228)
+- Fixed #220, List remote fs contents and download project operations ignoring entries with spaces 
+- Min VS Code version is now `v1.90.2`
+- Updated stubs to MicroPython v1.23.0 stable (Thanks to @Josverl [`micropython-rp2-rpi_pico_w-stubs`](https://github.com/Josverl/micropython-stubs))
+
 ## [3.7.8] - 2024-06-01
 
 ### Changed

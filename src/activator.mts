@@ -13,9 +13,11 @@ import Stubs, {
   displayStringToStubPort,
   fetchAvailableStubsVersions,
   installIncludedStubs,
+  installStubsByPipVersion,
   installStubsByVersion,
   STUB_PORTS,
   stubPortToDisplayString,
+  stubsInstalled,
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
 import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
@@ -527,7 +529,7 @@ export default class Activator {
 
             return acc;
           },
-          ["**/.picowgo", "**/.micropico", "**/.micropico", "**/.DS_Store"]
+          ["**/.picowgo", "**/.micropico", "**/.DS_Store"]
         );
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
@@ -1122,6 +1124,10 @@ export default class Activator {
             // Map each value to "key - value" and push to resultArray
             versions.push(
               ...values.map(value =>
+                // differentiate between multiple stub ports and single
+                // to reduce UI clutter for version selection
+                // after a user selected a certain port already
+                // but still support multiple ports per selection
                 Object.keys(availableStubVersions).length > 1
                   ? `${stubPortToDisplayString(key)} - ${value}`
                   : value
@@ -1149,12 +1155,16 @@ export default class Activator {
             async (progress, token) => {
               // cancellation is not possible
               token.onCancellationRequested(() => undefined);
-              const versionParts = version.split(" - ");
+              const versionParts = version.includes(" - ")
+                ? version.split(" - ")
+                : [Object.keys(availableStubVersions)[0], version];
 
               // TODO: implement cancellation
               const result = await installStubsByVersion(
                 versionParts[1],
-                displayStringToStubPort(versionParts[0]),
+                version.includes(" - ")
+                  ? displayStringToStubPort(versionParts[0])
+                  : versionParts[0],
                 settings
               );
 
@@ -1207,6 +1217,46 @@ export default class Activator {
       DeviceWifiProvider.viewType,
       deviceWifiProvider
     );
+
+    // auto install selected stubs of a project they aren't installed yet
+    // retuns null if stubs are installed and the pip package name plus version if not
+    const stubsInstalledResult: string | null = await stubsInstalled(settings);
+    if (stubsInstalledResult !== null) {
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title:
+            "Downloading stubs for current project, " +
+            "this may take a while...",
+          cancellable: false,
+        },
+        async (progress, token) => {
+          // cancellation is not possible
+          token.onCancellationRequested(() => undefined);
+
+          // TODO: implement cancellation
+          const result = await installStubsByPipVersion(
+            stubsInstalledResult,
+            settings
+          );
+
+          if (result) {
+            progress.report({
+              increment: 100,
+              message: "Stubs installed successfully.",
+            });
+            void vscode.window.showInformationMessage(
+              "Stubs installed successfully."
+            );
+          } else {
+            void vscode.window.showErrorMessage(
+              "Stubs installation failed. " +
+                "Selecting a different version might help."
+            );
+          }
+        }
+      );
+    }
 
     return this.ui;
   }
