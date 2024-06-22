@@ -22,6 +22,7 @@ import which from "which";
 import { execSync } from "child_process";
 import axios, { HttpStatusCode } from "axios";
 import type Settings from "./settings.mjs";
+import { strict as assert } from "assert";
 
 export default class Stubs {
   private logger: Logger;
@@ -324,7 +325,8 @@ export async function installStubsByVersion(
       return false;
     }
   } else {
-    command = pip3 ?? pip;
+    assert(pip3 !== null || pip !== null);
+    command = (pip3 ?? pip)!;
   }
 
   const folderName = `${port}==${version}`;
