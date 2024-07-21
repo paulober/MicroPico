@@ -378,7 +378,8 @@
             "**/project.pico-go",
             "**/env",
             "**/venv",
-            "**/.venv"
+            "**/.venv",
+            "**/.idea"
           ],
           "order": 8
         },
