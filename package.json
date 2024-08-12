@@ -20,8 +20,8 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.90.2",
-    "node": ">=20.9.0"
+    "vscode": "^1.92.1",
+    "node": ">=20.14.0"
   },
   "keywords": [
     "raspberry",
@@ -62,7 +62,7 @@
     "arm64",
     "arm"
   ],
-  "minimumNodeVersion": 18,
+  "minimumNodeVersion": 20,
   "contributes": {
     "commands": [
       {
