@@ -608,7 +608,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^3.1.0",
+    "@paulober/pyboard-serial-com": "^3.1.1",
     "axios": "^1.7.3",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
