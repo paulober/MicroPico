@@ -10,6 +10,18 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [3.8.3] - 2024-08-28
+
+### Added
+
+- Eperimental support for `ESP32-S3-Pico`
+
+### Changed
+
+- Upraded to `pyboard-serial-com` `v3.1.1`
+- Updated dependencies
+- Ignore `.idea` by default (Thanks to @Finnomator for #237) 
+
 ## [3.8.0] / [3.8.1] / [3.8.2] - 2024-06-22
 
 ### Added
