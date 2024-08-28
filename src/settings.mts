@@ -210,11 +210,11 @@ export default class Settings {
   public getSyncFileTypes(): string[] {
     return this.getBoolean(SettingsKey.syncAllFileTypes)
       ? []
-      : this.getArray(SettingsKey.syncFileTypes) || [];
+      : this.getArray(SettingsKey.syncFileTypes) ?? [];
   }
 
   public getIngoredSyncItems(): string[] {
-    return this.getArray(SettingsKey.pyIgnore) || [];
+    return this.getArray(SettingsKey.pyIgnore) ?? [];
   }
 
   public async updateStubsPath(newStubs: string): Promise<boolean> {
@@ -282,7 +282,7 @@ export default class Settings {
  */
 export function resolveVariables(value: string[], workspace?: Uri): string[] {
   const substitutions = new Map<string, string>();
-  const home = process.env.HOME || process.env.USERPROFILE;
+  const home = process.env.HOME ?? process.env.USERPROFILE;
   if (home) {
     substitutions.set("${userHome}", home);
   }

@@ -7,7 +7,7 @@ export async function pathExists(path: string): Promise<boolean> {
     await stat(path);
 
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -20,7 +20,7 @@ export async function readJsonFile<T>(path: string): Promise<T | undefined> {
     });
 
     return JSON.parse(content) as T;
-  } catch (error) {
+  } catch {
     return undefined;
   }
 }

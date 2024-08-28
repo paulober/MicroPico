@@ -61,7 +61,7 @@ export function getVsCodeUserPath(): string {
 
   switch (process.platform) {
     case "win32":
-      folder = process.env.APPDATA || join(homeDir, "AppData", "Roaming");
+      folder = process.env.APPDATA ?? join(homeDir, "AppData", "Roaming");
       break;
     case "darwin":
       folder = join(homeDir, "Library", "Application Support");
@@ -114,6 +114,8 @@ export function getProjectPath(): string | undefined {
   if (workspaceFolders && workspaceFolders.length > 0) {
     return workspaceFolders[0].uri.fsPath;
   }
+
+  return;
 }
 
 /**
@@ -216,7 +218,7 @@ export async function getTypeshedPicoWStubPath(): Promise<
     }
 
     return null;
-  } catch (err) {
+  } catch {
     return null;
   }
 }

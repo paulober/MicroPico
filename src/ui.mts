@@ -29,7 +29,7 @@ export default class UI {
   private userOperationOngoing = false;
   private lastState = false;
 
-  private items: { [key: string]: StatusBarItem } = {};
+  private items: Record<string, StatusBarItem> = {};
 
   constructor(settings: Settings) {
     this.settings = settings;
@@ -127,16 +127,16 @@ export default class UI {
     this.userOperationOngoing = true;
     this.logger.debug("User operation started");
 
-    this.items["run"].hide();
-    this.items["stop"].show();
+    this.items.run.hide();
+    this.items.stop.show();
   }
 
   public userOperationStopped(): void {
     this.userOperationOngoing = false;
     this.logger.debug("User operation stopped");
 
-    this.items["stop"].hide();
-    this.items["run"].show();
+    this.items.stop.hide();
+    this.items.run.show();
   }
 
   public isUserOperationOngoing(): boolean {

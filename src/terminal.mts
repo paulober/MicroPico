@@ -291,7 +291,7 @@ export class Terminal implements Pseudoterminal {
       "except",
       "finally",
     ];
-    const lastLine = this.buffer.split("\n").pop() || "";
+    const lastLine = this.buffer.split("\n").pop() ?? "";
     if (!this.multilineMode) {
       this.multilineMode = multilineKeywords.some(keyword =>
         lastLine.trim().startsWith(keyword)

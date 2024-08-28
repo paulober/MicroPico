@@ -18,7 +18,7 @@ export async function renameActivationFile(): Promise<void> {
       Uri.joinPath(folder.uri, ".picowgo"),
       Uri.joinPath(folder.uri, ".micropico")
     );
-  } catch (error) {
+  } catch {
     // ignore error
   }
 }

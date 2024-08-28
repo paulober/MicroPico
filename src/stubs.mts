@@ -17,6 +17,7 @@ import {
 } from "./osHelper.mjs";
 import { copy, emptyDir, mkdirpSync } from "fs-extra";
 import Logger from "./logger.mjs";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import _ from "lodash";
 import which from "which";
 import { execSync } from "child_process";
@@ -49,7 +50,7 @@ export default class Stubs {
       if (await pathExists(installedStubsFolder)) {
         const installedMatchingFolders = (
           await readdir(installedStubsFolder)
-        ).filter(name => name.match(/micropython_rp2.*\.dist-info/));
+        ).filter(name => /micropython_rp2.*\.dist-info/.exec(name));
 
         if (installedMatchingFolders.length > 0) {
           installedVersion = installedMatchingFolders[0];
@@ -60,7 +61,7 @@ export default class Stubs {
 
       if (await pathExists(currentFolder)) {
         const currentMatchingFolders = (await readdir(currentFolder)).filter(
-          name => name.match(/micropython_rp2.*\.dist-info/)
+          name => /micropython_rp2.*\.dist-info/.exec(name)
         );
 
         if (currentMatchingFolders.length > 0) {
@@ -161,10 +162,9 @@ export default class Stubs {
     const extensionsFilePath = join(vsc, "extensions.json");
 
     // Option for adding recommended extensions in a included extensions.json file
-    const extensions =
-      ((await readJsonFile(extensionsFilePath)) as {
-        recommendations: string[];
-      }) || {};
+    const extensions = (await readJsonFile<{
+      recommendations: string[];
+    }>(extensionsFilePath)) ?? { recommendations: [] };
     extensions.recommendations = _.union(
       extensions.recommendations || [],
       recommendedExtensions
@@ -172,13 +172,10 @@ export default class Stubs {
     await writeJsonFile(extensionsFilePath, extensions);
   }
 
-  private async addSettings(
-    vsc: string,
-    justUpdate: boolean = false
-  ): Promise<void> {
+  private async addSettings(vsc: string, justUpdate = false): Promise<void> {
     const settingsFilePath = join(vsc, "settings.json");
     const stubsPath = settingsStubsPathForVersion("included");
-    const defaultSettings: { [key: string]: string | boolean | object } = {
+    const defaultSettings: Record<string, string | boolean | object> = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.linting.enabled": true,
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -192,9 +189,7 @@ export default class Stubs {
     };
 
     if (!justUpdate) {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       defaultSettings["micropico.syncFolder"] = "";
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       defaultSettings["micropico.openOnStart"] = true;
     }
 
@@ -205,7 +200,8 @@ export default class Stubs {
       "python.analysis.extraPaths": string[];
     }
 
-    let settings = ((await readJsonFile(settingsFilePath)) as ISettings) || {};
+    let settings =
+      (await readJsonFile<ISettings>(settingsFilePath)) ?? ({} as ISettings);
     settings = _.defaults(settings, defaultSettings);
 
     settings["python.analysis.typeshedPaths"] = _.union(
@@ -365,10 +361,8 @@ export async function installStubsByPipVersion(
 
 export async function fetchAvailableStubsVersions(
   displayPort?: string
-): Promise<{
-  [key: string]: string[];
-}> {
-  const versions: { [key: string]: string[] } = {};
+): Promise<Record<string, string[]>> {
+  const versions: Record<string, string[]> = {};
 
   if (displayPort !== undefined) {
     const stubPort = displayStringToStubPort(displayPort);
@@ -393,13 +387,12 @@ async function fetchAvailableStubsVersionsForPort(
     const response = await axios.get(`https://pypi.org/pypi/${port}/json`);
 
     if (response.status === HttpStatusCode.Ok.valueOf()) {
-      const releases = (
-        response.data as { releases: { [key: string]: object } }
-      ).releases;
+      const releases = (response.data as { releases: Record<string, object> })
+        .releases;
 
       return Object.keys(releases);
     }
-  } catch (error) {
+  } catch {
     //const msg: string =
     //  typeof error === "string" ? error : (error as Error).message;
     // console.error(`Fetching available stubs versions failed: ${msg}`);

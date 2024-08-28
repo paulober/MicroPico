@@ -645,7 +645,7 @@ export default class Activator {
               "/",
               undefined,
               (data: string) => {
-                const match = data.match(/:\s*(\d+)%/);
+                const match = /:\s*(\d+)%/.exec(data);
                 if (match !== null && match.length === 2) {
                   const inc = parseInt(match[1]) - pastProgress;
                   pastProgress += inc;
@@ -1399,7 +1399,7 @@ export default class Activator {
       }
     | undefined {
     const progressRegex = /^'(.+)'\s\[(\d+)\/(\d+)\]$/;
-    const match = progress.match(progressRegex);
+    const match = progressRegex.exec(progress);
     if (!match) {
       return;
     }

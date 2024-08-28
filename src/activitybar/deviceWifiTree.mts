@@ -95,8 +95,8 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
 
   private _logger: Logger = new Logger("DeviceWifiProvider");
 
-  private _connectedTo: string = "";
-  private _passwords: { [key: string]: string } = {};
+  private _connectedTo = "";
+  private _passwords: Record<string, string> = {};
 
   constructor(
     private readonly pyb: PyboardRunner,
@@ -255,6 +255,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
     return element;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async getChildren(element?: Wifi | undefined): Promise<Wifi[]> {
     const networks = await this.pyb.executeCommand(DETECT_WIFIS_SCRIPT);
 
@@ -265,9 +266,10 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
         return [];
       }
 
-      const wifis: { [key: string]: string } = JSON.parse(response) as {
-        [key: string]: string;
-      };
+      const wifis: Record<string, string> = JSON.parse(response) as Record<
+        string,
+        string
+      >;
 
       return Object.keys(wifis)
         .map(

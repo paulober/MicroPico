@@ -8,8 +8,10 @@ const logLevel: LogLevel = "debug";
 
 // ANSI escape code for red color
 const red = "\x1b[31m";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const green = "\x1b[32m";
 const yellow = "\x1b[33m";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const blue = "\x1b[34m";
 const magenta = "\x1b[35m";
 // ANSI escape code to reset color
@@ -40,6 +42,7 @@ export default class Logger {
   private shouldLog(level: LogLevel): boolean {
     const levels: LogLevel[] = ["debug", "info", "warn", "error"];
 
+    // eslint-disable-next-line @typescript-eslint/prefer-includes
     return levels.indexOf(level) >= levels.indexOf(logLevel);
   }
 

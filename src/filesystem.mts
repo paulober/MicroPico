@@ -72,7 +72,9 @@ export class PicoWFs implements FileSystemProvider {
   }
 
   public watch(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     uri: Uri,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options: {
       readonly recursive: boolean;
       readonly excludes: readonly string[];
@@ -125,8 +127,7 @@ export class PicoWFs implements FileSystemProvider {
     const itemStat = (result as PyOutGetItemStat).stat;
 
     if (
-      itemStat === null ||
-      itemStat.created === undefined ||
+      itemStat?.created === undefined ||
       itemStat.lastModified === undefined
     ) {
       this.logger.warn("stat: item not found: " + uri.path);
@@ -235,6 +236,7 @@ export class PicoWFs implements FileSystemProvider {
   public async writeFile(
     uri: Uri,
     content: Uint8Array,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options: { readonly create: boolean; readonly overwrite: boolean }
   ): Promise<void> {
     if (forbiddenFolders.some(folder => uri.path.includes(folder))) {
@@ -307,6 +309,7 @@ export class PicoWFs implements FileSystemProvider {
     oldUri: Uri,
     newUri: Uri,
     // does always overwrite
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options: { readonly overwrite: boolean }
   ): Promise<void> {
     //if old uri is open in editor close this editor window
