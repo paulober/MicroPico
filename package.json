@@ -571,15 +571,15 @@
   ],
   "scripts": {
     "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
-    "vscode:prepublish": "npm run package",
-    "postinstall": "python3 -m pip install -U micropython-rp2-rpi_pico_w-stubs==1.23.* --target ./mpy_stubs --no-user",
+    "vscode:prepublish": "pnpm package",
+    "postinstall": "python -m pip install -U micropython-rp2-rpi_pico_w-stubs==1.23.* --target ./mpy_stubs --no-user",
     "compile-uninstaller": "rollup -c uninstall.rollup.config.mjs",
-    "compile": "rollup -c && npm run compile-uninstaller",
+    "compile": "rollup -c && pnpm compile-uninstaller",
     "watch": "rollup -cw",
-    "package": "rollup -c --environment BUILD:production --sourcemap hidden && npm run compile-uninstaller",
+    "package": "rollup -c --environment BUILD:production --sourcemap hidden && pnpm compile-uninstaller",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "pretest": "pnpm compile-tests && pnpm compile && pnpm lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
@@ -603,17 +603,18 @@
     "eslint-config-prettier": "^9.1.0",
     "glob": "^9.3.4",
     "mocha": "^10.7.3",
-    "rollup": "^4.20.0",
+    "rollup": "^4.21.1",
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.5.4"
   },
   "dependencies": {
     "@paulober/pyboard-serial-com": "^3.1.1",
-    "axios": "^1.7.4",
+    "axios": "^1.7.5",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
     "rimraf": "^6.0.1",
     "uuid": "^10.0.0",
     "which": "^4.0.0"
-  }
+  },
+  "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1"
 }
