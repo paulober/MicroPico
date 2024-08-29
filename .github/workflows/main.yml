@@ -27,13 +27,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node v20.14.x
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node v20.14.0
         uses: actions/setup-node@v4
         with:
-          node-version: "20.14.x"
+          node-version: "20.14.0"
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'pnpm'
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5
@@ -44,7 +49,7 @@ jobs:
         shell: bash
         run: |
           sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
-          pnpm ci --no-audit
+          pnpm i
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
