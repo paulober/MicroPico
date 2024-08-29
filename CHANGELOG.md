@@ -10,7 +10,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
-## [3.8.3] - 2024-08-28
+## [3.8.3] / [3.8.4] - 2024-08-29
 
 ### Added
 
@@ -18,7 +18,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ### Changed
 
-- Upraded to `pyboard-serial-com` `v3.1.1`
+- Upraded to `pyboard-serial-com` `v3.1.2`
 - Updated dependencies
 - Ignore `.idea` by default (Thanks to @Finnomator for #237) 
 
