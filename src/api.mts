@@ -15,7 +15,7 @@ import type { ExtensionTerminalOptions } from "vscode";
 export const extName = "micropico";
 export const commandPrefix = `${extName}.`;
 export const extId = "paulober.pico-w-go";
-export const TERMINAL_NAME = "Pico (W) vREPL";
+export const TERMINAL_NAME = "MicroPico vREPL";
 
 export const recommendedExtensions = [
   "ms-python.python",

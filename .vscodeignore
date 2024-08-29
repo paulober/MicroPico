@@ -16,6 +16,8 @@ rollup.config.mjs
 .github/**
 scripts/**
 images/*.xcf
+images/MicroPico-Socialmedia.png
+images/PicoWGo-Socialmedia.png
 
 # instance files
 connection_state.json
@@ -25,7 +27,5 @@ azure-pipelines.yml
 *.vsix
 
 !dist/*.cjs
-!dist/scripts/*.py
-dist/scripts/__pycache__
 !mpy_stubs/
 !web/

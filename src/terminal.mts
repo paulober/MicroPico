@@ -26,7 +26,7 @@ export class Terminal implements Pseudoterminal {
   private history: History = new History();
   private controlSequence = false;
   private xCursor = 0;
-  private isForzen = false;
+  private isFrozen = false;
 
   onDidWrite: Event<string> = this.writeEmitter.event;
   onDidClose: Event<void | number> = this.closeEmitter.event;
@@ -43,7 +43,7 @@ export class Terminal implements Pseudoterminal {
     }
 
     this.isOpen = true;
-    this.isForzen = false;
+    this.isFrozen = false;
 
     //this.writeEmitter.fire("\x1b[1;32mWelcome to the Virtual REPL!\x1b[0m\r\n");
     //this.writeEmitter.fire("Enter a message and it will be echoed back:\r\n");
@@ -60,7 +60,7 @@ export class Terminal implements Pseudoterminal {
   }
 
   public freeze(): void {
-    this.isForzen = true;
+    this.isFrozen = true;
 
     this.clean(false);
   }
@@ -76,7 +76,7 @@ export class Terminal implements Pseudoterminal {
   }
 
   public melt(): void {
-    this.isForzen = false;
+    this.isFrozen = false;
   }
 
   private getRelativeCursor(): number {
@@ -93,7 +93,7 @@ export class Terminal implements Pseudoterminal {
   }
 
   public handleInput(data: string): void {
-    if (!this.isOpen || this.isForzen) {
+    if (!this.isOpen || this.isFrozen) {
       return;
     }
 
@@ -299,6 +299,10 @@ export class Terminal implements Pseudoterminal {
     }
   }
 
+  public cls(): void {
+    this.writeEmitter.fire("\x1b[2J\x1b[0f");
+  }
+
   private processInput(input: string): void {
     /*if (input === "exit") {
       this.writeEmitter.fire("\r\nExiting...\r\n");
@@ -306,12 +310,12 @@ export class Terminal implements Pseudoterminal {
     }*/
     //this.writeEmitter.fire(`\r\nYou entered: \x1b[1;33m${input}\x1b[0m\r\n`);
     if (input === ".cls" || input === ".clear") {
-      this.writeEmitter.fire("\x1b[2J\x1b[0f");
+      this.cls();
       this.open(undefined);
 
       return;
     } else if (input === ".empty") {
-      this.writeEmitter.fire("\x1b[2J\x1b[0f");
+      this.cls();
       this.prompt();
 
       return;

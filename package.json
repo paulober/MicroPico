@@ -1,7 +1,7 @@
 {
   "name": "pico-w-go",
   "displayName": "MicroPico",
-  "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico (W) with MicroPython firmware.",
+  "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico boards running MicroPython firmware.",
   "version": "3.8.3",
   "publisher": "paulober",
   "license": "MPL-2.0",
@@ -460,7 +460,7 @@
     "terminal": {
       "profiles": [
         {
-          "title": "Pico (W) vREPL",
+          "title": "MicroPico vREPL",
           "id": "micropico.vrepl"
         }
       ]
@@ -564,9 +564,9 @@
     },
     {
       "key": "togglepicowfs",
-      "name": "$(list-tree) Toggle Pico-W-FS",
+      "name": "$(list-tree) Toggle Mpy FS",
       "command": "micropico.toggleFileSystem",
-      "tooltip": "Toggle virtual Pico (W) workspace"
+      "tooltip": "Toggle virtual MicroPico workspace"
     }
   ],
   "scripts": {
@@ -601,7 +601,6 @@
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.9.1",
     "eslint-config-prettier": "^9.1.0",
-    "rimraf": "^6.0.1",
     "rollup": "^4.21.1",
     "rollup-plugin-copy": "^3.5.0",
     "tslib": "^2.7.0",
@@ -613,6 +612,7 @@
     "axios": "^1.7.5",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
+    "rimraf": "^6.0.1",
     "uuid": "^10.0.0",
     "which": "^4.0.0"
   },

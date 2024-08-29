@@ -44,6 +44,7 @@ export default class Activator {
   private ui?: UI;
   private stubs?: Stubs;
   private picoFs?: PicoWFs;
+  private terminal?: Terminal;
 
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
@@ -94,43 +95,49 @@ export default class Activator {
 
     this.setupAutoConnect(settings);
 
-    const terminal = new Terminal(async () => {
-      if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-        const result = await PicoMpyCom.getInstance().runCommand(
-          "\rfrom usys import implementation, version; " +
-            "print(version.split('; ')[1] + '; ' + implementation._machine)"
+    this.terminal = new Terminal(async () => {
+      const result = await PicoMpyCom.getInstance().runCommand(
+        "\rfrom usys import implementation, version; " +
+          "print(version.split('; ')[1] + '; ' + implementation._machine)"
+      );
+      if (result.type === OperationResultType.commandResponse) {
+        return (
+          "\x1b[1;32m" +
+          result.response +
+          "\x1b[0m" +
+          'Type "help()" for more information or ' +
+          ".help for custom vREPL commands." +
+          "\r\n".repeat(2)
         );
-        if (result.type === OperationResultType.commandResponse) {
-          return (
-            "\x1b[1;32m" +
-            result.response +
-            "\x1b[0m" +
-            'Type "help()" for more information or ' +
-            ".help for custom vREPL commands." +
-            "\r\n".repeat(2)
-          );
-        }
       }
 
-      return "No connection to Pico (W) REPL";
+      return (
+        "\x1b[38;2;255;165;0m" + // Set text color to orange (RGB: 255, 165, 0)
+        "Failed to get MicroPython version and machine type.\r\n" +
+        "Waiting for board to connect...\r\n" +
+        "\x1b[0m" // Reset text color to default
+      );
     });
     let commandExecuting = false;
-    terminal.onDidSubmit(async (cmd: string) => {
+    this.terminal.onDidSubmit(async (cmd: string) => {
       if (commandExecuting) {
         PicoMpyCom.getInstance().emit(PicoSerialEvents.relayInput, cmd);
 
         return;
       }
 
+      // TODO: maybe this.ui?.userOperationStarted();
+      // this will make waiting for prompt falsethis.terminal.freeze();
       commandExecuting = true;
       const result = await PicoMpyCom.getInstance().runFriendlyCommand(
         cmd,
         (open: boolean) => {
           // TODO: maybe use
+          //terminal.melt();
         },
         (data: Buffer) => {
           if (data.length > 0) {
-            terminal?.write(data.toString("utf-8"));
+            this.terminal?.write(data.toString("utf-8"));
           }
         },
         // TODO: proper python detection
@@ -138,13 +145,14 @@ export default class Activator {
       );
       if (result.type !== OperationResultType.commandResult || !result.result) {
         // write red text into terminal
-        terminal?.write("\x1b[31mException occured\x1b[0m");
+        this.terminal?.write("\x1b[31mException occured\x1b[0m\r\n");
       }
+      this.terminal?.write("\r\n");
       commandExecuting = false;
-      terminal?.prompt();
+      this.terminal?.prompt();
     });
-    terminal.onDidRequestTabComp(async (buf: string) => {
-      terminal.freeze();
+    this.terminal.onDidRequestTabComp(async (buf: string) => {
+      this.terminal?.freeze();
       const nlIdx = buf.lastIndexOf("\n");
       const lastLineTrimmed = buf.slice(nlIdx + 1).trim();
       const result = await PicoMpyCom.getInstance().retrieveTabCompletion(
@@ -159,15 +167,15 @@ export default class Activator {
         if (result.isSimple) {
           newUserInp = newUserInp.replace(lastLineTrimmed, result.suggestions);
         } else {
-          terminal.write(result.suggestions);
+          this.terminal?.write(result.suggestions);
         }
       }
-      terminal.prompt();
-      terminal.melt();
+      this.terminal?.prompt();
+      this.terminal?.melt();
 
       // simulate user input to get the correct indentation
       for (const char of newUserInp) {
-        terminal.handleInput(char);
+        this.terminal?.handleInput(char);
       }
     });
 
@@ -191,7 +199,7 @@ export default class Activator {
         )
       ),
       isTransient: true,
-      pty: terminal,
+      pty: this.terminal,
       hideFromUser: false,
       location: vscode.TerminalLocation.Panel,
     };
@@ -207,9 +215,9 @@ export default class Activator {
     context.subscriptions.push(
       vscode.window.onDidOpenTerminal(newTerminal => {
         if (newTerminal.creationOptions.name === TERMINAL_NAME) {
-          if (terminal?.getIsOpen()) {
+          if (this.terminal?.getIsOpen()) {
             void vscode.window.showWarningMessage(
-              "Only one instance of Pico (W) vREPL is recommended. " +
+              "Only one instance of MicroPico vREPL is recommended. " +
                 "Please close the new terminal instance!"
             );
             // would freeze old terminal
@@ -341,6 +349,7 @@ export default class Activator {
         }
 
         await focusTerminal(terminalOptions);
+        // TODO: maybe freeze terminal until this operation runs to prevent user input
         const data = await PicoMpyCom.getInstance().runFile(
           file,
           (open: boolean): void => {
@@ -349,13 +358,13 @@ export default class Activator {
             }
 
             commandExecuting = true;
-            terminal?.clean(true);
-            terminal?.write("\r\n");
+            this.terminal?.clean(true);
+            this.terminal?.write("\r\n");
             this.ui?.userOperationStarted();
           },
           (data: Buffer) => {
             if (data.length > 0) {
-              terminal?.write(data.toString("utf-8"));
+              this.terminal?.write(data.toString("utf-8"));
             }
           }
         );
@@ -364,9 +373,9 @@ export default class Activator {
           this.logger.warn("Failed to execute script on Pico.");
         }
         commandExecuting = false;
-        terminal?.melt();
-        terminal?.write("\r\n");
-        terminal?.prompt();
+        this.terminal?.melt();
+        this.terminal?.write("\r\n");
+        this.terminal?.prompt();
       }
     );
     context.subscriptions.push(disposable);
@@ -411,13 +420,13 @@ export default class Activator {
             // tells the terminal that it should
             // emit input events to relay user input
             commandExecuting = true;
-            terminal?.clean(true);
-            terminal?.write("\r\n");
+            this.terminal?.clean(true);
+            this.terminal?.write("\r\n");
             this.ui?.userOperationStarted();
           },
           (data: Buffer) => {
             if (data.length > 0) {
-              terminal?.write(data.toString("utf-8"));
+              this.terminal?.write(data.toString("utf-8"));
             }
           },
           // TODO: better python detection
@@ -425,9 +434,9 @@ export default class Activator {
         );
         this.ui?.userOperationStopped();
         commandExecuting = false;
-        terminal?.melt();
-        terminal?.write("\r\n");
-        terminal?.prompt();
+        this.terminal?.melt();
+        this.terminal?.write("\r\n");
+        this.terminal?.prompt();
       }
     );
     context.subscriptions.push(disposable);
@@ -461,13 +470,13 @@ export default class Activator {
               }
 
               commandExecuting = true;
-              terminal?.clean(true);
-              terminal?.write("\r\n");
+              this.terminal?.clean(true);
+              this.terminal?.write("\r\n");
               this.ui?.userOperationStarted();
             },
             (data: Buffer) => {
               if (data.length > 0) {
-                terminal?.write(data.toString("utf-8"));
+                this.terminal?.write(data.toString("utf-8"));
               }
             },
             // TODO: better python detection
@@ -479,8 +488,8 @@ export default class Activator {
             // const result = data as PyOutCommandResult;
             // TODO: reflect result.result in status bar
           }
-          terminal?.melt();
-          terminal?.prompt();
+          this.terminal?.melt();
+          this.terminal?.prompt();
         }
       }
     );
@@ -1015,13 +1024,13 @@ export default class Activator {
             if (open) {
               commandExecuting = true;
               //terminal?.freeze();
-              terminal?.clean(true);
+              this.terminal?.clean(true);
               //terminal?.write("\r\n");
               this.ui?.userOperationStarted();
             }
           },
           (data: Buffer) => {
-            terminal?.write(data.toString("utf-8"));
+            this.terminal?.write(data.toString("utf-8"));
           }
         );
         commandExecuting = false;
@@ -1035,8 +1044,8 @@ export default class Activator {
             void vscode.window.showErrorMessage("Hard reset failed");
           }
         }
-        terminal?.melt();
-        terminal?.prompt();
+        this.terminal?.melt();
+        this.terminal?.prompt();
       }
     );
 
@@ -1282,6 +1291,9 @@ export default class Activator {
       this.logger.debug(
         "Connected to a board. Now executing *OnConnect stuff..."
       );
+
+      this.terminal?.cls();
+      this.terminal?.open(undefined);
 
       const scriptToExecute = settings.getString(SettingsKey.executeOnConnect);
       if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
