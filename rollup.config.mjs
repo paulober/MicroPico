@@ -18,12 +18,14 @@ export default {
     },
     external: [
         'vscode',
+        // need to be externalized and included by packager for native modules of pico-mpy-com
+        "@serialport/bindings-cpp",
     ],
     plugins: [
         !isProduction && copy({
             targets: [
                 {
-                    src: 'node_modules/@paulober/pyboard-serial-com/scripts',
+                    src: 'node_modules/@serialport/bindings-cpp/scripts',
                     dest: 'dist/'
                 },
             ],
@@ -31,12 +33,14 @@ export default {
         nodeResolve({
             preferBuiltins: true,
         }),
-        commonjs(),
+        commonjs({
+            ignoreDynamicRequires: true,
+        }),
         typescript({
             tsconfig: 'tsconfig.json',
         }),
         isProduction && terser(),
-        // required by axios
+        // required by axios and serialport
         json(),
     ],
 };

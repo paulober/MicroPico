@@ -1,9 +1,5 @@
 /* eslint-disable max-len */
-import {
-  type PyOutCommandWithResponse,
-  PyOutType,
-  type PyboardRunner,
-} from "@paulober/pyboard-serial-com";
+import { OperationResultType, PicoMpyCom } from "@paulober/pico-mpy-com";
 import {
   Uri,
   window,
@@ -44,10 +40,7 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
   private _view?: WebviewView;
   private _isDisabled = true;
 
-  constructor(
-    private readonly pyb: PyboardRunner,
-    private readonly _extensionUri: Uri
-  ) {}
+  constructor(private readonly _extensionUri: Uri) {}
 
   public async disable(): Promise<void> {
     this._isDisabled = true;
@@ -66,12 +59,12 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
   }
 
   private async _getInstalledPackages(): Promise<string[]> {
-    const installedPackages = await this.pyb.executeCommand(
+    const installedPackages = await PicoMpyCom.getInstance().runCommand(
       INSTALLED_PACKAGES_SCRIPT
     );
 
-    if (installedPackages.type === PyOutType.commandWithResponse) {
-      const response = (installedPackages as PyOutCommandWithResponse).response;
+    if (installedPackages.type === OperationResultType.commandResponse) {
+      const response = installedPackages.response;
       if (response.trimEnd() === "") {
         return [];
       }
@@ -83,13 +76,12 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
   }
 
   private async installPackage(pkg: string): Promise<void> {
-    const installPackageResult = await this.pyb.executeCommand(
+    const installPackageResult = await PicoMpyCom.getInstance().runCommand(
       INSTALL_PACKAGE_SCRIPT(pkg)
     );
 
-    if (installPackageResult.type === PyOutType.commandWithResponse) {
-      const response = (installPackageResult as PyOutCommandWithResponse)
-        .response;
+    if (installPackageResult.type === OperationResultType.commandResponse) {
+      const response = installPackageResult.response;
 
       if (!response.toLowerCase().includes("not found")) {
         void window.showInformationMessage(

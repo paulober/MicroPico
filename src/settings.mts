@@ -1,8 +1,8 @@
 import type { Memento, Uri, WorkspaceConfiguration } from "vscode";
 import { window, workspace as vsWorkspace } from "vscode";
-import { PyboardRunner } from "@paulober/pyboard-serial-com";
 import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
 import { join, relative } from "path";
+import { PicoMpyCom } from "@paulober/pico-mpy-com";
 
 export enum SettingsKey {
   autoConnect = "autoConnect",
@@ -90,10 +90,10 @@ export default class Settings {
     // or if manualComDevice is undefined
     if (this.getBoolean(SettingsKey.autoConnect) === true) {
       try {
-        process.env.NODE_ENV = "production";
-        const ports = await PyboardRunner.getPorts();
-        if (ports.ports.length > 0) {
-          return ports.ports[0];
+        // process.env.NODE_ENV = "production";
+        const ports = await PicoMpyCom.getSerialPorts();
+        if (ports.length > 0) {
+          return ports[0];
         }
       } catch (e) {
         // TODO: use logger

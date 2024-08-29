@@ -23,7 +23,7 @@ jobs:
   build:
     name: "Build ubuntu-latest"
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -34,19 +34,25 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install NPM Dependencies And Download Stubs
+      - name: Install PNPM Dependencies And Download Stubs
         shell: bash
         run: |
           sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
-          npm ci --no-audit
+          pnpm ci --no-audit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package Extension
         run: npx @vscode/vsce package --no-yarn -o micropico-${{ github.sha }}.vsix
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: micropico-${{ github.sha }}.vsix
+          path: micropico-${{ github.sha }}.vsix

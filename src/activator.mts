@@ -20,22 +20,19 @@ import Stubs, {
   stubsInstalled,
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
-import { PyboardRunner, PyOutType } from "@paulober/pyboard-serial-com";
-import type {
-  PyOut,
-  PyOutCommandResult,
-  PyOutCommandWithResponse,
-  PyOutStatus,
-  PyOutTabComp,
-} from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
-import { basename, dirname, join, relative, sep } from "path";
+import { basename, dirname, join } from "path";
 import { PicoWFs } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
 import DeviceWifiProvider from "./activitybar/deviceWifiTree.mjs";
 import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
+import {
+  OperationResultType,
+  PicoMpyCom,
+  PicoSerialEvents,
+} from "@paulober/pico-mpy-com";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -44,7 +41,6 @@ const PICO_VARAINTS_PINOUTS = ["pico-pinout.svg", "picow-pinout.svg"];
 
 export default class Activator {
   private logger: Logger;
-  private pyb?: PyboardRunner;
   private ui?: UI;
   private stubs?: Stubs;
   private picoFs?: PicoWFs;
@@ -59,6 +55,7 @@ export default class Activator {
   public async activate(
     context: vscode.ExtensionContext
   ): Promise<UI | undefined> {
+    // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
     const settings = new Settings(context.workspaceState);
 
     // execute async not await
@@ -95,25 +92,18 @@ export default class Activator {
     this.ui = new UI(settings);
     this.ui.init();
 
-    this.pyb = new PyboardRunner(
-      this.comDevice ?? "default",
-      115200,
-      this.pyboardOnError.bind(this),
-      this.pyboardOnExit.bind(this)
-    );
-
     this.setupAutoConnect(settings);
 
     const terminal = new Terminal(async () => {
-      if (this.pyb?.isPipeConnected()) {
-        const result = await this.pyb?.executeCommand(
+      if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+        const result = await PicoMpyCom.getInstance().runCommand(
           "\rfrom usys import implementation, version; " +
             "print(version.split('; ')[1] + '; ' + implementation._machine)"
         );
-        if (result.type === PyOutType.commandWithResponse) {
+        if (result.type === OperationResultType.commandResponse) {
           return (
             "\x1b[1;32m" +
-            (result as PyOutCommandWithResponse).response +
+            result.response +
             "\x1b[0m" +
             'Type "help()" for more information or ' +
             ".help for custom vREPL commands." +
@@ -127,23 +117,29 @@ export default class Activator {
     let commandExecuting = false;
     terminal.onDidSubmit(async (cmd: string) => {
       if (commandExecuting) {
-        await this.pyb?.writeToPyboard(cmd);
+        PicoMpyCom.getInstance().emit(PicoSerialEvents.relayInput, cmd);
 
         return;
       }
 
       commandExecuting = true;
-      await this.pyb?.executeFriendlyCommand(cmd, (data: string) => {
-        if (data === "!!JSONDecodeError!!" || data === "!!ERR!!") {
-          // write red text into terminal
-          terminal?.write("\x1b[31mException occured\x1b[0m");
-
-          return;
-        }
-        if (data.length > 0) {
-          terminal?.write(data);
-        }
-      });
+      const result = await PicoMpyCom.getInstance().runFriendlyCommand(
+        cmd,
+        (open: boolean) => {
+          // TODO: maybe use
+        },
+        (data: Buffer) => {
+          if (data.length > 0) {
+            terminal?.write(data.toString("utf-8"));
+          }
+        },
+        // TODO: proper python detection
+        process.platform === "win32" ? "python" : "python3"
+      );
+      if (result.type !== OperationResultType.commandResult || !result.result) {
+        // write red text into terminal
+        terminal?.write("\x1b[31mException occured\x1b[0m");
+      }
       commandExecuting = false;
       terminal?.prompt();
     });
@@ -151,21 +147,19 @@ export default class Activator {
       terminal.freeze();
       const nlIdx = buf.lastIndexOf("\n");
       const lastLineTrimmed = buf.slice(nlIdx + 1).trim();
-      const result = await this.pyb?.retrieveTabCompletion(lastLineTrimmed);
+      const result = await PicoMpyCom.getInstance().retrieveTabCompletion(
+        lastLineTrimmed
+      );
       // to be modified if simple tab completion
       let newUserInp = buf;
       if (
-        result?.type === PyOutType.tabComp &&
-        (result as PyOutTabComp).completion.length > 0
+        result?.type === OperationResultType.tabComplete &&
+        result.suggestions.trimEnd().length > lastLineTrimmed.length
       ) {
-        const compResult = result as PyOutTabComp;
-        if (compResult.isSimple) {
-          newUserInp = newUserInp.replace(
-            lastLineTrimmed,
-            compResult.completion
-          );
+        if (result.isSimple) {
+          newUserInp = newUserInp.replace(lastLineTrimmed, result.suggestions);
         } else {
-          terminal.write(compResult.completion);
+          terminal.write(result.suggestions);
         }
       }
       terminal.prompt();
@@ -242,7 +236,7 @@ export default class Activator {
     );
 
     // register fs provider as early as possible
-    this.picoFs = new PicoWFs(this.pyb);
+    this.picoFs = new PicoWFs();
     context.subscriptions.push(
       vscode.workspace.registerFileSystemProvider("pico", this.picoFs, {
         isCaseSensitive: true,
@@ -252,7 +246,7 @@ export default class Activator {
 
     context.subscriptions.push({
       dispose: async () => {
-        await this.pyb?.disconnect();
+        await PicoMpyCom.getInstance().closeSerialPort();
       },
     });
 
@@ -301,7 +295,8 @@ export default class Activator {
         this.comDevice = await settings.getComDevice();
         if (this.comDevice !== undefined) {
           this.ui?.init();
-          this.pyb?.switchDevice(this.comDevice);
+          // TODO: verify that this does allow smooth transition between serialport devices
+          await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
           this.setupAutoConnect(settings);
         }
       }
@@ -313,7 +308,7 @@ export default class Activator {
       commandPrefix + "disconnect",
       async () => {
         clearInterval(this.autoConnectTimer);
-        await this.pyb?.disconnect();
+        await PicoMpyCom.getInstance().closeSerialPort();
       }
     );
     context.subscriptions.push(disposable);
@@ -322,7 +317,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "run",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -345,39 +340,28 @@ export default class Activator {
           }
         }
 
-        let frozen = false;
         await focusTerminal(terminalOptions);
-        const data = await this.pyb.runFile(file, (data: string) => {
-          // only freeze after operation has started
-          if (!frozen) {
+        const data = await PicoMpyCom.getInstance().runFile(
+          file,
+          (open: boolean): void => {
+            if (!open) {
+              return;
+            }
+
             commandExecuting = true;
             terminal?.clean(true);
             terminal?.write("\r\n");
             this.ui?.userOperationStarted();
-            frozen = true;
+          },
+          (data: Buffer) => {
+            if (data.length > 0) {
+              terminal?.write(data.toString("utf-8"));
+            }
           }
-          if (data.includes("!!ERR!!")) {
-            this.logger.error(
-              "Exception occured (maybe a connection loss). " +
-                `Message dump: ${data}`
-            );
-            console.log(
-              "Exception occured (maybe a connection loss). " +
-                `Message dump: ${data}`
-            );
-            // write red text into terminal
-            terminal?.write(
-              "\x1b[31mException occured (maybe a connection loss)\x1b[0m\r\n"
-            );
-          } else if (data.length > 0) {
-            terminal?.write(data);
-          }
-        });
+        );
         this.ui?.userOperationStopped();
-        if (data.type === PyOutType.commandResult) {
-          if (!(data as PyOutCommandResult).result) {
-            this.logger.warn("Failed to execute script on Pico.");
-          }
+        if (data.type !== OperationResultType.commandResult || !data.result) {
+          this.logger.warn("Failed to execute script on Pico.");
         }
         commandExecuting = false;
         terminal?.melt();
@@ -390,7 +374,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "remote.run",
       async (fileOverride?: string | vscode.Uri) => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -411,30 +395,33 @@ export default class Activator {
           return;
         }
 
-        let frozen = false;
         await focusTerminal(terminalOptions);
-        await this.pyb.executeCommand(
-          "import uos as _pico_uos; " +
-            "__pico_dir=_pico_uos.getcwd(); " +
-            `_pico_uos.chdir('${dirname(file)}'); ` +
+        await PicoMpyCom.getInstance().runFriendlyCommand(
+          "import os; " +
+            "__pico_dir=os.getcwd(); " +
+            `os.chdir('${dirname(file)}'); ` +
             `execfile('${basename(file)}'); ` +
-            "_pico_uos.chdir(__pico_dir); " +
-            "del __pico_dir; " +
-            "del _pico_uos",
-          (data: string) => {
-            // only freeze after operation has started
-            if (!frozen) {
-              commandExecuting = true;
-              terminal?.clean(true);
-              terminal?.write("\r\n");
-              this.ui?.userOperationStarted();
-              frozen = true;
+            "os.chdir(__pico_dir); " +
+            "del __pico_dir",
+          (open: boolean) => {
+            if (!open) {
+              return;
             }
+
+            // tells the terminal that it should
+            // emit input events to relay user input
+            commandExecuting = true;
+            terminal?.clean(true);
+            terminal?.write("\r\n");
+            this.ui?.userOperationStarted();
+          },
+          (data: Buffer) => {
             if (data.length > 0) {
-              terminal?.write(data);
+              terminal?.write(data.toString("utf-8"));
             }
           },
-          true
+          // TODO: better python detection
+          process.platform === "win32" ? "python" : "python3"
         );
         this.ui?.userOperationStopped();
         commandExecuting = false;
@@ -449,7 +436,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "runselection",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -464,28 +451,31 @@ export default class Activator {
 
           return;
         } else {
-          let frozen = false;
           await focusTerminal(terminalOptions);
-          const data = await this.pyb.executeCommand(
+          const data = await PicoMpyCom.getInstance().runFriendlyCommand(
             code,
-            (data: string) => {
-              // only freeze after operation has started
-              if (!frozen) {
-                commandExecuting = true;
-                terminal?.clean(true);
-                terminal?.write("\r\n");
-                this.ui?.userOperationStarted();
-                frozen = true;
+            (open: boolean) => {
+              // TODO: maybe make sure these kind of functions are only run once
+              if (!open) {
+                return;
               }
+
+              commandExecuting = true;
+              terminal?.clean(true);
+              terminal?.write("\r\n");
+              this.ui?.userOperationStarted();
+            },
+            (data: Buffer) => {
               if (data.length > 0) {
-                terminal?.write(data);
+                terminal?.write(data.toString("utf-8"));
               }
             },
-            true
+            // TODO: better python detection
+            process.platform === "win32" ? "python" : "python3"
           );
           commandExecuting = false;
           this.ui?.userOperationStopped();
-          if (data.type === PyOutType.commandResult) {
+          if (data.type === OperationResultType.commandResult) {
             // const result = data as PyOutCommandResult;
             // TODO: reflect result.result in status bar
           }
@@ -500,7 +490,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "upload",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -534,8 +524,8 @@ export default class Activator {
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
           // TODO: maybe do soft reboot instead of gc for bigger impact
-          await this.pyb?.executeCommand(
-            "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
+          await PicoMpyCom.getInstance().runCommand(
+            "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc"
           );
         }
 
@@ -549,29 +539,27 @@ export default class Activator {
             // cancellation is not possible
             token.onCancellationRequested(() => undefined);
 
-            let currentFileIndex = -1;
-            const data = await this.pyb?.startUploadingProject(
+            const data = await PicoMpyCom.getInstance().uploadProject(
               syncDir[1],
               settings.getSyncFileTypes(),
               ignoredSyncItems,
-              (data: string) => {
-                this.logger.debug("upload progress: " + data);
-                const status = this.analyseUploadDownloadProgress(data);
+              (
+                totalChunksCount: number,
+                currentChunk: number,
+                relativePath: string
+              ) => {
+                this.logger.debug(
+                  "upload progress: " +
+                    `${currentChunk}/${totalChunksCount} - ${relativePath}`
+                );
 
-                if (status === undefined) {
-                  return;
-                }
-
-                if (currentFileIndex < status.current) {
-                  currentFileIndex = status.current;
-                  progress.report({
-                    increment: 100 / status.total,
-                  });
-                }
-
+                // increment progress bar
+                // can be done like this as this function is only called once per chunk
                 progress.report({
-                  message: sep + relative(syncDir[1], status.filePath),
+                  increment: 100 / totalChunksCount,
+                  message: relativePath,
                 });
+                // message: sep + relative(syncDir[1], status.filePath),
               }
             );
 
@@ -580,9 +568,8 @@ export default class Activator {
               return;
             }
 
-            if (data.type === PyOutType.status) {
-              const result = data as PyOutStatus;
-              if (result.status) {
+            if (data.type === OperationResultType.commandResult) {
+              if (data.result) {
                 void vscode.window.showInformationMessage("Project uploaded.");
               } else {
                 void vscode.window.showErrorMessage("Project upload failed.");
@@ -590,8 +577,10 @@ export default class Activator {
                 return;
               }
             }
-            progress.report({ increment: 100, message: "Project uploaded." });
-            // moved outside if so if not uploaded because file already exists it still resets
+            // TODO: maybe make sure it's 100% if needed to make notification dissapear
+            //progress.report({ increment: 100, message: "Project uploaded." });
+
+            // moved outside so if not uploaded because file already exists it still resets
             if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
               //await this.pyb?.softReset();
               await vscode.commands.executeCommand(
@@ -608,7 +597,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "uploadFile",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -628,8 +617,8 @@ export default class Activator {
         let pastProgress = 0;
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
-          await this.pyb?.executeCommand(
-            "import gc as __pico_gc; __pico_gc.collect(); del __pico_gc"
+          await PicoMpyCom.getInstance().runCommand(
+            "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc"
           );
         }
 
@@ -639,27 +628,30 @@ export default class Activator {
             title: "Uploading file...",
             cancellable: false,
           },
+          // TODO: add support for cancelation
           async (progress /*, token*/) => {
-            const data = await this.pyb?.uploadFiles(
+            const data = await PicoMpyCom.getInstance().uploadFiles(
               [file],
               "/",
               undefined,
-              (data: string) => {
-                const match = /:\s*(\d+)%/.exec(data);
-                if (match !== null && match.length === 2) {
-                  const inc = parseInt(match[1]) - pastProgress;
-                  pastProgress += inc;
-                  if (pastProgress >= 100) {
-                    progress.report({ message: "File uploaded." });
-                  } else {
-                    progress.report({ increment: inc });
-                  }
-                }
+              (
+                totalChunksCount: number,
+                currentChunk: number,
+                relativePath: string
+              ) => {
+                // increment progress and set message to uploaded if 100% is reached
+                progress.report({
+                  increment: 100 / totalChunksCount,
+                  message:
+                    totalChunksCount === currentChunk
+                      ? "Uploaded"
+                      : // TODO: maybe add something like: uploading...
+                        relativePath,
+                });
               }
             );
-            if (data && data.type === PyOutType.status) {
-              const result = data as PyOutStatus;
-              if (result.status) {
+            if (data && data.type === OperationResultType.commandResult) {
+              if (data.result) {
                 this.picoFs?.fileChanged(
                   vscode.FileChangeType.Created,
                   vscode.Uri.from({
@@ -667,7 +659,8 @@ export default class Activator {
                     path: "/" + basename(file),
                   })
                 );
-                progress.report({ increment: 100 });
+                // TODO: maybe make sure to set 100% if needed to make notification dissapear
+                //progress.report({ increment: 100 });
                 if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
                   //await this.pyb?.softReset();
                   await vscode.commands.executeCommand(
@@ -689,7 +682,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "download",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -714,35 +707,30 @@ export default class Activator {
             cancellable: false,
           },
           async (progress /*, token*/) => {
-            let currentFileIndex = -1;
-            const data = await this.pyb?.downloadProject(
+            const data = await PicoMpyCom.getInstance().downloadProject(
               syncDir[1],
-              (data: string) => {
-                const status = this.analyseUploadDownloadProgress(data);
-
-                if (status === undefined) {
-                  return;
-                }
-
-                if (currentFileIndex < status.current) {
-                  currentFileIndex = status.current;
-                  progress.report({
-                    increment: 100 / status.total,
-                  });
-                }
-
+              (
+                totalChunksCount: number,
+                currentChunk: number,
+                relativePath: string
+              ) => {
+                // increment progress
                 progress.report({
-                  message: status.filePath,
+                  increment: 100 / totalChunksCount,
+                  message:
+                    totalChunksCount === currentChunk
+                      ? "Project downloaded"
+                      : relativePath,
                 });
               }
             );
-            if (data && data.type === PyOutType.status) {
-              const result = data as PyOutStatus;
-              if (result.status) {
-                progress.report({
+            if (data && data.type === OperationResultType.commandResult) {
+              if (data.result) {
+                // TODO: maybe set to 100% if needed to make notification dissapear
+                /*progress.report({
                   increment: 100,
-                  message: "Project downloaded.",
-                });
+                });*/
+                // TODO: maybe second notification isn't needed
                 void vscode.window.showInformationMessage(
                   "Project downloaded."
                 );
@@ -760,7 +748,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "deleteAllFiles",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -768,10 +756,9 @@ export default class Activator {
           return;
         }
 
-        const data = await this.pyb.deleteFolderRecursive("/");
-        if (data.type === PyOutType.status) {
-          const result = data as PyOutStatus;
-          if (result.status) {
+        const data = await PicoMpyCom.getInstance().deleteFolderRecursive("/");
+        if (data.type === OperationResultType.commandResult) {
+          if (data.result) {
             void vscode.window.showInformationMessage(
               "All files on Pico were deleted."
             );
@@ -803,16 +790,17 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "toggleConnect",
       async () => {
-        if (this.pyb?.isPipeConnected()) {
+        if (!PicoMpyCom.getInstance().isPortDisconnected()) {
           clearInterval(this.autoConnectTimer);
-          await this.pyb?.disconnect();
+          await PicoMpyCom.getInstance().closeSerialPort();
         } else {
           this.comDevice = await settings.getComDevice();
           if (this.comDevice === undefined) {
             void vscode.window.showErrorMessage("No COM device found!");
           } else {
             this.ui?.init();
-            this.pyb?.switchDevice(this.comDevice);
+            // TODO: check if this is a smooth transition between serialport devices
+            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
             this.setupAutoConnect(settings);
           }
         }
@@ -834,7 +822,7 @@ export default class Activator {
           return;
         }
 
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -849,7 +837,7 @@ export default class Activator {
           null,
           {
             uri: vscode.Uri.parse("pico://"),
-            name: "Pico (W) Remote Workspace",
+            name: "Mpy Remote Workspace",
           }
         );
       }
@@ -906,16 +894,16 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "extra.getSerial",
       async () => {
-        const ports = await PyboardRunner.getPorts();
-        if (ports.ports.length > 1) {
+        const ports = await PicoMpyCom.getSerialPorts();
+        if (ports.length > 1) {
           // TODO: maybe replace with quick pick in the future
           void vscode.window.showInformationMessage(
-            "Found: " + ports.ports.join(", ")
+            "Found: " + ports.join(", ")
           );
-        } else if (ports.ports.length === 1) {
-          writeIntoClipboard(ports.ports[0]);
+        } else if (ports.length === 1) {
+          writeIntoClipboard(ports[0]);
           void vscode.window.showInformationMessage(
-            `Found: ${ports.ports[0]} (copied to clipboard).`
+            `Found: ${ports[0]} (copied to clipboard).`
           );
         } else {
           void vscode.window.showWarningMessage("No connected Pico found.");
@@ -928,16 +916,19 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "switchPico",
       async () => {
-        if (this.pyb?.isPipeConnected()) {
-          await this.pyb?.disconnect();
+        // TODO: may not be needed with new switch port system in PicoMpyCom
+        if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+          // closes the port befor searching for ports, bad if use would
+          // like to connect to the same again
+          await PicoMpyCom.getInstance().closeSerialPort();
         }
 
-        const ports = await PyboardRunner.getPorts();
-        if (ports.ports.length === 0) {
+        const ports = await PicoMpyCom.getSerialPorts();
+        if (ports.length === 0) {
           void vscode.window.showErrorMessage("No connected Pico found!");
         }
 
-        const port = await vscode.window.showQuickPick(ports.ports, {
+        const port = await vscode.window.showQuickPick(ports, {
           canPickMany: false,
           placeHolder:
             "Select your the COM port of the Pico you want to connect to",
@@ -946,7 +937,7 @@ export default class Activator {
 
         if (port !== undefined) {
           this.comDevice = port;
-          this.pyb?.switchDevice(this.comDevice);
+          await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
         }
       }
     );
@@ -956,7 +947,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.soft",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -964,10 +955,9 @@ export default class Activator {
           return;
         }
 
-        const result = await this.pyb?.softReset();
-        if (result.type === PyOutType.commandResult) {
-          const fsOps = result as PyOutCommandResult;
-          if (fsOps.result) {
+        const result = await PicoMpyCom.getInstance().softReset();
+        if (result.type === OperationResultType.commandResult) {
+          if (result.result) {
             void vscode.window.showInformationMessage("Soft reset done");
 
             return;
@@ -982,7 +972,10 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.hard",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        // TODO: maybe instead just run the command and if it retuns a type none
+        // response show warning message as otherwise a second warning for this
+        // case would be required to be implemented
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -990,10 +983,9 @@ export default class Activator {
           return;
         }
 
-        const result = await this.pyb?.hardReset();
-        if (result.type === PyOutType.commandResult) {
-          const fsOps = result as PyOutCommandResult;
-          if (fsOps.result) {
+        const result = await PicoMpyCom.getInstance().hardReset();
+        if (result.type === OperationResultType.commandResult) {
+          if (result.result) {
             void vscode.window.showInformationMessage("Hard reset done");
           } else {
             void vscode.window.showErrorMessage("Hard reset failed");
@@ -1006,7 +998,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.soft.listen",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -1014,24 +1006,25 @@ export default class Activator {
           return;
         }
 
-        let frozen = false;
         await focusTerminal(terminalOptions);
-        const result: PyOut = await this.pyb?.sendCtrlD((data: string) => {
-          if (!frozen) {
-            commandExecuting = true;
-            //terminal?.freeze();
-            terminal?.clean(true);
-            //terminal?.write("\r\n");
-            this.ui?.userOperationStarted();
-            frozen = true;
+        const result = await PicoMpyCom.getInstance().sendCtrlD(
+          (open: boolean) => {
+            if (open) {
+              commandExecuting = true;
+              //terminal?.freeze();
+              terminal?.clean(true);
+              //terminal?.write("\r\n");
+              this.ui?.userOperationStarted();
+            }
+          },
+          (data: Buffer) => {
+            terminal?.write(data.toString("utf-8"));
           }
-          terminal?.write(data);
-        });
+        );
         commandExecuting = false;
         this.ui?.userOperationStopped();
-        if (result.type === PyOutType.commandResult) {
-          const fsOps = result as PyOutCommandResult;
-          if (fsOps.result) {
+        if (result.type === OperationResultType.commandResult) {
+          if (result.result) {
             void vscode.window.showInformationMessage(
               "Hard reset and reboot finished"
             );
@@ -1047,7 +1040,7 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "rtc.sync",
       async () => {
-        if (!this.pyb?.isPipeConnected()) {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
@@ -1055,9 +1048,15 @@ export default class Activator {
           return;
         }
 
-        await this.pyb?.syncRtc();
+        const result = await PicoMpyCom.getInstance().syncRtcTime();
 
-        void vscode.window.showInformationMessage("RTC on your Pico synced");
+        if (result.type === OperationResultType.commandResult) {
+          if (result.result) {
+            void vscode.window.showInformationMessage("RTC synchronized");
+          } else {
+            void vscode.window.showErrorMessage("RTC synchronization failed");
+          }
+        }
       }
     );
 
@@ -1065,7 +1064,7 @@ export default class Activator {
       commandPrefix + "universalStop",
       async () => {
         if (
-          !this.pyb?.isPipeConnected() ||
+          PicoMpyCom.getInstance().isPortDisconnected() ||
           !this.ui?.isUserOperationOngoing()
         ) {
           void vscode.window.showInformationMessage("Nothing to stop.");
@@ -1074,7 +1073,8 @@ export default class Activator {
         }
 
         // double ctrl+c to stop any running program
-        await this.pyb?.writeToPyboard("\x03\x03\n");
+        // TODO: to be implemented
+        //await PicoMpyCom.getInstance().st;
 
         // wait for the program to stop
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -1187,11 +1187,9 @@ export default class Activator {
     context.subscriptions.push(disposable);
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
-      this.pyb,
       context.extensionUri
     );
     const deviceWifiProvider = new DeviceWifiProvider(
-      this.pyb,
       packagesWebviewProvider,
       // TODO: maybe use extensionUri
       context.extensionPath
@@ -1262,7 +1260,122 @@ export default class Activator {
   }
 
   private setupAutoConnect(settings: Settings): void {
-    this.autoConnectTimer = setInterval(
+    // if disconnected: check in a reasonable interval if a port is available and then connect
+    // else: just subscribe to the closed event once and if it is triggered start the disconnected
+    // routine and reflect the disconnected status in the UI
+
+    PicoMpyCom.getInstance().on(
+      PicoSerialEvents.portError,
+      this.boardOnExit.bind(this)
+    );
+    PicoMpyCom.getInstance().on(
+      PicoSerialEvents.portClosed,
+      this.boardOnExit.bind(this)
+    );
+    PicoMpyCom.getInstance().on(PicoSerialEvents.portOpened, () => {
+      if (this.ui?.getState()) {
+        return;
+      }
+      this.logger.debug(
+        "Connected to a board. Now executing *OnConnect stuff..."
+      );
+
+      const scriptToExecute = settings.getString(SettingsKey.executeOnConnect);
+      if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
+        void vscode.commands.executeCommand(
+          commandPrefix + "remote.run",
+          scriptToExecute
+        );
+      }
+
+      const moduleToImport = settings.getString(SettingsKey.importOnConnect);
+      if (moduleToImport !== undefined && moduleToImport.trim() !== "") {
+        // TODO: check that voiding this is correct
+        void PicoMpyCom.getInstance().runCommand(`import ${moduleToImport}`);
+      }
+      this.ui?.refreshState(true);
+    });
+
+    // TODO: check this condition, maybe this causes setupAutoConnect to be retriggered
+    // if the settings ever change, maybe listen to settings change event
+    if (
+      (settings.getString(SettingsKey.manualComDevice)?.length ?? 0) <= 0 &&
+      !settings.getBoolean(SettingsKey.autoConnect)
+    ) {
+      return;
+    }
+
+    const onAutoConnect = (): void => {
+      if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+        clearInterval(this.autoConnectTimer);
+
+        return;
+      }
+
+      // make sure the user is informed about the connection state
+      // TODO: maybe called to often, reduce by only running at change of con state
+      this.ui?.refreshState(false);
+      settings.reload();
+      const autoPort = settings.getBoolean(SettingsKey.autoConnect);
+      const manualComDevice =
+        settings.getString(SettingsKey.manualComDevice) ?? "";
+
+      // TODO: maybe not reconnect to this.comDevice if autoConnect is disabled
+      if (
+        !autoPort &&
+        this.comDevice === undefined &&
+        manualComDevice.length <= 0
+      ) {
+        return;
+      }
+
+      PicoMpyCom.getSerialPorts()
+        .then(async ports => {
+          if (ports.length === 0) {
+            return;
+          }
+
+          // so this doesn't get triggered again while trying to connect
+          clearInterval(this.autoConnectTimer);
+
+          // try to connect to previously connected device first
+          if (this.comDevice && ports.includes(this.comDevice)) {
+            // try to reconnect
+            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+              return;
+            }
+          }
+
+          // no elseif as if the previous connection attemp failed try the next device
+          // TODO: maybe the delay above is not needed
+          if (autoPort) {
+            const port = ports[0];
+            this.comDevice = port;
+            await PicoMpyCom.getInstance().openSerialPort(port);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } else if (
+            manualComDevice.length > 0 &&
+            ports.includes(manualComDevice)
+          ) {
+            this.comDevice = manualComDevice;
+            await PicoMpyCom.getInstance().openSerialPort(manualComDevice);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+
+          // restart this interval
+          this.autoConnectTimer = setInterval(onAutoConnect, 1500);
+        })
+        .catch(error => {
+          this.logger.error("Failed to get serial ports: " + error);
+        });
+    };
+
+    this.autoConnectTimer = setInterval(onAutoConnect, 1500);
+
+    // TODO: implement auto connect based on event emitter of PicoMpyCom
+    /*this.autoConnectTimer = setInterval(
       // TODO (important): this should not take longer than 2500ms because
       // then the there would b a hell of a concurrency problem
       () =>
@@ -1270,8 +1383,7 @@ export default class Activator {
           // this could let the PyboardRunner let recognize that it lost connection to
           // the pyboard wrapper and mark the Pico as disconnected
           // O(1)
-          await this.pyb?.checkStatus();
-          if (this.pyb?.isPipeConnected()) {
+          if (PicoMpyCom.getInstance().) {
             // ensure that the script is only executed once
             if (this.ui?.getState() === false) {
               const scriptToExecute = settings.getString(
@@ -1327,7 +1439,7 @@ export default class Activator {
           }
         })(),
       2500
-    );
+    );*/
   }
 
   private pyboardOnError(data: Buffer | undefined): void {
@@ -1351,17 +1463,29 @@ export default class Activator {
     }
   }
 
-  private pyboardOnExit(code: number | null): void {
+  /**
+   * Handles the exit event of the board connection.
+   *
+   * @param error The error that caused the exit event.
+   */
+  private boardOnExit(error?: Error | string): void {
+    // TODO: needs some adjustment (maybe) because it will be triggered multiple times
+    // if an error with the connection occurs
     this.ui?.refreshState(false);
-    if (code === 0 || code === null) {
-      this.logger.info(`Pyboard exited with code 0`);
+    if (error === undefined) {
+      this.logger.info(`Connection to board was closed.`);
       if (this.comDevice !== undefined) {
-        void vscode.window.showInformationMessage("Disconnected from Pico");
+        void vscode.window.showInformationMessage("Disconnected from board.");
       }
-    } else if (this.pyb?.isBoardConnected()) {
+    } else if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+      // TODO: check the reason of this case or if it should be handled differently
       // true if the connection was lost after a board has been connected successfully
-      this.logger.error(`Pyboard exited with code ${code}`);
-      void vscode.window.showErrorMessage("Connection to Pico lost");
+      this.logger.error(
+        `Connection to board lost: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+      void vscode.window.showErrorMessage("Connection to board has been lost.");
     }
   }
 
@@ -1388,27 +1512,5 @@ export default class Activator {
     </body>
     </html>`
     );
-  }
-
-  private analyseUploadDownloadProgress(progress: string):
-    | {
-        filePath: string;
-        total: number;
-        current: number;
-        percentage: number;
-      }
-    | undefined {
-    const progressRegex = /^'(.+)'\s\[(\d+)\/(\d+)\]$/;
-    const match = progressRegex.exec(progress);
-    if (!match) {
-      return;
-    }
-
-    const filePath = match[1];
-    const current = parseInt(match[2]);
-    const total = parseInt(match[3]);
-    const percentage = parseInt(match[4]);
-
-    return { filePath, total, current, percentage };
   }
 }

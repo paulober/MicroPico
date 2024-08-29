@@ -590,6 +590,7 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@serialport/bindings-cpp": "^12.0.1",
     "@types/eslint": "^9.6.1",
     "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.17.7",
@@ -606,7 +607,7 @@
     "typescript-eslint": "^8.3.0"
   },
   "dependencies": {
-    "@paulober/pyboard-serial-com": "^3.1.1",
+    "@paulober/pico-mpy-com": "^0.0.4",
     "axios": "^1.7.5",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",

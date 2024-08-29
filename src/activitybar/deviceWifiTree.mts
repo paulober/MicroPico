@@ -1,8 +1,3 @@
-import {
-  type PyOutCommandWithResponse,
-  PyOutType,
-  type PyboardRunner,
-} from "@paulober/pyboard-serial-com";
 import { join } from "path/posix";
 import {
   TreeItem,
@@ -15,6 +10,7 @@ import {
 } from "vscode";
 import Logger from "../logger.mjs";
 import type PackagesWebviewProvider from "./packagesWebview.mjs";
+import { OperationResultType, PicoMpyCom } from "@paulober/pico-mpy-com";
 
 const DETECT_WIFIS_SCRIPT = `
 try:
@@ -99,7 +95,6 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
   private _passwords: Record<string, string> = {};
 
   constructor(
-    private readonly pyb: PyboardRunner,
     private readonly packagesWebviewProvider: PackagesWebviewProvider,
     private readonly extensionPath: string
   ) {}
@@ -114,10 +109,12 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
   public async checkConnection(): Promise<void> {
     // TODO: make check connection return the ssid it's connected to or empty string
     // so if use manually connects this gets reflected in UI
-    const isConnected = await this.pyb.executeCommand(CHECK_CONNECTION_SCRIPT);
+    const isConnected = await PicoMpyCom.getInstance().runCommand(
+      CHECK_CONNECTION_SCRIPT
+    );
 
-    if (isConnected.type === PyOutType.commandWithResponse) {
-      const response = (isConnected as PyOutCommandWithResponse).response;
+    if (isConnected.type === OperationResultType.commandResponse) {
+      const response = isConnected.response;
       if (response.startsWith("True")) {
         const connectedTo = response.trimEnd().split("_")[1];
         if (this._connectedTo !== connectedTo) {
@@ -146,14 +143,12 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
   }
 
   private async _connectToWifi(element: Wifi): Promise<void> {
-    const isConnected = await this.pyb.executeCommand(
+    const isConnected = await PicoMpyCom.getInstance().runCommand(
       CONNECT_TO_WIFI_SCRIPT(element, this._passwords[element.label])
     );
 
-    if (isConnected.type === PyOutType.commandWithResponse) {
-      if (
-        (isConnected as PyOutCommandWithResponse).response.trimEnd() === "True"
-      ) {
+    if (isConnected.type === OperationResultType.commandResponse) {
+      if (isConnected.response.trimEnd() === "True") {
         this._connectedTo = element.label;
         this._logger.info(
           "Successfully connected Pico to wifi: ",
@@ -173,7 +168,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
         await this.packagesWebviewProvider.enable();
       } else {
         delete this._passwords[element.label];
-        const resp = (isConnected as PyOutCommandWithResponse).response;
+        const resp = isConnected.response;
         this._logger.error("Failed to connect to wifi: ", element.label, resp);
 
         await window.showErrorMessage(
@@ -184,7 +179,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
   }
 
   private async _disconnectWifi(): Promise<void> {
-    await this.pyb.executeCommand(DISCONNECT_FROM_WIFI_SCRIPT);
+    await PicoMpyCom.getInstance().runCommand(DISCONNECT_FROM_WIFI_SCRIPT);
 
     this._connectedTo = "";
     this._logger.info("Successfully disconnected Pico from wifi.");
@@ -257,10 +252,12 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async getChildren(element?: Wifi | undefined): Promise<Wifi[]> {
-    const networks = await this.pyb.executeCommand(DETECT_WIFIS_SCRIPT);
+    const networks = await PicoMpyCom.getInstance().runCommand(
+      DETECT_WIFIS_SCRIPT
+    );
 
-    if (networks.type === PyOutType.commandWithResponse) {
-      const response = (networks as PyOutCommandWithResponse).response;
+    if (networks.type === OperationResultType.commandResponse) {
+      const response = networks.response;
 
       if (response.trimEnd() === "") {
         return [];

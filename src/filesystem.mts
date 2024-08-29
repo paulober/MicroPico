@@ -14,13 +14,6 @@ import {
   FileType,
   window,
 } from "vscode";
-import { PyOutType } from "@paulober/pyboard-serial-com";
-import type {
-  PyOutGetItemStat,
-  PyOutListContents,
-  PyOutStatus,
-  PyboardRunner,
-} from "@paulober/pyboard-serial-com";
 import Logger from "./logger.mjs";
 import { v4 as uuidv4 } from "uuid";
 import { basename, dirname, join } from "path";
@@ -29,6 +22,7 @@ import { mkdir, readFile, rmdir, unlink, writeFile } from "fs/promises";
 import { randomBytes } from "crypto";
 import remoteConfigFs from "./remoteConfig.mjs";
 import { getTypeshedPicoWStubPath } from "./api.mjs";
+import { OperationResultType, PicoMpyCom } from "@paulober/pico-mpy-com";
 
 // TODO: maybe use startsWidth instead of includes to avoid false positives in child folders
 const forbiddenFolders = [".vscode", ".git"];
@@ -42,16 +36,14 @@ export class PicoWFs implements FileSystemProvider {
   //private cache: Map<string, any> = new Map();
   private remoteConfigFs = remoteConfigFs;
 
-  private pyb: PyboardRunner;
   //private cacheEnabled = false;
 
   // FileSystemProvider stuff
   private _emitter = new EventEmitter<FileChangeEvent[]>();
   public onDidChangeFile: Event<FileChangeEvent[]> = this._emitter.event;
 
-  constructor(pyboardRunner: PyboardRunner) {
+  constructor() {
     this.logger = new Logger("PicoWFs");
-    this.pyb = pyboardRunner;
 
     if (picoWFsVscodeConfiguration) {
       void getTypeshedPicoWStubPath().then(path => {
@@ -117,14 +109,14 @@ export class PicoWFs implements FileSystemProvider {
       throw FileSystemError.FileNotFound(uri);
     }
 
-    const result = await this.pyb.getItemStat(uri.path);
+    const result = await PicoMpyCom.getInstance().getItemStat(uri.path);
 
-    if (result.type !== PyOutType.getItemStat) {
+    if (result.type !== OperationResultType.getItemStat) {
       this.logger.error("stat: unexpected result type");
       throw FileSystemError.Unavailable(uri);
     }
 
-    const itemStat = (result as PyOutGetItemStat).stat;
+    const itemStat = result.stat;
 
     if (
       itemStat?.created === undefined ||
@@ -154,17 +146,17 @@ export class PicoWFs implements FileSystemProvider {
       throw FileSystemError.FileNotFound(uri);
     }
 
-    const result = await this.pyb.listContents(uri.path);
+    const result = await PicoMpyCom.getInstance().listContents(uri.path);
 
-    if (result.type === PyOutType.none) {
+    if (result.type === OperationResultType.none) {
       this.logger.error("readDirectory: Directory propably not found");
       throw FileSystemError.FileNotFound(uri);
-    } else if (result.type !== PyOutType.listContents) {
+    } else if (result.type !== OperationResultType.listContents) {
       this.logger.error("readDirectory: unexpected result type");
       throw FileSystemError.Unavailable(uri);
     }
 
-    const items = (result as PyOutListContents).response;
+    const items = result.contents;
 
     const children: Array<[string, FileType]> = items.map(item => [
       item.path,
@@ -183,9 +175,9 @@ export class PicoWFs implements FileSystemProvider {
       throw FileSystemError.NoPermissions(uri);
     }
 
-    const result = await this.pyb.createFolders([uri.path]);
-    if (result.type === PyOutType.status) {
-      const status = (result as PyOutStatus).status;
+    const result = await PicoMpyCom.getInstance().createFolders([uri.path]);
+    if (result.type === OperationResultType.commandResult) {
+      const status = result.result;
       if (!status) {
         this.logger.warn("createDirectory: propably already existsed");
         throw FileSystemError.FileExists(uri);
@@ -213,10 +205,13 @@ export class PicoWFs implements FileSystemProvider {
 
     // create path to temporary file
     const tmpFilePath = join(tmpdir(), uuidv4({ random: _v4Bytes() }) + ".tmp");
-    const result = await this.pyb.downloadFiles([uri.path], tmpFilePath);
+    const result = await PicoMpyCom.getInstance().downloadFiles(
+      [uri.path],
+      tmpFilePath
+    );
 
-    if (result.type === PyOutType.status) {
-      const status = (result as PyOutStatus).status;
+    if (result.type === OperationResultType.commandResult) {
+      const status = result.result;
       if (!status) {
         this.logger.error("readFile: File not found");
         throw FileSystemError.FileNotFound(uri);
@@ -252,13 +247,13 @@ export class PicoWFs implements FileSystemProvider {
     await writeFile(tmpFilePath, content);
 
     // upload
-    const result = await this.pyb.uploadFiles(
+    const result = await PicoMpyCom.getInstance().uploadFiles(
       [tmpFilePath],
       // trailing slash needed so uploader knows what is a destination FOLDER
       dirname(uri.path) + "/"
     );
-    if (result.type === PyOutType.status) {
-      const status = (result as PyOutStatus).status;
+    if (result.type === OperationResultType.commandResult) {
+      const status = result.result;
       if (!status) {
         this.logger.warn("writeFile: failed to upload file");
         throw FileSystemError.FileExists(uri);
@@ -280,23 +275,23 @@ export class PicoWFs implements FileSystemProvider {
     }
 
     if (options.recursive) {
-      const result = await this.pyb.deleteFileOrFolder(
+      const result = await PicoMpyCom.getInstance().deleteFileOrFolder(
         uri.path,
         options.recursive
       );
-      if (result.type === PyOutType.status) {
-        const status = (result as PyOutStatus).status;
+      if (result.type === OperationResultType.commandResult) {
+        const status = result.result;
         if (!status) {
           throw FileSystemError.FileNotFound(uri);
         }
       }
     } else {
-      const result = await this.pyb.deleteFileOrFolder(
+      const result = await PicoMpyCom.getInstance().deleteFileOrFolder(
         uri.path,
         options.recursive
       );
-      if (result.type === PyOutType.status) {
-        const status = (result as PyOutStatus).status;
+      if (result.type === OperationResultType.commandResult) {
+        const status = result.result;
         if (!status) {
           // both failed, so most likely the fs item does not exist
           throw FileSystemError.FileNotFound(uri);
@@ -324,10 +319,13 @@ export class PicoWFs implements FileSystemProvider {
       throw FileSystemError.NoPermissions(oldUri);
     }
 
-    const result = await this.pyb.renameItem(oldUri.path, newUri.path);
+    const result = await PicoMpyCom.getInstance().renameItem(
+      oldUri.path,
+      newUri.path
+    );
 
-    if (result.type === PyOutType.status) {
-      const status = (result as PyOutStatus).status;
+    if (result.type === OperationResultType.commandResult) {
+      const status = result.result;
       if (!status) {
         throw FileSystemError.FileExists(newUri);
       }
