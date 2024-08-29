@@ -17,16 +17,14 @@ export default {
         exports: 'named',
     },
     external: [
-        'vscode',
-        // need to be externalized and included by packager for native modules of pico-mpy-com
-        "@serialport/bindings-cpp",
+        'vscode'
     ],
     plugins: [
-        !isProduction && copy({
+        isProduction && copy({
             targets: [
                 {
-                    src: 'node_modules/@serialport/bindings-cpp/scripts',
-                    dest: 'dist/'
+                    src: 'node_modules/@serialport/bindings-cpp/prebuilds',
+                    dest: './'
                 },
             ],
         }),

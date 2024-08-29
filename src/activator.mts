@@ -614,7 +614,6 @@ export default class Activator {
         }
 
         // TODO: maybe upload relative to project root like uploadProject does with files
-        let pastProgress = 0;
 
         if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
           await PicoMpyCom.getInstance().runCommand(
@@ -709,6 +708,10 @@ export default class Activator {
           async (progress /*, token*/) => {
             const data = await PicoMpyCom.getInstance().downloadProject(
               syncDir[1],
+              // TODO: add support for these three config options
+              "/",
+              undefined,
+              undefined,
               (
                 totalChunksCount: number,
                 currentChunk: number,

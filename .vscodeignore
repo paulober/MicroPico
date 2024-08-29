@@ -3,7 +3,7 @@
 .idea/**
 out/**
 node_modules/**
-!node_modules/@serialport/bindings-cpp
+!prebuilds
 src/**
 .gitignore
 .yarnrc

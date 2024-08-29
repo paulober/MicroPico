@@ -27,10 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Setup Node v20.14.0
         uses: actions/setup-node@v4
         with:
@@ -38,18 +34,18 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install PNPM Dependencies And Download Stubs
+      - name: Install NPM Dependencies And Download Stubs
         shell: bash
         run: |
           sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
-          pnpm i
+          npm ci --no-audit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
