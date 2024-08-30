@@ -27,6 +27,7 @@ export class Terminal implements Pseudoterminal {
   private controlSequence = false;
   private xCursor = 0;
   private isFrozen = false;
+  private awaitingCloseOp = false;
 
   onDidWrite: Event<string> = this.writeEmitter.event;
   onDidClose: Event<void | number> = this.closeEmitter.event;
@@ -53,7 +54,17 @@ export class Terminal implements Pseudoterminal {
     });
   }
 
+  // signal that a close call should be ignored
+  public awaitClose(): void {
+    this.awaitingCloseOp = true;
+  }
+
   public close(): void {
+    if (this.awaitingCloseOp) {
+      this.awaitingCloseOp = false;
+
+      return;
+    }
     this.isOpen = false;
     // clear history
     this.history.clear();

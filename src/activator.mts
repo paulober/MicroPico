@@ -238,24 +238,31 @@ export default class Activator {
     );
 
     context.subscriptions.push(
-      vscode.window.onDidOpenTerminal(newTerminal => {
+      vscode.window.onDidOpenTerminal(async newTerminal => {
         if (newTerminal.creationOptions.name === TERMINAL_NAME) {
           if (this.terminal?.getIsOpen()) {
             void vscode.window.showWarningMessage(
               "Only one instance of MicroPico vREPL is recommended. " +
-                "Please close the new terminal instance!"
+                "Closing new instance."
             );
-            // would freeze old terminal
-            //newTerminal.dispose();
+            // would freeze old terminal if this is not set
+            this.terminal.awaitClose();
+
+            // close new one
+            newTerminal.dispose();
+
+            // focus on old one
+            await focusTerminal(terminalOptions);
 
             // TODO: currently disreagarding if user has unsubmitted input in pty
             // send enter for new prompt
-            newTerminal.sendText("\n");
+            //newTerminal.sendText("\n");
           }
         }
       })
     );
 
+    /*
     context.subscriptions.push(
       vscode.window.onDidCloseTerminal(closedTerminal => {
         if (closedTerminal.creationOptions.name === TERMINAL_NAME) {
@@ -266,7 +273,7 @@ export default class Activator {
             .forEach(t => t.dispose());
         }
       })
-    );
+    );*/
 
     // register fs provider as early as possible
     this.picoFs = new PicoRemoteFileSystem();
