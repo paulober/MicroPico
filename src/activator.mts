@@ -322,14 +322,14 @@ export default class Activator {
     // [Command] Initialise
     disposable = vscode.commands.registerCommand(
       commandPrefix + "initialise",
-      async (pythonExecutable?: string) => {
+      async (pythonExecutable?: string, location?: string) => {
         // set python executable
         if (pythonExecutable !== undefined && pythonExecutable.length > 0) {
           await pythonApi.environments.updateActiveEnvironmentPath(
             pythonExecutable
           );
         }
-        await this.stubs?.addToWorkspace();
+        await this.stubs?.addToWorkspace(location);
       }
     );
     context.subscriptions.push(disposable);
