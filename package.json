@@ -114,7 +114,7 @@
       },
       {
         "command": "micropico.remote.run",
-        "title": "Remote > Run current file on Pico",
+        "title": "Run current file on Pico",
         "enablement": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py",
         "category": "MicroPico"
       },
