@@ -91,9 +91,14 @@
       },
       {
         "command": "micropico.uploadFile",
-        "title": "Upload current file to Pico",
+        "title": "Upload file to Pico",
         "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource",
         "category": "MicroPico"
+      },
+      {
+        "command": "micropico.downloadFile",
+        "title": "Download file from Pico",
+        "enablement": "micropico.isConnected && resourceScheme == pico && isFileSystemResource"
       },
       {
         "command": "micropico.download",
@@ -225,6 +230,11 @@
           "command": "micropico.uploadFile",
           "group": "micropico",
           "when": "micropico.isActivated && resourceScheme != pico"
+        },
+        {
+          "command": "micropico.downloadFile",
+          "group": "micropico",
+          "when": "micropico.isActivated && resourceScheme == pico"
         },
         {
           "command": "micropico.download",

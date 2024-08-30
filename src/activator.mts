@@ -158,12 +158,14 @@ export default class Activator {
       // TODO: maybe this.ui?.userOperationStarted();
       // this will make waiting for prompt falsethis.terminal.freeze();
       commandExecuting = true;
-      this.ui?.userOperationStarted();
       const result = await PicoMpyCom.getInstance().runFriendlyCommand(
         cmd,
         (open: boolean) => {
           // TODO: maybe use
           //terminal.melt();
+          if (open) {
+            this.ui?.userOperationStarted();
+          }
         },
         (data: Buffer) => {
           if (data.length > 0) {
@@ -384,7 +386,7 @@ export default class Activator {
     // [Command] Run File
     disposable = vscode.commands.registerCommand(
       commandPrefix + "run",
-      async () => {
+      async (resourceURI?: vscode.Uri) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
@@ -393,9 +395,12 @@ export default class Activator {
           return;
         }
 
-        let file = await getFocusedFile();
+        let file = resourceURI?.fsPath ?? (await getFocusedFile());
 
-        if (file === undefined) {
+        if (
+          file === undefined ||
+          (resourceURI && resourceURI.scheme === "pico")
+        ) {
           file = await getFocusedFile(true);
           if (file === undefined) {
             void vscode.window.showWarningMessage("No file open and focused.");
@@ -611,12 +616,16 @@ export default class Activator {
         void vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: "Uploading",
-            cancellable: false,
+            title: "Uploading project",
+            cancellable: true,
           },
           async (progress, token) => {
-            // cancellation is not possible
-            token.onCancellationRequested(() => undefined);
+            // cancellation is possible
+            token.onCancellationRequested(
+              PicoMpyCom.getInstance().interruptExecution.bind(
+                PicoMpyCom.getInstance()
+              )
+            );
 
             const data = await PicoMpyCom.getInstance().uploadProject(
               syncDir[1],
@@ -627,6 +636,9 @@ export default class Activator {
                 currentChunk: number,
                 relativePath: string
               ) => {
+                if (currentChunk === 1) {
+                  this.ui?.userOperationStarted();
+                }
                 this.logger.debug(
                   "upload progress: " +
                     `${currentChunk}/${totalChunksCount} - ${relativePath}`
@@ -641,6 +653,7 @@ export default class Activator {
                 // message: sep + relative(syncDir[1], status.filePath),
               }
             );
+            this.ui?.userOperationStopped();
 
             // check if data is PyOut
             if (data === undefined) {
@@ -675,7 +688,7 @@ export default class Activator {
     // [Command] Upload file
     disposable = vscode.commands.registerCommand(
       commandPrefix + "uploadFile",
-      async () => {
+      async (resourceURI?: vscode.Uri) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
@@ -684,7 +697,7 @@ export default class Activator {
           return;
         }
 
-        const file = await getFocusedFile();
+        const file = resourceURI?.fsPath ?? (await getFocusedFile());
 
         if (file === undefined) {
           void vscode.window.showWarningMessage("No file open.");
@@ -703,11 +716,17 @@ export default class Activator {
         void vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: "Uploading file...",
+            title: "Uploading file",
             cancellable: false,
           },
-          // TODO: add support for cancelation
-          async (progress /*, token*/) => {
+          async (progress, token) => {
+            // cancellation is possible
+            token.onCancellationRequested(
+              PicoMpyCom.getInstance().interruptExecution.bind(
+                PicoMpyCom.getInstance()
+              )
+            );
+
             const data = await PicoMpyCom.getInstance().uploadFiles(
               [file],
               "/",
@@ -717,6 +736,10 @@ export default class Activator {
                 currentChunk: number,
                 relativePath: string
               ) => {
+                if (currentChunk === 1) {
+                  this.ui?.userOperationStarted();
+                }
+
                 // increment progress and set message to uploaded if 100% is reached
                 progress.report({
                   increment: 100 / totalChunksCount,
@@ -728,6 +751,7 @@ export default class Activator {
                 });
               }
             );
+            this.ui?.userOperationStopped();
             if (data && data.type === OperationResultType.commandResult) {
               if (data.result) {
                 this.picoFs?.fileChanged(
@@ -736,6 +760,9 @@ export default class Activator {
                     scheme: "pico",
                     path: "/" + basename(file),
                   })
+                );
+                void vscode.window.showInformationMessage(
+                  `${file} was uploaded successfully.`
                 );
                 // TODO: maybe make sure to set 100% if needed to make notification dissapear
                 //progress.report({ increment: 100 });
@@ -754,6 +781,89 @@ export default class Activator {
       }
     );
     context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "downloadFile",
+      async (resourceURI?: vscode.Uri) => {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
+          );
+
+          return;
+        }
+
+        const syncDir = await settings.requestSyncFolder("Download");
+
+        if (syncDir === undefined) {
+          void vscode.window.showWarningMessage(
+            "Download canceled. No sync folder selected."
+          );
+
+          return;
+        }
+
+        const file =
+          resourceURI?.fsPath.replaceAll("\\", "/") ??
+          (await getFocusedFile())?.replaceAll("\\", "/");
+
+        if (file === undefined) {
+          void vscode.window.showWarningMessage("No file open.");
+
+          return;
+        }
+
+        void vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: "Downloading file",
+            cancellable: false,
+          },
+          async (progress, token) => {
+            // cancellation is possible
+            token.onCancellationRequested(
+              PicoMpyCom.getInstance().interruptExecution.bind(
+                PicoMpyCom.getInstance()
+              )
+            );
+
+            const data = await PicoMpyCom.getInstance().downloadFiles(
+              [file],
+              // TODO: maybe attach relative path to syncDir[1] | or in different command
+              join(syncDir[1], basename(file)),
+              (
+                totalChunksCount: number,
+                currentChunk: number,
+                relativePath: string
+              ) => {
+                if (currentChunk === 1) {
+                  this.ui?.userOperationStarted();
+                }
+                // increment progress and set message to uploaded if 100% is reached
+                progress.report({
+                  increment: 100 / totalChunksCount,
+                  message:
+                    totalChunksCount === currentChunk
+                      ? "Downloaded"
+                      : // TODO: maybe add something like: uploading...
+                        relativePath,
+                });
+              }
+            );
+            this.ui?.userOperationStopped();
+            if (data && data.type === OperationResultType.commandResult) {
+              if (data.result) {
+                void vscode.window.showInformationMessage(
+                  `${file} was downloaded successfully.`
+                );
+              } else {
+                void vscode.window.showErrorMessage("File download failed.");
+              }
+            }
+          }
+        );
+      }
+    );
 
     // [Command] Download project
     // TODO: maybe add diffent warning methods for overwritten files in syncFolder
@@ -784,7 +894,14 @@ export default class Activator {
             title: "Downloading",
             cancellable: false,
           },
-          async (progress /*, token*/) => {
+          async (progress, token) => {
+            // cancellation is possible
+            token.onCancellationRequested(
+              PicoMpyCom.getInstance().interruptExecution.bind(
+                PicoMpyCom.getInstance()
+              )
+            );
+
             const data = await PicoMpyCom.getInstance().downloadProject(
               syncDir[1],
               // TODO: add support for these three config options
@@ -796,6 +913,9 @@ export default class Activator {
                 currentChunk: number,
                 relativePath: string
               ) => {
+                if (currentChunk === 1) {
+                  this.ui?.userOperationStarted();
+                }
                 // increment progress
                 progress.report({
                   increment: 100 / totalChunksCount,
@@ -806,6 +926,7 @@ export default class Activator {
                 });
               }
             );
+            this.ui?.userOperationStopped();
             if (data && data.type === OperationResultType.commandResult) {
               if (data.result) {
                 // TODO: maybe set to 100% if needed to make notification dissapear

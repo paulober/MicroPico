@@ -26,7 +26,7 @@ export default class UI {
   private logger: Logger;
   private visible = false;
   private initialized = false;
-  private userOperationOngoing = false;
+  private userOperationOngoing = 0;
   private lastState = false;
 
   private items: Record<string, StatusBarItem> = {};
@@ -124,7 +124,7 @@ export default class UI {
   }
 
   public userOperationStarted(): void {
-    this.userOperationOngoing = true;
+    this.userOperationOngoing++;
     this.logger.debug("User operation started");
 
     this.items.run.hide();
@@ -132,7 +132,7 @@ export default class UI {
   }
 
   public userOperationStopped(): void {
-    this.userOperationOngoing = false;
+    this.userOperationOngoing--;
     this.logger.debug("User operation stopped");
 
     this.items.stop.hide();
@@ -140,7 +140,7 @@ export default class UI {
   }
 
   public isUserOperationOngoing(): boolean {
-    return this.userOperationOngoing;
+    return this.userOperationOngoing > 0;
   }
 
   public destroy(): void {
