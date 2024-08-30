@@ -46,6 +46,9 @@
       "description": "Why would you want to use MicroPico in an untrusted workspace?"
     }
   },
+  "extensionDependencies": [
+		"ms-python.python"
+	],
   "activationEvents": [
     "workspaceContains:.picowgo",
     "workspaceContains:.micropico",
@@ -608,7 +611,8 @@
     "typescript-eslint": "^8.3.0"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^0.0.4",
+    "@paulober/pico-mpy-com": "^1.0.0",
+    "@vscode/python-extension": "^1.0.5",
     "axios": "^1.7.5",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",

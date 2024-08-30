@@ -33,6 +33,10 @@ import {
   PicoMpyCom,
   PicoSerialEvents,
 } from "@paulober/pico-mpy-com";
+import {
+  type ActiveEnvironmentPathChangeEvent,
+  PythonExtension,
+} from "@vscode/python-extension";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -45,6 +49,7 @@ export default class Activator {
   private stubs?: Stubs;
   private picoFs?: PicoWFs;
   private terminal?: Terminal;
+  private pythonPath?: string;
 
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
@@ -58,6 +63,19 @@ export default class Activator {
   ): Promise<UI | undefined> {
     // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
     const settings = new Settings(context.workspaceState);
+
+    // get the python env to be used
+    const pythonApi = await PythonExtension.api();
+
+    context.subscriptions.push(
+      pythonApi.environments.onDidChangeActiveEnvironmentPath(
+        (e: ActiveEnvironmentPathChangeEvent) => {
+          this.pythonPath = e.path;
+        }
+      )
+    );
+    // get currently selected environment
+    this.pythonPath = pythonApi.environments.getActiveEnvironmentPath()?.path;
 
     // execute async not await
     void vscode.commands.executeCommand(
@@ -115,13 +133,19 @@ export default class Activator {
         "\x1b[38;2;255;165;0m" + // Set text color to orange (RGB: 255, 165, 0)
         "Failed to get MicroPython version and machine type.\r\n" +
         "Waiting for board to connect...\r\n" +
-        "\x1b[0m" // Reset text color to default
+        "\x1b[0m\r\n" // Reset text color to default
       );
     });
     let commandExecuting = false;
     this.terminal.onDidSubmit(async (cmd: string) => {
       if (commandExecuting) {
         PicoMpyCom.getInstance().emit(PicoSerialEvents.relayInput, cmd);
+
+        return;
+      }
+
+      if (!this.pythonPath) {
+        this.showNoActivePythonError();
 
         return;
       }
@@ -140,14 +164,13 @@ export default class Activator {
             this.terminal?.write(data.toString("utf-8"));
           }
         },
-        // TODO: proper python detection
-        process.platform === "win32" ? "python" : "python3"
+        this.pythonPath
       );
       if (result.type !== OperationResultType.commandResult || !result.result) {
         // write red text into terminal
         this.terminal?.write("\x1b[31mException occured\x1b[0m\r\n");
+        this.terminal?.write("\r\n");
       }
-      this.terminal?.write("\r\n");
       commandExecuting = false;
       this.terminal?.prompt();
     });
@@ -391,6 +414,12 @@ export default class Activator {
           return;
         }
 
+        if (!this.pythonPath) {
+          this.showNoActivePythonError();
+
+          return;
+        }
+
         const file =
           (fileOverride !== undefined && typeof fileOverride === "string"
             ? fileOverride
@@ -429,8 +458,7 @@ export default class Activator {
               this.terminal?.write(data.toString("utf-8"));
             }
           },
-          // TODO: better python detection
-          process.platform === "win32" ? "python" : "python3"
+          this.pythonPath
         );
         this.ui?.userOperationStopped();
         commandExecuting = false;
@@ -449,6 +477,12 @@ export default class Activator {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
+
+          return;
+        }
+
+        if (!this.pythonPath) {
+          this.showNoActivePythonError();
 
           return;
         }
@@ -479,8 +513,7 @@ export default class Activator {
                 this.terminal?.write(data.toString("utf-8"));
               }
             },
-            // TODO: better python detection
-            process.platform === "win32" ? "python" : "python3"
+            this.pythonPath
           );
           commandExecuting = false;
           this.ui?.userOperationStopped();
@@ -1455,6 +1488,15 @@ export default class Activator {
         })(),
       2500
     );*/
+  }
+
+  private showNoActivePythonError(): void {
+    // TODO: add details button taking them to the python extension docs
+    void vscode.window.showWarningMessage(
+      "Python path not found. Please check your Python environment.\n" +
+        "See the Python extension for instructions on how to select " +
+        "a Python interpreter."
+    );
   }
 
   private pyboardOnError(data: Buffer | undefined): void {
