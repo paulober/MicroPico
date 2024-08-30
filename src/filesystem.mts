@@ -30,7 +30,7 @@ const forbiddenFolders = [".vscode", ".git"];
 // disabled because the Python and Pylance extensions don't currently support virtual workspaces
 const picoWFsVscodeConfiguration = false;
 
-export class PicoWFs implements FileSystemProvider {
+export class PicoRemoteFileSystem implements FileSystemProvider {
   private logger: Logger;
 
   //private cache: Map<string, any> = new Map();
@@ -43,7 +43,7 @@ export class PicoWFs implements FileSystemProvider {
   public onDidChangeFile: Event<FileChangeEvent[]> = this._emitter.event;
 
   constructor() {
-    this.logger = new Logger("PicoWFs");
+    this.logger = new Logger("PicoRemoteFileSystem");
 
     if (picoWFsVscodeConfiguration) {
       void getTypeshedPicoWStubPath().then(path => {
@@ -112,7 +112,7 @@ export class PicoWFs implements FileSystemProvider {
     const result = await PicoMpyCom.getInstance().getItemStat(uri.path);
 
     if (result.type !== OperationResultType.getItemStat) {
-      this.logger.error("stat: unexpected result type");
+      this.logger.error("stat: unexpected result type for " + uri.path);
       throw FileSystemError.Unavailable(uri);
     }
 
@@ -211,8 +211,7 @@ export class PicoWFs implements FileSystemProvider {
     );
 
     if (result.type === OperationResultType.commandResult) {
-      const status = result.result;
-      if (!status) {
+      if (!result.result) {
         this.logger.error("readFile: File not found");
         throw FileSystemError.FileNotFound(uri);
       } else {

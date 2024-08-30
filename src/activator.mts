@@ -22,7 +22,7 @@ import Stubs, {
 import Settings, { SettingsKey } from "./settings.mjs";
 import Logger from "./logger.mjs";
 import { basename, dirname, join } from "path";
-import { PicoWFs } from "./filesystem.mjs";
+import { PicoRemoteFileSystem } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
@@ -47,7 +47,7 @@ export default class Activator {
   private logger: Logger;
   private ui?: UI;
   private stubs?: Stubs;
-  private picoFs?: PicoWFs;
+  private picoFs?: PicoRemoteFileSystem;
   private terminal?: Terminal;
   private pythonPath?: string;
 
@@ -74,8 +74,10 @@ export default class Activator {
         }
       )
     );
-    // get currently selected environment
-    this.pythonPath = pythonApi.environments.getActiveEnvironmentPath()?.path;
+    setImmediate(() => {
+      // get currently selected environment
+      this.pythonPath = pythonApi.environments.getActiveEnvironmentPath()?.path;
+    });
 
     // execute async not await
     void vscode.commands.executeCommand(
@@ -267,7 +269,7 @@ export default class Activator {
     );
 
     // register fs provider as early as possible
-    this.picoFs = new PicoWFs();
+    this.picoFs = new PicoRemoteFileSystem();
     context.subscriptions.push(
       vscode.workspace.registerFileSystemProvider("pico", this.picoFs, {
         isCaseSensitive: true,
@@ -1311,7 +1313,7 @@ export default class Activator {
 
     PicoMpyCom.getInstance().on(
       PicoSerialEvents.portError,
-      this.boardOnExit.bind(this)
+      this.boardOnError.bind(this)
     );
     PicoMpyCom.getInstance().on(
       PicoSerialEvents.portClosed,
@@ -1324,9 +1326,14 @@ export default class Activator {
       this.logger.debug(
         "Connected to a board. Now executing *OnConnect stuff..."
       );
+      this.logger.info("Connection to board successfully established");
 
       this.terminal?.cls();
       this.terminal?.open(undefined);
+
+      void vscode.window.showInformationMessage(
+        "Connection to MicoPython board established."
+      );
 
       const scriptToExecute = settings.getString(SettingsKey.executeOnConnect);
       if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
@@ -1420,103 +1427,41 @@ export default class Activator {
         });
     };
 
+    // required because setInterval would call it first after 1500ms
+    onAutoConnect();
+    // setup interval
     this.autoConnectTimer = setInterval(onAutoConnect, 1500);
-
-    // TODO: implement auto connect based on event emitter of PicoMpyCom
-    /*this.autoConnectTimer = setInterval(
-      // TODO (important): this should not take longer than 2500ms because
-      // then the there would b a hell of a concurrency problem
-      () =>
-        void (async () => {
-          // this could let the PyboardRunner let recognize that it lost connection to
-          // the pyboard wrapper and mark the Pico as disconnected
-          // O(1)
-          if (PicoMpyCom.getInstance().) {
-            // ensure that the script is only executed once
-            if (this.ui?.getState() === false) {
-              const scriptToExecute = settings.getString(
-                SettingsKey.executeOnConnect
-              );
-              if (
-                scriptToExecute !== undefined &&
-                scriptToExecute.trim() !== ""
-              ) {
-                void vscode.commands.executeCommand(
-                  commandPrefix + "remote.run",
-                  scriptToExecute
-                );
-              }
-
-              const moduleToImport = settings.getString(
-                SettingsKey.importOnConnect
-              );
-              if (
-                moduleToImport !== undefined &&
-                moduleToImport.trim() !== ""
-              ) {
-                await this.pyb?.executeCommand(`import ${moduleToImport}`);
-              }
-            }
-            this.ui?.refreshState(true);
-
-            return;
-          }
-          this.ui?.refreshState(false);
-          settings.reload();
-          const autoPort = settings.getBoolean(SettingsKey.autoConnect);
-
-          const ports = await PyboardRunner.getPorts();
-          if (ports.ports.length === 0) {
-            return;
-          }
-
-          // try to connect to previously connected device first
-          if (this.comDevice && ports.ports.includes(this.comDevice)) {
-            // try to reconnect
-            this.pyb?.switchDevice(this.comDevice);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            if (this.pyb?.isPipeConnected()) {
-              return;
-            }
-          }
-
-          if (autoPort) {
-            const port = ports.ports[0];
-            this.comDevice = port;
-            this.pyb?.switchDevice(port);
-          }
-        })(),
-      2500
-    );*/
   }
 
   private showNoActivePythonError(): void {
-    // TODO: add details button taking them to the python extension docs
-    void vscode.window.showWarningMessage(
-      "Python path not found. Please check your Python environment.\n" +
-        "See the Python extension for instructions on how to select " +
-        "a Python interpreter."
-    );
+    vscode.window
+      .showWarningMessage(
+        "Python path not found. Please check your Python environment.\n" +
+          "See the Python extension for instructions on how to select " +
+          "a Python interpreter.",
+        "Open Documentation"
+      )
+      .then(selection => {
+        if (selection?.toLocaleLowerCase().startsWith("open")) {
+          vscode.env.openExternal(
+            vscode.Uri.parse(
+              // eslint-disable-next-line max-len
+              "https://code.visualstudio.com/docs/languages/python#_environments"
+            )
+          );
+        }
+      });
   }
 
-  private pyboardOnError(data: Buffer | undefined): void {
-    if (
-      data === undefined &&
-      this.comDevice !== undefined &&
-      this.comDevice !== "" &&
-      this.comDevice !== "default"
-    ) {
-      //this.ui?.refreshState(true);
-      this.logger.info("Connection to wrapper successfully established");
-      void vscode.window.showInformationMessage(
-        "Connection to board established."
+  private boardOnError(error?: Error): void {
+    if (error) {
+      void vscode.window.showErrorMessage(
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+          ? error
+          : "Unknown error"
       );
-
-      return;
-    } else {
-      if (data) {
-        void vscode.window.showErrorMessage(data.toString("utf-8"));
-      }
     }
   }
 
