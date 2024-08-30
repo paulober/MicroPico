@@ -282,6 +282,9 @@ export class Terminal implements Pseudoterminal {
   }
 
   private handleTab(): void {
+    if (this.buffer === "") {
+      return;
+    }
     // move cursor into next line
     this.writeEmitter.fire("\r\n");
 

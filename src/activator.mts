@@ -141,7 +141,10 @@ export default class Activator {
     let commandExecuting = false;
     this.terminal.onDidSubmit(async (cmd: string) => {
       if (commandExecuting) {
-        PicoMpyCom.getInstance().emit(PicoSerialEvents.relayInput, cmd);
+        PicoMpyCom.getInstance().emit(
+          PicoSerialEvents.relayInput,
+          Buffer.from(cmd.trim(), "utf-8")
+        );
 
         return;
       }
@@ -155,6 +158,7 @@ export default class Activator {
       // TODO: maybe this.ui?.userOperationStarted();
       // this will make waiting for prompt falsethis.terminal.freeze();
       commandExecuting = true;
+      this.ui?.userOperationStarted();
       const result = await PicoMpyCom.getInstance().runFriendlyCommand(
         cmd,
         (open: boolean) => {
@@ -172,7 +176,12 @@ export default class Activator {
         // write red text into terminal
         this.terminal?.write("\x1b[31mException occured\x1b[0m\r\n");
         this.terminal?.write("\r\n");
+        // important if for example a command requests input and the user
+        // stops it with the universal stop command but had already entered
+        // some input which hasn't been submitted yet
+        this.terminal?.clean(true);
       }
+      this.ui?.userOperationStopped();
       commandExecuting = false;
       this.terminal?.prompt();
     });
@@ -210,7 +219,7 @@ export default class Activator {
         .find(term => term.creationOptions.name === TERMINAL_NAME)
         ?.dispose();
     } catch {
-      console.warn("Failed to dispose old terminals on reactivation.");
+      this.logger.warn("Failed to dispose old terminals on reactivation.");
     }
 
     const terminalOptions = {
@@ -241,6 +250,19 @@ export default class Activator {
       vscode.window.onDidOpenTerminal(async newTerminal => {
         if (newTerminal.creationOptions.name === TERMINAL_NAME) {
           if (this.terminal?.getIsOpen()) {
+            // fix if all terminals are closed
+            // but close() has not been called
+            // for example if the vscode window was reloaded
+            // in some combination of reopening and restoring
+            // this situation can occur
+            if (
+              vscode.window.terminals.filter(
+                t => t.creationOptions.name === TERMINAL_NAME
+              ).length < 2
+            ) {
+              return;
+            }
+
             void vscode.window.showWarningMessage(
               "Only one instance of MicroPico vREPL is recommended. " +
                 "Closing new instance."
@@ -1132,9 +1154,8 @@ export default class Activator {
           return;
         }
 
-        // double ctrl+c to stop any running program
-        // TODO: to be implemented
-        //await PicoMpyCom.getInstance().st;
+        // interrupt most running programs
+        PicoMpyCom.getInstance().interruptExecution();
 
         // wait for the program to stop
         await new Promise(resolve => setTimeout(resolve, 100));
