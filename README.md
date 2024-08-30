@@ -47,7 +47,6 @@ On most Linux installations the device file of the Pico serial port is owned by 
 - First of all open a folder and run `> MicroPico > Configure Project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the auto-completion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in [\#Requirements](#requirements).
 
 - Have the onboard LED flashing in under 5 minutes:
-> Note that [accessing the onboard LED is slightly different for the Pico W compared with the Pico (Page 15 Chapter 3.4)](https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf). So, you can use the following script in place of `flash.py`:
 
 ```python
 from machine import Pin
