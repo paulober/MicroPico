@@ -1,6 +1,7 @@
 import { EventEmitter } from "vscode";
 import type { Pseudoterminal, Event, TerminalDimensions } from "vscode";
 import History from "./models/history.mjs";
+import { OperationResultType, PicoMpyCom } from "@paulober/pico-mpy-com";
 
 const PROMPT = ">>> ";
 const DEL = (count: number): string => `\x1b[${count}D\x1b[1P`;
@@ -340,12 +341,40 @@ export class Terminal implements Pseudoterminal {
       this.submitEmitter.fire("import uos; uos.listdir()\n");
 
       return;
+    } else if (input === ".rtc") {
+      this.writeEmitter.fire("\r\n");
+      this.waitingForPrompt = true;
+      this.history.add(input);
+      PicoMpyCom.getInstance()
+        .getRtcTime()
+        .then(time => {
+          if (time.type === OperationResultType.getRtcTime) {
+            this.writeEmitter.fire(
+              `RTC time: ${time.time ? time.time.toLocaleString() : "N/A"}\r\n`
+            );
+            this.prompt();
+          } else {
+            // log in red
+            this.writeEmitter.fire(
+              "\x1b[1;31mError getting RTC time\x1b[0m\r\n"
+            );
+            this.prompt();
+          }
+        })
+        .catch(() => {
+          // log in red
+          this.writeEmitter.fire("\x1b[1;31mError getting RTC time\x1b[0m\r\n");
+          this.prompt();
+        });
+
+      return;
     } else if (input === ".help") {
       this.writeEmitter.fire("\r\n");
       this.writeEmitter.fire("Available vREPL commands:\r\n");
       this.writeEmitter.fire(".cls/.clear - clear screen and prompt\r\n");
       this.writeEmitter.fire(".empty - clean vREPL\r\n");
       this.writeEmitter.fire(".ls - list files on Pico\r\n");
+      this.writeEmitter.fire(".rtc - get the time form the onboard RTC\r\n");
       this.writeEmitter.fire(".help - show this help\r\n");
       this.prompt();
 
