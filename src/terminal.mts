@@ -1,7 +1,8 @@
-import { EventEmitter } from "vscode";
+import { commands, EventEmitter } from "vscode";
 import type { Pseudoterminal, Event, TerminalDimensions } from "vscode";
 import History from "./models/history.mjs";
 import { OperationResultType, PicoMpyCom } from "@paulober/pico-mpy-com";
+import { commandPrefix } from "./api.mjs";
 
 const PROMPT = ">>> ";
 const DEL = (count: number): string => `\x1b[${count}D\x1b[1P`;
@@ -368,6 +369,15 @@ export class Terminal implements Pseudoterminal {
         });
 
       return;
+    } else if (input === ".sr") {
+      commands.executeCommand(commandPrefix + "reset.soft.listen");
+
+      return;
+    } else if (input === ".hr") {
+      commands.executeCommand(commandPrefix + "reset.hard");
+      this.writeEmitter.fire("\r\n");
+
+      return;
     } else if (input === ".help") {
       this.writeEmitter.fire("\r\n");
       this.writeEmitter.fire("Available vREPL commands:\r\n");
@@ -375,6 +385,9 @@ export class Terminal implements Pseudoterminal {
       this.writeEmitter.fire(".empty - clean vREPL\r\n");
       this.writeEmitter.fire(".ls - list files on Pico\r\n");
       this.writeEmitter.fire(".rtc - get the time form the onboard RTC\r\n");
+      this.writeEmitter.fire(".sr - soft reset the Pico\r\n");
+      this.writeEmitter.fire(".hr - hard reset the Pico\r\n");
+
       this.writeEmitter.fire(".help - show this help\r\n");
       this.prompt();
 
@@ -406,9 +419,11 @@ export class Terminal implements Pseudoterminal {
     this.writeEmitter.fire(data);
   }
 
-  public prompt(): void {
+  public prompt(withoutPrint = false): void {
     this.waitingForPrompt = false;
-    this.writeEmitter.fire(PROMPT);
+    if (!withoutPrint) {
+      this.writeEmitter.fire(PROMPT);
+    }
     // save cursor positon
     this.writeEmitter.fire("\x1b7");
   }

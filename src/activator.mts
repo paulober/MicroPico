@@ -1266,7 +1266,7 @@ export default class Activator {
           }
         }
         this.terminal?.melt();
-        this.terminal?.prompt();
+        this.terminal?.prompt(true);
       }
     );
 
