@@ -476,13 +476,8 @@ export default class Activator {
         }
 
         await focusTerminal(terminalOptions);
-        await PicoMpyCom.getInstance().runFriendlyCommand(
-          "import os; " +
-            "__pico_dir=os.getcwd(); " +
-            `os.chdir('${dirname(file)}'); ` +
-            `execfile('${basename(file)}'); ` +
-            "os.chdir(__pico_dir); " +
-            "del __pico_dir",
+        await PicoMpyCom.getInstance().runRemoteFile(
+          file,
           (open: boolean) => {
             if (!open) {
               return;
@@ -499,8 +494,7 @@ export default class Activator {
             if (data.length > 0) {
               this.terminal?.write(data.toString("utf-8"));
             }
-          },
-          this.pythonPath
+          }
         );
         this.ui?.userOperationStopped();
         commandExecuting = false;
@@ -1186,7 +1180,27 @@ export default class Activator {
           return;
         }
 
-        const result = await PicoMpyCom.getInstance().hardReset();
+        await focusTerminal(terminalOptions);
+        // performing hard reset in orange
+        this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
+
+        const result = await PicoMpyCom.getInstance().hardReset(
+          (open: boolean) => {
+            if (!open) {
+              return;
+            }
+
+            commandExecuting = true;
+            this.terminal?.clean(true);
+            this.terminal?.write("\r\n");
+            this.ui?.userOperationStarted();
+          },
+          (data: Buffer) => {
+            this.terminal?.write(data.toString("utf-8"));
+          }
+        );
+        commandExecuting = false;
+        this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
             void vscode.window.showInformationMessage("Hard reset done");
