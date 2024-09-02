@@ -212,6 +212,9 @@ export class Terminal implements Pseudoterminal {
           // Tab
           this.handleTab();
         }
+      } else if (char === "\x16") {
+        // Ctrl+V
+        commands.executeCommand("editor.action.clipboardPasteAction");
       } else {
         if (IGNORED_CHARS.includes(char)) {
           return;
