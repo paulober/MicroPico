@@ -113,7 +113,28 @@ export default class Activator {
     this.ui = new UI(settings);
     this.ui.init();
 
-    this.setupAutoConnect(settings);
+    const workspaceFolder = vscode.workspace.workspaceFolders;
+    let activationFilePresent = false;
+    if (workspaceFolder !== undefined && workspaceFolder.length > 0) {
+      const folder = workspaceFolder[0];
+      // check if folder contains .micropico
+      const micropico = vscode.Uri.joinPath(folder.uri, ".micropico");
+      activationFilePresent = await vscode.workspace.fs.stat(micropico).then(
+        () => true,
+        () => false
+      );
+    }
+
+    if (activationFilePresent) {
+      this.ui.show();
+      this.setupAutoConnect(settings);
+    }
+
+    context.subscriptions.push({
+      dispose: async () => {
+        await PicoMpyCom.getInstance().closeSerialPort();
+      },
+    });
 
     this.terminal = new Terminal(async () => {
       const result = await PicoMpyCom.getInstance().runCommand(
@@ -308,15 +329,10 @@ export default class Activator {
       })
     );
 
-    context.subscriptions.push({
-      dispose: async () => {
-        await PicoMpyCom.getInstance().closeSerialPort();
-      },
-    });
-
     if (
       settings.getBoolean(SettingsKey.openOnStart) &&
-      this.comDevice !== undefined
+      this.comDevice !== undefined &&
+      activationFilePresent
     ) {
       await focusTerminal(terminalOptions);
     }

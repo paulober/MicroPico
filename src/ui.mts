@@ -57,7 +57,7 @@ export default class UI {
   }
 
   /**
-   * Show the quick pick menu for Pico-W-Go contributed commands.
+   * Show the quick pick menu for MicroPico contributed commands.
    */
   public showQuickPick(): void {
     void commands.executeCommand("workbench.action.quickOpen", "> MicroPico: ");
@@ -69,6 +69,27 @@ export default class UI {
     }
 
     this.visible = true;
+
+    const sbButtons = this.settings.getArray(SettingsKey.statusbarButtons);
+    if (!sbButtons) {
+      this.visible = false;
+
+      return;
+    }
+
+    for (const key of sbButtons) {
+      this.items[key].show();
+    }
+    this.items.listcommands.show();
+  }
+
+  public hide(): void {
+    this.visible = false;
+
+    for (const item of Object.values(this.items)) {
+      item.hide();
+    }
+    this.items.listcommands.hide();
   }
 
   private setButton(name: string, icon: string, text: string): void {
@@ -113,12 +134,13 @@ export default class UI {
     item.command = command;
     item.tooltip = tooltip;
 
+    /* don't auto activate
     if (
       this.settings.getArray(SettingsKey.statusbarButtons)?.includes(key) ||
       key === "listcommands"
     ) {
       item.show();
-    }
+    }*/
 
     return item;
   }
@@ -127,6 +149,7 @@ export default class UI {
     this.userOperationOngoing++;
     this.logger.debug("User operation started");
 
+    // TODO: only if they are not both in settings enabled
     this.items.run.hide();
     this.items.stop.show();
   }
@@ -135,6 +158,7 @@ export default class UI {
     this.userOperationOngoing--;
     this.logger.debug("User operation stopped");
 
+    // TODO: only if they are not both in settings enabled
     this.items.stop.hide();
     this.items.run.show();
   }
