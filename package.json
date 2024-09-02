@@ -425,7 +425,8 @@
               "listserial",
               "listcommands",
               "togglepicowfs",
-              "uploadproject"
+              "uploadproject",
+              "downloadproject"
             ]
           },
           "default": [
@@ -525,7 +526,7 @@
       "key": "runselection",
       "name": "$(play) Run Line",
       "command": "micropico.runselection",
-      "tooltip": "Run current line"
+      "tooltip": "Run selected lines"
     },
     {
       "key": "upload",
@@ -534,13 +535,19 @@
       "tooltip": "Upload current file to your board"
     },
     {
+      "key": "download",
+      "name": "$(triangle-down) Download",
+      "command": "micropico.downloadFile",
+      "tooltip": "Download current file to your board"
+    },
+    {
       "key": "uploadproject",
       "name": "$(triangle-up) Upload Project",
       "command": "micropico.upload",
       "tooltip": "Upload current project to your board"
     },
     {
-      "key": "download",
+      "key": "downloadproject",
       "name": "$(triangle-down) Download",
       "command": "micropico.download",
       "tooltip": "Download project from your board. This will overwrite all files in the sync folder."
@@ -555,7 +562,7 @@
       "key": "softreset",
       "name": "$(refresh) Reset",
       "command": "micropico.reset.soft",
-      "tooltip": "Restart your board"
+      "tooltip": "Clears the state of the MicroPython virtual machine"
     },
     {
       "key": "settings",
@@ -565,9 +572,9 @@
     },
     {
       "key": "listserial",
-      "name": "$(list-unordered) List serialports",
+      "name": "$(list-unordered) List serial ports",
       "command": "micropico.extra.getSerial",
-      "tooltip": "List available serialports"
+      "tooltip": "List available serial ports"
     },
     {
       "key": "listcommands",
