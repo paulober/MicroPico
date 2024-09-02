@@ -1184,6 +1184,60 @@ export default class Activator {
     // [Command] Hard reset pico
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.hard",
+      () => {
+        // TODO: maybe instead just run the command and if it retuns a type none
+        // response show warning message as otherwise a second warning for this
+        // case would be required to be implemented
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
+          );
+
+          return;
+        }
+        // performing hard reset in orange
+        void vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: "Performing hard reset...",
+            cancellable: true,
+          },
+          async (progress, token) => {
+            token.onCancellationRequested(
+              PicoMpyCom.getInstance().interruptExecution.bind(
+                PicoMpyCom.getInstance()
+              )
+            );
+
+            const result = await PicoMpyCom.getInstance().hardReset(
+              (open: boolean) => {
+                if (!open) {
+                  return;
+                }
+
+                this.ui?.userOperationStarted();
+              }
+            );
+            progress.report({ increment: 100 });
+            this.ui?.userOperationStopped();
+            if (result.type === OperationResultType.commandResult) {
+              if (result.result) {
+                void vscode.window.showInformationMessage(
+                  "Hard reset is done."
+                );
+              } else {
+                void vscode.window.showErrorMessage("Hard reset has failed.");
+              }
+            }
+          }
+        );
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    // [Command] Hard reset pico (interactive)
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "reset.hard.listen",
       async () => {
         // TODO: maybe instead just run the command and if it retuns a type none
         // response show warning message as otherwise a second warning for this

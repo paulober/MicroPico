@@ -374,7 +374,7 @@ export class Terminal implements Pseudoterminal {
 
       return;
     } else if (input === ".hr") {
-      commands.executeCommand(commandPrefix + "reset.hard");
+      commands.executeCommand(commandPrefix + "reset.hard.listen");
       this.writeEmitter.fire("\r\n");
 
       return;

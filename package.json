@@ -155,6 +155,11 @@
         "category": "MicroPico"
       },
       {
+        "command": "micropico.reset.hard.listen",
+        "title": "Reset > Hard (interactive)",
+        "category": "MicroPico"
+      },
+      {
         "command": "micropico.help",
         "title": "Help > Getting started",
         "category": "MicroPico"
@@ -196,7 +201,7 @@
       },
       {
         "command": "micropico.reset.soft.listen",
-        "title": "Reset > Soft (listen)",
+        "title": "Reset > Soft (interactive)",
         "category": "MicroPico"
       },
       {
