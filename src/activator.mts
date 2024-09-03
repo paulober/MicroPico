@@ -89,9 +89,25 @@ export default class Activator {
     this.stubs = new Stubs();
     await this.stubs.update(settings);
 
-    this.comDevice = await settings.getComDevice();
+    const workspaceFolder = vscode.workspace.workspaceFolders;
+    let activationFilePresent = false;
+    if (workspaceFolder !== undefined && workspaceFolder.length > 0) {
+      const folder = workspaceFolder[0];
+      // check if folder contains .micropico
+      const micropico = vscode.Uri.joinPath(folder.uri, ".micropico");
+      activationFilePresent = await vscode.workspace.fs.stat(micropico).then(
+        () => true,
+        () => false
+      );
+    }
 
-    if (this.comDevice === undefined || this.comDevice === "") {
+    // TODO: maybe not call getComDevice if no activationFile is present
+    this.comDevice = await settings.getComDevice(!activationFilePresent);
+
+    if (
+      activationFilePresent &&
+      (this.comDevice === undefined || this.comDevice === "")
+    ) {
       this.comDevice = undefined;
 
       void vscode.window
@@ -112,18 +128,6 @@ export default class Activator {
 
     this.ui = new UI(settings);
     this.ui.init();
-
-    const workspaceFolder = vscode.workspace.workspaceFolders;
-    let activationFilePresent = false;
-    if (workspaceFolder !== undefined && workspaceFolder.length > 0) {
-      const folder = workspaceFolder[0];
-      // check if folder contains .micropico
-      const micropico = vscode.Uri.joinPath(folder.uri, ".micropico");
-      activationFilePresent = await vscode.workspace.fs.stat(micropico).then(
-        () => true,
-        () => false
-      );
-    }
 
     if (activationFilePresent) {
       this.ui.show();

@@ -94,7 +94,9 @@ export default class UI {
 
   private setButton(name: string, icon: string, text: string): void {
     this.items[name].text = `$(${icon}) ${text}`;
-    this.items[name].show();
+    if (this.visible) {
+      this.items[name].show();
+    }
   }
 
   private setState(connected: boolean): void {

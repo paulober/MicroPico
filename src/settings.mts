@@ -85,7 +85,7 @@ export default class Settings {
    * @returns the com device to use. If autoConnect is true, the first port is returned.
    * Otherwise the manual com device is returned.
    */
-  public async getComDevice(): Promise<string | undefined> {
+  public async getComDevice(silent = false): Promise<string | undefined> {
     // manual com device undefined if this.getBoolean(SettingsKey.autoConnect) is true
     // or if manualComDevice is undefined
     if (this.getBoolean(SettingsKey.autoConnect) === true) {
@@ -98,16 +98,18 @@ export default class Settings {
       } catch (e) {
         // TODO: use logger
         console.error(e);
-        const message =
-          typeof e === "string" ? e : e instanceof Error ? e.message : "";
-        void window.showErrorMessage(
-          "Error while reading (COM) ports for autoConnect: " + message
-        );
+        if (!silent) {
+          const message =
+            typeof e === "string" ? e : e instanceof Error ? e.message : "";
+          void window.showErrorMessage(
+            "Error while reading (COM) ports for autoConnect: " + message
+          );
+        }
       }
     }
 
     let manualComDevice = this.getString(SettingsKey.manualComDevice);
-    if (manualComDevice === undefined || manualComDevice === "") {
+    if (!silent && (manualComDevice === undefined || manualComDevice === "")) {
       manualComDevice = undefined;
       void window.showErrorMessage(
         "autoConnect setting has been disabled (or no Pico has been " +
