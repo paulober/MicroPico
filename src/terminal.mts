@@ -381,6 +381,12 @@ export class Terminal implements Pseudoterminal {
       this.writeEmitter.fire("\r\n");
 
       return;
+    } else if (input === ".gc") {
+      commands.executeCommand(commandPrefix + "garbageCollect");
+      this.writeEmitter.fire("\r\n");
+      this.prompt();
+
+      return;
     } else if (input === ".help") {
       this.writeEmitter.fire("\r\n");
       this.writeEmitter.fire("Available vREPL commands:\r\n");
@@ -390,6 +396,7 @@ export class Terminal implements Pseudoterminal {
       this.writeEmitter.fire(".rtc - get the time form the onboard RTC\r\n");
       this.writeEmitter.fire(".sr - soft reset the Pico\r\n");
       this.writeEmitter.fire(".hr - hard reset the Pico\r\n");
+      this.writeEmitter.fire(".gc - trigger garbage collector\r\n");
 
       this.writeEmitter.fire(".help - show this help\r\n");
       this.prompt();

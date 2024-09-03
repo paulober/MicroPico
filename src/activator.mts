@@ -138,8 +138,9 @@ export default class Activator {
 
     this.terminal = new Terminal(async () => {
       const result = await PicoMpyCom.getInstance().runCommand(
-        "\rfrom usys import implementation, version; " +
-          "print(version.split('; ')[1] + '; ' + implementation._machine)"
+        "\rfrom sys import implementation as _pe_impl, version as _pe_vers\n" +
+          "print(_pe_vers.split('; ')[1] + '; ' + _pe_impl._machine)\n" +
+          "del _pe_impl, _pe_vers"
       );
       if (result.type === OperationResultType.commandResponse) {
         return (
@@ -193,7 +194,8 @@ export default class Activator {
             this.terminal?.write(data.toString("utf-8"));
           }
         },
-        this.pythonPath
+        this.pythonPath,
+        true
       );
       if (result.type !== OperationResultType.commandResult || !result.result) {
         // write red text into terminal
@@ -565,7 +567,8 @@ export default class Activator {
                 this.terminal?.write(data.toString("utf-8"));
               }
             },
-            this.pythonPath
+            this.pythonPath,
+            true
           );
           commandExecuting = false;
           this.ui?.userOperationStopped();
@@ -1471,6 +1474,45 @@ export default class Activator {
       }
     );
     context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "garbageCollect",
+      () => {
+        if (PicoMpyCom.getInstance().isPortDisconnected()) {
+          void vscode.window.showWarningMessage(
+            "Please connect to the Pico first."
+          );
+
+          return;
+        }
+
+        vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: "Running garbage collector...",
+            cancellable: false,
+          },
+          async progress => {
+            // gc currently not cancelable
+
+            const result = await PicoMpyCom.getInstance().garbageCollect();
+            progress.report({ increment: 100 });
+            if (
+              result.type === OperationResultType.commandResult &&
+              result.result
+            ) {
+              void vscode.window.showInformationMessage(
+                "Garbage collection done"
+              );
+
+              return;
+            }
+
+            void vscode.window.showErrorMessage("Garbage collection failed");
+          }
+        );
+      }
+    );
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
       context.extensionUri
