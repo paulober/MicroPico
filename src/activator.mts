@@ -141,6 +141,10 @@ export default class Activator {
     });
 
     this.terminal = new Terminal(async () => {
+      if (this.ui?.isHidden()) {
+        await vscode.commands.executeCommand(commandPrefix + "connect");
+        this.ui?.show();
+      }
       const result = await PicoMpyCom.getInstance().runCommand(
         "\rfrom sys import implementation as _pe_impl, version as _pe_vers\n" +
           "print(_pe_vers.split('; ')[1] + '; ' + _pe_impl._machine)\n" +
@@ -1539,14 +1543,17 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    vscode.window.registerWebviewViewProvider(
+    disposable = vscode.window.registerWebviewViewProvider(
       PackagesWebviewProvider.viewType,
       packagesWebviewProvider
     );
-    vscode.window.registerTreeDataProvider(
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.window.registerTreeDataProvider(
       DeviceWifiProvider.viewType,
       deviceWifiProvider
     );
+    context.subscriptions.push(disposable);
 
     // auto install selected stubs of a project they aren't installed yet
     // retuns null if stubs are installed and the pip package name plus version if not

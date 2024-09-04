@@ -92,6 +92,10 @@ export default class UI {
     this.items.listcommands.hide();
   }
 
+  public isHidden(): boolean {
+    return !this.visible;
+  }
+
   private setButton(name: string, icon: string, text: string): void {
     this.items[name].text = `$(${icon}) ${text}`;
     if (this.visible) {
