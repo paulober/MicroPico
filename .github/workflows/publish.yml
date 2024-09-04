@@ -17,10 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node v20.9.x
+      - name: Setup Node v20.9.0
         uses: actions/setup-node@v4
         with:
-          node-version: '20.14.x'
+          node-version: '20.14.0'
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -38,22 +38,25 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish
-        run: ./scripts/publish.sh
+      - name: Run Publish Script
+        run: |
+          chmod +x ./scripts/publish.sh
+          ./scripts/publish.sh
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
           OVSX_PAT: ${{ secrets.OPEN_VSX_TOKEN }}
-      
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Visual Studio Code extension package
-          path: pico-w-go-*.vsix
+          name: MicroPico ${{ github.event.release.tag_name }}
+          path: micropico-*.vsix
 
       - name: Upload Artifact To Release
-        #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/MicroPico/releases/$RELEASE_ID/assets 
-        run: gh release upload $RELEASE_TAG_NAME pico-w-go-*.vsix
+        #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/MicroPico/releases/$RELEASE_ID/assets
+        run: gh release upload $RELEASE_TAG_NAME micropico-*.vsix
         env:
-          #RELEASE_ID: ${{ github.event.release.id }}
+          #RELEASE_ID: $ {{ github.event.release.id }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
