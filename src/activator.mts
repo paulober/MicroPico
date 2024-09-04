@@ -49,7 +49,9 @@ export default class Activator {
   private stubs?: Stubs;
   private picoFs?: PicoRemoteFileSystem;
   private terminal?: Terminal;
+  private terminalOptions?: vscode.ExtensionTerminalOptions;
   private pythonPath?: string;
+  private activationFilePresentAtLaunch = false;
 
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
@@ -90,22 +92,25 @@ export default class Activator {
     await this.stubs.update(settings);
 
     const workspaceFolder = vscode.workspace.workspaceFolders;
-    let activationFilePresent = false;
     if (workspaceFolder !== undefined && workspaceFolder.length > 0) {
       const folder = workspaceFolder[0];
       // check if folder contains .micropico
       const micropico = vscode.Uri.joinPath(folder.uri, ".micropico");
-      activationFilePresent = await vscode.workspace.fs.stat(micropico).then(
-        () => true,
-        () => false
-      );
+      this.activationFilePresentAtLaunch = await vscode.workspace.fs
+        .stat(micropico)
+        .then(
+          () => true,
+          () => false
+        );
     }
 
     // TODO: maybe not call getComDevice if no activationFile is present
-    this.comDevice = await settings.getComDevice(!activationFilePresent);
+    this.comDevice = await settings.getComDevice(
+      !this.activationFilePresentAtLaunch
+    );
 
     if (
-      activationFilePresent &&
+      this.activationFilePresentAtLaunch &&
       (this.comDevice === undefined || this.comDevice === "")
     ) {
       this.comDevice = undefined;
@@ -129,7 +134,7 @@ export default class Activator {
     this.ui = new UI(settings);
     this.ui.init();
 
-    if (activationFilePresent) {
+    if (this.activationFilePresentAtLaunch) {
       this.ui.show();
       this.setupAutoConnect(settings);
     }
@@ -255,7 +260,7 @@ export default class Activator {
       this.logger.warn("Failed to dispose old terminals on reactivation.");
     }
 
-    const terminalOptions = {
+    this.terminalOptions = {
       name: TERMINAL_NAME,
       iconPath: vscode.Uri.file(
         join(
@@ -267,15 +272,20 @@ export default class Activator {
       ),
       isTransient: true,
       pty: this.terminal,
-      hideFromUser: false,
+      //hideFromUser: false,
       location: vscode.TerminalLocation.Panel,
     };
 
     // register terminal profile provider
     context.subscriptions.push(
       vscode.window.registerTerminalProfileProvider(commandPrefix + "vrepl", {
-        provideTerminalProfile: () =>
-          new vscode.TerminalProfile(terminalOptions),
+        provideTerminalProfile: () => {
+          if (this.terminalOptions) {
+            return new vscode.TerminalProfile(this.terminalOptions);
+          } else {
+            return undefined;
+          }
+        },
       })
     );
 
@@ -307,7 +317,7 @@ export default class Activator {
             newTerminal.dispose();
 
             // focus on old one
-            await focusTerminal(terminalOptions);
+            await focusTerminal(this.terminalOptions);
 
             // TODO: currently disreagarding if user has unsubmitted input in pty
             // send enter for new prompt
@@ -342,9 +352,9 @@ export default class Activator {
     if (
       settings.getBoolean(SettingsKey.openOnStart) &&
       this.comDevice !== undefined &&
-      activationFilePresent
+      this.activationFilePresentAtLaunch
     ) {
-      await focusTerminal(terminalOptions);
+      await focusTerminal(this.terminalOptions);
     }
 
     // [Command] help
@@ -380,6 +390,10 @@ export default class Activator {
           );
         }
         await this.stubs?.addToWorkspace(location);
+        if (this.ui?.isHidden() && !location) {
+          await vscode.commands.executeCommand(commandPrefix + "connect");
+          this.ui?.show();
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -439,7 +453,7 @@ export default class Activator {
           }
         }
 
-        await focusTerminal(terminalOptions);
+        await focusTerminal(this.terminalOptions);
         // TODO: maybe freeze terminal until this operation runs to prevent user input
         const data = await PicoMpyCom.getInstance().runFile(
           file,
@@ -501,7 +515,7 @@ export default class Activator {
           return;
         }
 
-        await focusTerminal(terminalOptions);
+        await focusTerminal(this.terminalOptions);
         await PicoMpyCom.getInstance().runRemoteFile(
           file,
           (open: boolean) => {
@@ -556,7 +570,7 @@ export default class Activator {
 
           return;
         } else {
-          await focusTerminal(terminalOptions);
+          await focusTerminal(this.terminalOptions);
           const data = await PicoMpyCom.getInstance().runFriendlyCommand(
             code,
             (open: boolean) => {
@@ -1261,7 +1275,7 @@ export default class Activator {
           return;
         }
 
-        await focusTerminal(terminalOptions);
+        await focusTerminal(this.terminalOptions);
         // performing hard reset in orange
         this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
 
@@ -1304,7 +1318,7 @@ export default class Activator {
           return;
         }
 
-        await focusTerminal(terminalOptions);
+        await focusTerminal(this.terminalOptions);
         const result = await PicoMpyCom.getInstance().sendCtrlD(
           (open: boolean) => {
             if (open) {
@@ -1619,6 +1633,16 @@ export default class Activator {
         "Connected to a board. Now executing *OnConnect stuff..."
       );
       this.logger.info("Connection to board successfully established");
+
+      if (
+        !this.activationFilePresentAtLaunch &&
+        settings.getBoolean(SettingsKey.openOnStart) &&
+        this.comDevice !== undefined
+      ) {
+        void focusTerminal(this.terminalOptions);
+        // only keep for first connection on a launch without activation file
+        this.activationFilePresentAtLaunch = false;
+      }
 
       this.terminal?.cls();
       this.terminal?.open(undefined);
