@@ -21,7 +21,7 @@ for platform in "${platforms[@]}"; do
   if [ "$platform" == "win32-x64" ]; then
     npx @vscode/vsce package --no-yarn --target "win32-x64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
   elif [ "$platform" == "darwin-x64+arm64" ]; then
-    npx @vscode/vsce package --no-yarn --target "darwin-arm64 darwin-x64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
+    npx @vscode/vsce package --no-yarn --target "darwin-arm64" "darwin-x64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
   elif [ "$platform" == "linux-arm64" ]; then
     npx @vscode/vsce package --no-yarn --target "linux-arm64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
   elif [ "$platform" == "linux-arm" ]; then
