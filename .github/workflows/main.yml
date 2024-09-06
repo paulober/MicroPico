@@ -49,11 +49,20 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Package Extension
-        run: npx @vscode/vsce package --no-yarn -o micropico-${{ github.sha }}.vsix
+      - name: Get Short Commit SHA
+        run: |
+          short_sha=$(git rev-parse --short "$GITHUB_SHA")
+          echo "SHORT_SHA=${short_sha}" >> $GITHUB_ENV
+
+      - name: Run Package Script
+        run: |
+          chmod +x ./scripts/package.sh
+          ./scripts/package.sh
+        env:
+          RELEASE_TAG_NAME: ${{ env.SHORT_SHA }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: micropico-${{ github.sha }}.vsix
-          path: micropico-${{ github.sha }}.vsix
+          name: micropico-${{ env.SHORT_SHA }}.vsix
+          path: micropico-${{ env.SHORT_SHA }}.vsix
