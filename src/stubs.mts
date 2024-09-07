@@ -186,6 +186,10 @@ export default class Stubs {
       "python.analysis.diagnosticSeverityOverrides": {
         reportMissingModuleSource: "none",
       },
+      // this should stop the python extension
+      // from pasting activation stuff into the vREPL
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "python.terminal.activateEnvironment": false,
     };
 
     if (!justUpdate) {
