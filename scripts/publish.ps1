@@ -1,50 +1,53 @@
-npx vsce publish --target win32-x64 linux-x64 linux-arm64 linux-armhf darwin-x64 darwin-arm64
+# This script's purpose is to publish the VSCode extension to the VSCode Marketplace 
+# and OpenVSX Registry, also it packages binaries for each 
+# platform to reduce vsix size
+
+# Get the directory where the script is located
+$SCRIPT_DIR = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
+
+# Ensure package.ps1 is executable and call it
+& "$SCRIPT_DIR/package.ps1"
+
+# Find all .vsix files except the one without a platform prefix and publish them one by one
+Get-ChildItem -Recurse -Filter "micropico-$env:RELEASE_TAG_NAME-*.vsix" | Where-Object { $_.Name -ne "micropico-$env:RELEASE_TAG_NAME.vsix" } | ForEach-Object {
+    $packagePath = $_.FullName
+    $targetFlags = ""
+
+    # If the filename contains "darwin", add the appropriate target flags
+    if ($packagePath -like "*darwin*") {
+        $targetFlags = "--target darwin-x64 darwin-arm64 "
+    }
+
+    # Publish the VSCode extension to the VSCode Marketplace
+    npx @vscode/vsce publish "$targetFlags--packagePath" "$packagePath"
+
+    # Publish the VSCode extension to the Open VSX Registry
+    npx ovsx publish "$packagePath" "$targetFlags-p" "$env:OVSX_PAT"
+
+    # Delete this vsix file
+    Remove-Item -Force "$packagePath"
+}
 
 # SIG # Begin signature block
-# MIIIfwYJKoZIhvcNAQcCoIIIcDCCCGwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrf7aRWTg06UqaS2CAxQ+uEeb
-# 0pKgggUUMIIFEDCCAvigAwIBAgIQX2UN69y+sLFPPURerUHC0zANBgkqhkiG9w0B
-# AQsFADAgMQswCQYDVQQGEwJERTERMA8GA1UEAwwIcGF1bG9iZXIwHhcNMjIwOTA2
-# MTkxNTE5WhcNMjMxMjMxMjIwMDAwWjAgMQswCQYDVQQGEwJERTERMA8GA1UEAwwI
-# cGF1bG9iZXIwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCvk+ceUwcW
-# uKq9ONfQSXLEx/hV8HYiz+2vTSIJ7YQ6lXtVFV7wLKsuv5YpxVb7VBnUgWAPEz5S
-# N5uAyFIjb/lsGncCddoPvd1cfby3RSq5MpUrrZvMZgXUBLqcEBsG5m8kvrhWPFkP
-# 6+Xgzgyp689NBAzkastaFpmTJ+ux5uLq1dccPwgFxVdB0NmZ0Y5XflDt97rQc4W+
-# mEPpywG4IgTaWVvyZZ5tyKi1YFEn6+aARUbImVqLfRiJetT7PW0EqORq3zV5VbMX
-# P3RobjTWzIOHzqwv5++7kAfeZnXJbjQX8TjXQzZENew7GH+IhPCqA1yriRocXFr2
-# TpMcXtYZShMaJ46sibTtEd48wrYr1ucPF37E++tX7pR5/l44nC7ZhrXGHkqIAZik
-# lAv1jAEsu4Ytp2WW8yxhv24sy/BCiaTO5zWQ5mxn3H6CkUO6MS2wifqZmyjuxFMM
-# KslvX2FOJuETkja+C6vc49Lc/k8URRPuAczZ+o0SjtajmnXYzjGNxMmBg1YGXpfI
-# kUdIb9PO4dTCLt/xNj1qNT7GwXpxhSlAYzi4YXbwPQsJwkkipG38zx9d9Cm5mR6Y
-# CtsNhJsyVG49/o9d2mmmgdV1Gws/E71rTIlsxBLAHLw1AqFTGZbHw5poMYqSM4wk
-# P1MHiu2pJv4y6qu5vlsE3hjvmXN4XYhOVQIDAQABo0YwRDAOBgNVHQ8BAf8EBAMC
-# BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwHQYDVR0OBBYEFHHTDH3l/ESFdUBEaj3n
-# yW31bD5CMA0GCSqGSIb3DQEBCwUAA4ICAQCYXVQMixSGDvPrI6R7EMsGgAyPjdlk
-# vcmgcc6+fA4pbn4JRV26MPSoD1d54wB/ayyBsBFHNE3PuedtGgQr/W3VMSsEgQte
-# 0NnSfcNNVpYvANYNz7yrTszjdIbisptLzMDSWl4JRsaA957sUzy27CIYHkFzde5M
-# GPntHhrICk5KEPmGio1c4eUYspx388CJ2NzPX4/nNwpSneVLeFWUJNSPRLy3AHFN
-# MIGFZGcRC5C1Bfc4XAv32cjsKpSuSOMG2jEfcko7g1UvZdIcviWohs97VLYm56KR
-# NwWxmNewdHFEW7We+Rse5nPXeZo5HjX8ked3vAq6CjN6FfKv9aXd4xGvu6STshgo
-# HrigGMyGxpg8e4a9qTXICzPPazsvrhFyylRlAUR8Lu+tvQVRp3aoNcog4lfomGix
-# /ILMdrMnkDRPt42MVX6S+iNBgrfXkUIOhe9byJ5NjhoqES2EBOV/xlv14pFqZf55
-# 7NUbL6NUnicV2cTe77md6Ms20jX5T8qLyJOk9UHi4bo8wVABN8y5GKxcYJjfb5VV
-# evr3P+jMW+tVPqKTkXat9Iuhp7/8vYN5KzHKipCElvhIUYNmdbVG4IUavc0FwF8f
-# nMAxp/WFO1jCYJpIcifNT0exwWerzqS8qjuXt3LU8QHcEJTdP6LGhcAQfzz7qQTY
-# g8cGeBoAgmMYBzGCAtUwggLRAgEBMDQwIDELMAkGA1UEBhMCREUxETAPBgNVBAMM
-# CHBhdWxvYmVyAhBfZQ3r3L6wsU89RF6tQcLTMAkGBSsOAwIaBQCgeDAYBgorBgEE
-# AYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwG
-# CisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRFBGSL
-# Fhdh6WNWOks/H2mcjPDx3jANBgkqhkiG9w0BAQEFAASCAgA6r78UmKQKkQjaeJje
-# txWTubfrM8REIFjtVTDObIdH5mSA2OxOXrWr4fXSBUZW5QdmURbws9UXkJpXszI5
-# ks0cnnt4QzHSu0OolwZSW7TWwcX3/ouQxh/qcdk+FeDqRroVaoltRD3gqSCFJ6aF
-# aM2SkqMoaRGd0kmdibZsuciIKS8+7H9swHDuyKpxBGXOvVZfFwOAr0zO8B4AD9um
-# AcUHFqyaqDxZDkCBvNzQldCifmXCPB96MMW8F4Y7ZWlj9yZCV5Cgi4cVpZHsdVM1
-# eBxvwiMQHDc3XXEeQaHTcAl9pcD7ee2ICdeP1kyRb5Z4mo6NV3LG8npx3tuur2zT
-# x/xspAqTNOccpo06iBD7B0k4tIpnKaLm43aLSl3RPmRBiPWD5y2L9aPuMwZMhvu2
-# gAXlGYbx9XrtZ1JMku4KeyY3Z94U/buqY9tFay4znY8CPr4EIYgjL0HWIjr4Oz5s
-# uwqhdlGKGNapeDqMbMM/i9DQSNj60iJpsWUPKhMaQvrAZ24Vk2li5ub1P27ZcKMN
-# jDKPnLFc8yaHY1FQ1SxGfqO5IgJVgDQqp5nDWSOU5vTuIHj59nCzPZU8e0LUcS4s
-# +cxIswlaKADs5fw8/Q0PlAECn6dY6y6gZSiFXlLg/LPOKF0L7nlPk74dS8K+qEG2
-# qZWRuY6qqSP7LWJLC3mFPGgDYw==
+# MIID6AYJKoZIhvcNAQcCoIID2TCCA9UCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAzkyy0Suhkn3bY
+# UkYTY8pZC/nC+ITltXSljUy/jVxq6KCCAeYwggHiMIIBiKADAgECAhBB/1nf+Q3Z
+# h0a2oCYQfU8VMAoGCCqGSM49BAMCME8xEzARBgoJkiaJk/IsZAEZFgNkZXYxGDAW
+# BgoJkiaJk/IsZAEZFghwYXVsb2JlcjELMAkGA1UEBhMCREUxETAPBgNVBAMMCHBh
+# dWxvYmVyMB4XDTI0MDkwOTA4NDUxM1oXDTI2MDkwOTA4NTUxM1owTzETMBEGCgmS
+# JomT8ixkARkWA2RldjEYMBYGCgmSJomT8ixkARkWCHBhdWxvYmVyMQswCQYDVQQG
+# EwJERTERMA8GA1UEAwwIcGF1bG9iZXIwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNC
+# AAQT9Ou4TWli5lJ/+L+yx1NWRYzcJTh3Hr05pfzGQmv7ADbsqkYcjK81q84UuH+Q
+# dmhtJQZtywxmR06qx5zEZNoho0YwRDAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAww
+# CgYIKwYBBQUHAwMwHQYDVR0OBBYEFAYYFbazuCO8mQuVR0bvVkIm47ibMAoGCCqG
+# SM49BAMCA0gAMEUCIEX52cIb5KfuR9Z2ojJlPhlw3OYUrm0xm/h9+0EyroZ8AiEA
+# 3dvDHvBhXtb/UuLIP26/3vRbPIrnVamxzv8AnPfYnMYxggFYMIIBVAIBATBjME8x
+# EzARBgoJkiaJk/IsZAEZFgNkZXYxGDAWBgoJkiaJk/IsZAEZFghwYXVsb2JlcjEL
+# MAkGA1UEBhMCREUxETAPBgNVBAMMCHBhdWxvYmVyAhBB/1nf+Q3Zh0a2oCYQfU8V
+# MA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJ
+# KoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQB
+# gjcCARUwLwYJKoZIhvcNAQkEMSIEIEjp2NQfZLPcJ4t7BAFxjf1HD9EgAOqfSsuK
+# CyCZ9UCEMAsGByqGSM49AgEFAARHMEUCIQDEfWF5BWiRjjCeuec6MxHY2xQq178U
+# rF8MhkXqazRExAIgBAkvWEl7Uq7lVceVb5r2f4xVSOzpJiooY83TzD7BI+w=
 # SIG # End signature block

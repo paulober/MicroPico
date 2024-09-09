@@ -1,54 +1,63 @@
-# clear dist
-Remove-Item -R .\dist\*
-# rebuild dist with webpack done in vsce prepackage script
-npx vsce package --no-yarn --dependencies
+# Define an array of platforms
+$platforms = @("win32-x64", "darwin-x64+arm64", "linux-arm64", "linux-arm", "linux-x64", "universal")
+Remove-Item -Recurse -Force dist
 
+# Loop through the platforms
+foreach ($platform in $platforms) {
+    Remove-Item -Recurse -Force prebuilds
+    New-Item -ItemType Directory -Path prebuilds
+
+    if ($platform -ne "universal") {
+        # Copy the bindings binary for each platform
+        Copy-Item -Recurse -Path "node_modules/@serialport/bindings-cpp/prebuilds/$platform" -Destination "./prebuilds"
+    } else {
+        # Copy the bindings binaries for all platforms
+        Copy-Item -Recurse -Path "node_modules/@serialport/bindings-cpp/prebuilds" -Destination "./"
+    }
+
+    # Package the VSCode extension for the platform
+    switch ($platform) {
+        "win32-x64" {
+            npx @vscode/vsce package --no-yarn --target "win32-x64" -o "micropico-$env:RELEASE_TAG_NAME-$platform.vsix"
+        }
+        "darwin-x64+arm64" {
+            npx @vscode/vsce package --no-yarn -o "micropico-$env:RELEASE_TAG_NAME-$platform.vsix"
+        }
+        "linux-arm64" {
+            npx @vscode/vsce package --no-yarn --target "linux-arm64" -o "micropico-$env:RELEASE_TAG_NAME-$platform.vsix"
+        }
+        "linux-arm" {
+            npx @vscode/vsce package --no-yarn --target "linux-armhf" -o "micropico-$env:RELEASE_TAG_NAME-linux-armhf.vsix"
+        }
+        "linux-x64" {
+            npx @vscode/vsce package --no-yarn --target "linux-x64" -o "micropico-$env:RELEASE_TAG_NAME-$platform.vsix"
+        }
+        default {
+            npx @vscode/vsce package --no-yarn -o "micropico-$env:RELEASE_TAG_NAME.vsix"
+        }
+    }
+}
 
 # SIG # Begin signature block
-# MIIIfwYJKoZIhvcNAQcCoIIIcDCCCGwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNisiseNgmSuXA1Sv7QwLlv/Q
-# DkCgggUUMIIFEDCCAvigAwIBAgIQX2UN69y+sLFPPURerUHC0zANBgkqhkiG9w0B
-# AQsFADAgMQswCQYDVQQGEwJERTERMA8GA1UEAwwIcGF1bG9iZXIwHhcNMjIwOTA2
-# MTkxNTE5WhcNMjMxMjMxMjIwMDAwWjAgMQswCQYDVQQGEwJERTERMA8GA1UEAwwI
-# cGF1bG9iZXIwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCvk+ceUwcW
-# uKq9ONfQSXLEx/hV8HYiz+2vTSIJ7YQ6lXtVFV7wLKsuv5YpxVb7VBnUgWAPEz5S
-# N5uAyFIjb/lsGncCddoPvd1cfby3RSq5MpUrrZvMZgXUBLqcEBsG5m8kvrhWPFkP
-# 6+Xgzgyp689NBAzkastaFpmTJ+ux5uLq1dccPwgFxVdB0NmZ0Y5XflDt97rQc4W+
-# mEPpywG4IgTaWVvyZZ5tyKi1YFEn6+aARUbImVqLfRiJetT7PW0EqORq3zV5VbMX
-# P3RobjTWzIOHzqwv5++7kAfeZnXJbjQX8TjXQzZENew7GH+IhPCqA1yriRocXFr2
-# TpMcXtYZShMaJ46sibTtEd48wrYr1ucPF37E++tX7pR5/l44nC7ZhrXGHkqIAZik
-# lAv1jAEsu4Ytp2WW8yxhv24sy/BCiaTO5zWQ5mxn3H6CkUO6MS2wifqZmyjuxFMM
-# KslvX2FOJuETkja+C6vc49Lc/k8URRPuAczZ+o0SjtajmnXYzjGNxMmBg1YGXpfI
-# kUdIb9PO4dTCLt/xNj1qNT7GwXpxhSlAYzi4YXbwPQsJwkkipG38zx9d9Cm5mR6Y
-# CtsNhJsyVG49/o9d2mmmgdV1Gws/E71rTIlsxBLAHLw1AqFTGZbHw5poMYqSM4wk
-# P1MHiu2pJv4y6qu5vlsE3hjvmXN4XYhOVQIDAQABo0YwRDAOBgNVHQ8BAf8EBAMC
-# BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwHQYDVR0OBBYEFHHTDH3l/ESFdUBEaj3n
-# yW31bD5CMA0GCSqGSIb3DQEBCwUAA4ICAQCYXVQMixSGDvPrI6R7EMsGgAyPjdlk
-# vcmgcc6+fA4pbn4JRV26MPSoD1d54wB/ayyBsBFHNE3PuedtGgQr/W3VMSsEgQte
-# 0NnSfcNNVpYvANYNz7yrTszjdIbisptLzMDSWl4JRsaA957sUzy27CIYHkFzde5M
-# GPntHhrICk5KEPmGio1c4eUYspx388CJ2NzPX4/nNwpSneVLeFWUJNSPRLy3AHFN
-# MIGFZGcRC5C1Bfc4XAv32cjsKpSuSOMG2jEfcko7g1UvZdIcviWohs97VLYm56KR
-# NwWxmNewdHFEW7We+Rse5nPXeZo5HjX8ked3vAq6CjN6FfKv9aXd4xGvu6STshgo
-# HrigGMyGxpg8e4a9qTXICzPPazsvrhFyylRlAUR8Lu+tvQVRp3aoNcog4lfomGix
-# /ILMdrMnkDRPt42MVX6S+iNBgrfXkUIOhe9byJ5NjhoqES2EBOV/xlv14pFqZf55
-# 7NUbL6NUnicV2cTe77md6Ms20jX5T8qLyJOk9UHi4bo8wVABN8y5GKxcYJjfb5VV
-# evr3P+jMW+tVPqKTkXat9Iuhp7/8vYN5KzHKipCElvhIUYNmdbVG4IUavc0FwF8f
-# nMAxp/WFO1jCYJpIcifNT0exwWerzqS8qjuXt3LU8QHcEJTdP6LGhcAQfzz7qQTY
-# g8cGeBoAgmMYBzGCAtUwggLRAgEBMDQwIDELMAkGA1UEBhMCREUxETAPBgNVBAMM
-# CHBhdWxvYmVyAhBfZQ3r3L6wsU89RF6tQcLTMAkGBSsOAwIaBQCgeDAYBgorBgEE
-# AYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwG
-# CisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRatlJD
-# Zj8flepJcupsPVXaFZApNjANBgkqhkiG9w0BAQEFAASCAgCnSVoS+vxb5+lBpuWe
-# kClxrAWGnsSBWlcSR6kQyHkA1DguK/6noP2UobSmS0TSBFATwYQwx5DtklRzJOHz
-# CkFJK3d7V/0Sk9u+SyzD5QIxgBKIeSMjEmnRLD+ToWYhtZdVyCKwyO4s1caZWPw5
-# CvXbCH7UNz+0IYs9lRjS8ZSxJvX5QTaVK0Ae8kPiiH5KvV0W55HuRcsi+KXhX+z/
-# r5lg8joH2nYGvBo7qh69wGoaQf1SHpEqLSL6tKsmacaSBK8j937Dcb4tPePtaBqq
-# v2I4lBYXLoQichTWxRzMO8E5syffoPaOp2MyDXKwMOopyuMzxbruheZ+zzkK+qGg
-# 5eljMN3sExexVE7MUN9ccaFDX1tUJUjxCdgqQhM54i4hOI5M99JnxH6mwp4YQefC
-# 50zxA9WTZIe5xkEFYldmoHhBCeF1PwIk08R9JOTHEbUal4HHGhpl89H9tasqpoyD
-# uKsjkX0t1g6QJGny+Z6g7CLpuCFqRqoeeVuiZG0jaNjV5+fKQwpGS4klbyN6CRxH
-# lj4DBa85VCT+kARb7vyZ9bAH67q+YiqDMfxSWb/moOFD3M8eXIKljqwv0esTYv9N
-# RTpVmQaSxwZLQY+1O1XUR2qlHNvu0GPyYhwkUOr5vjH4YRS92Q3qnhUeVNU3L7QH
-# WcJ+ZcC4aWFS3DegtMjTvMaKDg==
+# MIID6AYJKoZIhvcNAQcCoIID2TCCA9UCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDFDWyaXPSxAHXM
+# NhnenQdRWCfweEPwP7g1yr8IJ5qFsKCCAeYwggHiMIIBiKADAgECAhBB/1nf+Q3Z
+# h0a2oCYQfU8VMAoGCCqGSM49BAMCME8xEzARBgoJkiaJk/IsZAEZFgNkZXYxGDAW
+# BgoJkiaJk/IsZAEZFghwYXVsb2JlcjELMAkGA1UEBhMCREUxETAPBgNVBAMMCHBh
+# dWxvYmVyMB4XDTI0MDkwOTA4NDUxM1oXDTI2MDkwOTA4NTUxM1owTzETMBEGCgmS
+# JomT8ixkARkWA2RldjEYMBYGCgmSJomT8ixkARkWCHBhdWxvYmVyMQswCQYDVQQG
+# EwJERTERMA8GA1UEAwwIcGF1bG9iZXIwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNC
+# AAQT9Ou4TWli5lJ/+L+yx1NWRYzcJTh3Hr05pfzGQmv7ADbsqkYcjK81q84UuH+Q
+# dmhtJQZtywxmR06qx5zEZNoho0YwRDAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAww
+# CgYIKwYBBQUHAwMwHQYDVR0OBBYEFAYYFbazuCO8mQuVR0bvVkIm47ibMAoGCCqG
+# SM49BAMCA0gAMEUCIEX52cIb5KfuR9Z2ojJlPhlw3OYUrm0xm/h9+0EyroZ8AiEA
+# 3dvDHvBhXtb/UuLIP26/3vRbPIrnVamxzv8AnPfYnMYxggFYMIIBVAIBATBjME8x
+# EzARBgoJkiaJk/IsZAEZFgNkZXYxGDAWBgoJkiaJk/IsZAEZFghwYXVsb2JlcjEL
+# MAkGA1UEBhMCREUxETAPBgNVBAMMCHBhdWxvYmVyAhBB/1nf+Q3Zh0a2oCYQfU8V
+# MA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJ
+# KoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQB
+# gjcCARUwLwYJKoZIhvcNAQkEMSIEIMXaC1Se7bNIJohglDlz3KrYu8wff7Mj9Zta
+# x1IoN18LMAsGByqGSM49AgEFAARHMEUCIExhiRRwzWZ6RmZ1DAqPkYSiR6mjmFA0
+# ycy4lJ9CeArfAiEA1usMgMJXu6zuHgYdFthOsXKiA69JYdTync/HGqfbEvU=
 # SIG # End signature block
