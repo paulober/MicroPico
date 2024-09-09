@@ -80,7 +80,7 @@
       },
       {
         "command": "micropico.initialise",
-        "title": "Configure project",
+        "title": "Configure MicroPico Project",
         "category": "MicroPico"
       },
       {
@@ -260,6 +260,11 @@
           "command": "micropico.remote.run",
           "group": "micropico",
           "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
+        },
+        {
+          "command": "micropico.initialise",
+          "group": "micropico",
+          "when": "resourceScheme != pico"
         }
       ],
       "editor/context": [

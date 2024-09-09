@@ -177,8 +177,6 @@ export default class Stubs {
     const stubsPath = settingsStubsPathForVersion("included");
     const defaultSettings: Record<string, string | boolean | object> = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      "python.linting.enabled": true,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.languageServer": "Pylance",
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "python.analysis.typeCheckingMode": "basic",
