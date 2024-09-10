@@ -14,7 +14,7 @@ chmod +x "$SCRIPT_DIR/package.sh"
 "$SCRIPT_DIR/package.sh"
 
 # Find all .vsix files except the one without a platform prefix and publish them one by one
-find . -type f -name "micropico-$RELEASE_TAG_NAME-*.vsix" ! -name "micropico-$RELEASE_TAG_NAME.vsix" | while read file -r package_path; do
+find . -type f -name "micropico-$RELEASE_TAG_NAME-*.vsix" ! -name "micropico-$RELEASE_TAG_NAME.vsix" | while read -r package_path; do
   # Default target flags (for non-darwin platforms)
   target_flags=""
 
