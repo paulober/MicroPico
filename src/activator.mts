@@ -382,15 +382,31 @@ export default class Activator {
     // [Command] Initialise
     disposable = vscode.commands.registerCommand(
       commandPrefix + "initialise",
-      async (pythonExecutable?: string, location?: string) => {
+      async (location?: string | vscode.Uri, pythonExecutable?: string) => {
         // set python executable
         if (pythonExecutable !== undefined && pythonExecutable.length > 0) {
           await pythonApi.environments.updateActiveEnvironmentPath(
             pythonExecutable
           );
         }
-        await this.stubs?.addToWorkspace(location);
-        if (this.ui?.isHidden() && !location) {
+
+        let isCurrentWorkspace = false;
+        if (
+          location &&
+          location instanceof vscode.Uri &&
+          workspaceFolder &&
+          workspaceFolder.length > 0
+        ) {
+          const folder = workspaceFolder[0];
+          if (folder.uri.fsPath === location.fsPath) {
+            isCurrentWorkspace = true;
+          }
+        }
+        const path =
+          location instanceof vscode.Uri ? location.fsPath : location;
+
+        await this.stubs?.addToWorkspace(path);
+        if (this.ui?.isHidden() && (!path || isCurrentWorkspace)) {
           await vscode.commands.executeCommand(commandPrefix + "connect");
           this.ui?.show();
         }
@@ -1338,10 +1354,10 @@ export default class Activator {
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
             void vscode.window.showInformationMessage(
-              "Hard reset and reboot finished"
+              "Interactive Soft Reset finished"
             );
           } else {
-            void vscode.window.showErrorMessage("Hard reset failed");
+            void vscode.window.showErrorMessage("Soft reset failed");
           }
         }
         this.terminal?.melt();
