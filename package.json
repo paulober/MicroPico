@@ -620,7 +620,7 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
+    "@eslint/js": "^9.10.0",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -635,18 +635,18 @@
     "@types/vscode": "^1.92.0",
     "@types/which": "^3.0.4",
     "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.9.1",
+    "eslint": "^9.10.0",
     "eslint-config-prettier": "^9.1.0",
-    "rollup": "^4.21.1",
+    "rollup": "^4.21.2",
     "rollup-plugin-copy": "^3.5.0",
     "tslib": "^2.7.0",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.3.0"
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.5.0"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^1.0.15",
+    "@paulober/pico-mpy-com": "^1.0.16",
     "@vscode/python-extension": "^1.0.5",
-    "axios": "^1.7.5",
+    "axios": "^1.7.7",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
     "rimraf": "^6.0.1",
