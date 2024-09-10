@@ -10,6 +10,23 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.0.0] - 2024-09-10
+
+### Added
+
+- `garbageCollect` and `reset.hard.listen` commands 
+- More vREPL shortcuts
+- A requirement for a python interpretter (can be selected though the Python VS Code extension)
+
+### Changed
+
+- Replaced `pyboard-serial-com` with `pico-mpy-com` library
+- Updated dependencies
+- Reenabled publishing on OpenVSX
+- Updated stubs to latest MicroPython v1.23.0 stable (Thanks to @Josverl)
+- Minor performance improvements
+- Major stability improvements
+
 ## [3.8.3] - 2024-08-28
 
 ### Added

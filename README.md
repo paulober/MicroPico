@@ -7,29 +7,32 @@
 > __Included auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO_W-20240602-v1.23.0.uf2](https://micropython.org/resources/firmware/RPI_PICO_W-20240602-v1.23.0.uf2) from the [micropython-stubs project](https://github.com/Josverl/micropython-stubs)__
 
 Works with:
-| Platform | x64 | arm64 | armhf |
+| Platform | x86 | arm64 | armhf |
 | :------- | :-: | :---: | :---: |
-| Windows  | ✅   | ❌     | ❌     |
+| Windows  | ✅   | ❌     | ⚠️     |
 | macOS    | ✅   | ✅     | ❌     |
 | Linux    | ✅   | ✅     | ⚠️      |
 
-> ⚠️ _Support for Linux armhf was dropped with v3.7.7 due to the lack of a suitable build environment. If you need support for armhf, please open an issue on GitHub._
+> ⚠️ _Included but unsupported_
 
 ## Features
 
 - Auto-completion with docs
-- Pseudo terminal integration for communication with MicroPython REPL on a `Pico (w)` board (with support for tab-completion)
+- Pseudo terminal integration for communication with MicroPython REPL on a Pico board (with support for tab-completion)
 - Running / Transferring files to / from your board
-- Built-in virtual-workspace provider for Raspberry Pi `Pico (W)` boards (does disable Pylance auto-completion)
+- Built-in virtual-workspace provider for Raspberry Pi Pico boards (does disable Pylance auto-completion)
 - Switch between auto-completion and IntelliSense for MicroPython ports `RPi Pico`, `RPi Pico (W)` and `ESP32` (requires pip installed an in PATH)
-- Device Manager UI for managing wifi connection and installing mip packages (only on `Pico-W`; experimental)
+- Device Manager UI for managing wifi connection and installing mip packages (only on `Pico W`; experimental)
 - `ESP32-WROOM-32`, `ESP32-C3`, `ESP32-S3`, `ESP32-S3-Pico` and `Teensy 4.0` support (experimental)
 
 ![Preview](images/preview.gif)
 
 ## Requirements
 
-* [MicroPython firmware](https://micropython.org/download) flashed onto the Raspberry Pi Pico (W):
+* [Visual Studio Code v1.92.1 or newer](https://code.visualstudio.com/Download)
+* [Python 3.10 or newer](https://www.python.org/downloads/)
+
+* [MicroPython firmware](https://micropython.org/download) flashed onto the Raspberry Pi Pico:
     - See [Raspberry Pi docs](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython) for help.
 
 Visual Studio Code extensions:
@@ -67,14 +70,9 @@ print("Finished.")
 
 - To run your program, run `> MicroPico > Run current file on Pico` in your Python file's tab. You can also use the status bar button "Run " at the bottom of VS Code window.
 
-- To stop the execution of the currently running program, run `> MicroPico > Stop execution`. The "Stop" button at the status bar does the same.
+- To stop the execution of the currently running program or other operation, run `> MicroPico > Stop execution`. The "Stop" button at the status bar does the same.
 
 ---
-
-## Problems with Anti-Virus Software (mostly Windows)
-
-Sometimes after a new release of `pyboard-serial-com` (the underlying npm packge for communication with the board) some anti-virus software might block the execution of the extension.
-To fix this, make sure to update your local anti-virus definitions. If this doesn't help, open a new issue on GitHub and/or report the false-positive to your anti-virus vendor. Depending on the anti-virus software you are using, you might be able to whitelist the exectuable in pyboard-serial-com that is blocked by your anti-virus software.
 
 ## Extension Settings
 
@@ -103,5 +101,4 @@ This extension contributes the following settings:
 
 ### Note
 
-+ _Most doc-strings for MicroPython functions (descriptions/hints) are from [docs.micropython.org](https://docs.micropython.org/en/v1.19.1/) by © 2014-2023 Damien P. George, Paul Sokolovsky, and contributors._
 + For licensing purposes: Prior to version v3.0.0 of this extension the codebase was a fork of github.com/cpwood/Pico-Go which is a derivative product of Pymakr by Pycom Limited.
