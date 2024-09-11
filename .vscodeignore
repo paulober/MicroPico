@@ -4,6 +4,7 @@
 out/**
 node_modules/**
 !prebuilds
+patches/
 src/**
 .gitignore
 .yarnrc

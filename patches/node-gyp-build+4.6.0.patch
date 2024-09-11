@@ -1,0 +1,14 @@
+diff --git a/node_modules/node-gyp-build/node-gyp-build.js b/node_modules/node-gyp-build/node-gyp-build.js
+index 61b398e..2573502 100644
+--- a/node_modules/node-gyp-build/node-gyp-build.js
++++ b/node_modules/node-gyp-build/node-gyp-build.js
+@@ -13,7 +13,8 @@ var runtime = isElectron() ? 'electron' : (isNwjs() ? 'node-webkit' : 'node')
+ var arch = process.env.npm_config_arch || os.arch()
+ var platform = process.env.npm_config_platform || os.platform()
+ var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
+-var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : vars.arm_version) || ''
++// ARMv7 detection patched to avoid arm_version === "default" on other arm systems than arm64 ones
++var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : (arch === 'arm' ? (vars.arm_version === 'default' ? '7' : vars.arm_version) : '')) || ''
+ var uv = (process.versions.uv || '').split('.')[0]
+ 
+ module.exports = load
