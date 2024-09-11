@@ -32,7 +32,6 @@ done
 
 # macOS universal publish not possible workaround
 
-rm *.vsix
 rm -rf prebuilds
 mkdir prebuilds
 cp -r "node_modules/@serialport/bindings-cpp/prebuilds/darwin-x64+arm64" "./prebuilds"

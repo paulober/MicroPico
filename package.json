@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico boards running MicroPython firmware.",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/MicroPico/blob/main/README.md",
@@ -612,7 +612,7 @@
     "compile": "rollup -c && npm run compile-uninstaller",
     "watch": "rollup -cw",
     "package-local": "rimraf dist && rollup -c --environment BUILD:production --sourcemap hidden && npm run compile-uninstaller",
-    "package": "rollup -c --environment BUILD:production --sourcemap hidden && npm run compile-uninstaller",
+    "package": "rollup -c --environment BUILD:production && npm run compile-uninstaller",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -645,7 +645,7 @@
     "typescript-eslint": "^8.5.0"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^1.0.16",
+    "@paulober/pico-mpy-com": "^1.0.17",
     "@vscode/python-extension": "^1.0.5",
     "axios": "^1.7.7",
     "fs-extra": "^11.2.0",
