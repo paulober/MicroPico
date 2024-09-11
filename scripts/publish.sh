@@ -15,18 +15,24 @@ chmod +x "$SCRIPT_DIR/package.sh"
 
 # Find all .vsix files except the one without a platform prefix and publish them one by one
 find . -type f -name "micropico-$RELEASE_TAG_NAME-*.vsix" ! -name "micropico-$RELEASE_TAG_NAME.vsix" | while read -r package_path; do
-  # Default target flags (for non-darwin platforms)
-  target_flags=""
-
-  # If the filename contains "darwin", add the appropriate target flags
+  # If the filename contains "darwin", skip as macOS universal publishing issn't possible at the moment
   if [[ "$package_path" == *"darwin"* ]]; then
-    target_flags="--target darwin-x64 darwin-arm64 "
+    continue
   fi
 
   # Publish the VSCode extension to the VSCode Marketplace
-  npx @vscode/vsce publish $target_flags--packagePath "$package_path"
+  npx @vscode/vsce publish --packagePath "$package_path"
   # Publish the VSCode extension to the Open VSX Registry
-  npx ovsx publish "$package_path" $target_flags-p "$OVSX_PAT"
+  npx ovsx publish "$package_path" -p "$OVSX_PAT"
   # delete this vsix file
   rm -rf "$package_path"
 done
+
+# macOS universal publish not possible workaround
+
+rm *.vsix
+rm -rf prebuilds
+mkdir prebuilds
+cp -r "node_modules/@serialport/bindings-cpp/prebuilds/darwin-x64+arm64" "./prebuilds"
+npx @vscode/vsce publish --no-yarn --target darwin-x64 darwin-arm64
+npx ovsx publish --target darwin-x64 darwin-arm64 -p "$OVSX_PAT"

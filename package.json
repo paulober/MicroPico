@@ -47,8 +47,8 @@
     }
   },
   "extensionDependencies": [
-		"ms-python.python"
-	],
+    "ms-python.python"
+  ],
   "activationEvents": [
     "workspaceContains:.picowgo",
     "workspaceContains:.micropico",

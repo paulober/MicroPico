@@ -7,10 +7,10 @@ node_modules/**
 src/**
 .gitignore
 .yarnrc
-rollup.config.mjs
+*rollup.config.mjs
 **/tsconfig.json
 **/eslint.config.mjs
-**/*.map
+vscodeUninstall.mjs
 **/*.ts
 
 .github/**
@@ -29,3 +29,7 @@ azure-pipelines.yml
 !dist/*.cjs
 !mpy_stubs/
 !web/
+!LICENSE.txt
+!README.md
+!CHANGELOG.md
+
