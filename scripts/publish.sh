@@ -17,6 +17,8 @@ chmod +x "$SCRIPT_DIR/package.sh"
 find . -type f -name "micropico-$RELEASE_TAG_NAME-*.vsix" ! -name "micropico-$RELEASE_TAG_NAME.vsix" | while read -r package_path; do
   # If the filename contains "darwin", skip as macOS universal publishing issn't possible at the moment
   if [[ "$package_path" == *"darwin"* ]]; then
+    # delete this vsix file
+    rm -rf "$package_path"
     continue
   fi
 
