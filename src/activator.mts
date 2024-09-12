@@ -1660,8 +1660,11 @@ export default class Activator {
         this.activationFilePresentAtLaunch = false;
       }
 
-      this.terminal?.cls();
-      this.terminal?.open(undefined);
+      if (this.terminal?.getIsOpen()) {
+        this.terminal?.cls();
+      }
+      //this.terminal?.open(undefined);
+      void focusTerminal(this.terminalOptions);
 
       void vscode.window.showInformationMessage(
         "Connection to MicoPython board established."
