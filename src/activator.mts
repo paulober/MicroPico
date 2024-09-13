@@ -52,6 +52,7 @@ export default class Activator {
   private terminalOptions?: vscode.ExtensionTerminalOptions;
   private pythonPath?: string;
   private activationFilePresentAtLaunch = false;
+  private settings?: Settings;
 
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
@@ -64,7 +65,7 @@ export default class Activator {
     context: vscode.ExtensionContext
   ): Promise<UI | undefined> {
     // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
-    const settings = new Settings(context.workspaceState);
+    this.settings = new Settings(context.workspaceState);
 
     // get the python env to be used
     const pythonApi = await PythonExtension.api();
@@ -89,7 +90,7 @@ export default class Activator {
     );
 
     this.stubs = new Stubs();
-    await this.stubs.update(settings);
+    await this.stubs.update(this.settings);
 
     const workspaceFolder = vscode.workspace.workspaceFolders;
     if (workspaceFolder !== undefined && workspaceFolder.length > 0) {
@@ -105,7 +106,7 @@ export default class Activator {
     }
 
     // TODO: maybe not call getComDevice if no activationFile is present
-    this.comDevice = await settings.getComDevice(
+    this.comDevice = await this.settings.getComDevice(
       !this.activationFilePresentAtLaunch
     );
 
@@ -131,12 +132,12 @@ export default class Activator {
         });
     }
 
-    this.ui = new UI(settings);
+    this.ui = new UI(this.settings);
     this.ui.init();
 
     if (this.activationFilePresentAtLaunch) {
       this.ui.show();
-      this.setupAutoConnect(settings);
+      this.setupAutoConnect();
     }
 
     context.subscriptions.push({
@@ -350,7 +351,7 @@ export default class Activator {
     );
 
     if (
-      settings.getBoolean(SettingsKey.openOnStart) &&
+      this.settings.getBoolean(SettingsKey.openOnStart) &&
       this.comDevice !== undefined &&
       this.activationFilePresentAtLaunch
     ) {
@@ -417,14 +418,14 @@ export default class Activator {
     // [Command] Connect
     disposable = vscode.commands.registerCommand(
       commandPrefix + "connect",
-      async () => {
-        this.comDevice = await settings.getComDevice();
+      () => {
+        /*this.comDevice = await this.settings?.getComDevice();
         if (this.comDevice !== undefined) {
           this.ui?.init();
           // TODO: verify that this does allow smooth transition between serialport devices
           await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-          this.setupAutoConnect(settings);
-        }
+        }*/
+        this.setupAutoConnect();
       }
     );
     context.subscriptions.push(disposable);
@@ -434,6 +435,7 @@ export default class Activator {
       commandPrefix + "disconnect",
       async () => {
         clearInterval(this.autoConnectTimer);
+        this.intentionalDisconnect = true;
         await PicoMpyCom.getInstance().closeSerialPort();
       }
     );
@@ -632,8 +634,15 @@ export default class Activator {
 
           return;
         }
+        if (!this.settings) {
+          void vscode.window.showErrorMessage(
+            "Failed to upload project. Settings not available."
+          );
 
-        const syncDir = await settings.requestSyncFolder("Upload");
+          return;
+        }
+
+        const syncDir = await this.settings.requestSyncFolder("Upload");
 
         if (syncDir === undefined) {
           void vscode.window.showWarningMessage(
@@ -644,7 +653,7 @@ export default class Activator {
         }
 
         // reducde replaces filter, map and concat
-        const ignoredSyncItems = settings.getIngoredSyncItems().reduce(
+        const ignoredSyncItems = this.settings.getIngoredSyncItems().reduce(
           (acc: string[], item: string) => {
             // item must either be global or for the current sync folder otherwise it is ignored
             if (!item.includes(":") || item.split(":")[0] === syncDir[0]) {
@@ -657,7 +666,7 @@ export default class Activator {
           ["**/.picowgo", "**/.micropico", "**/.DS_Store"]
         );
 
-        if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
+        if (this.settings.getBoolean(SettingsKey.gcBeforeUpload)) {
           // TODO: maybe do soft reboot instead of gc for bigger impact
           await PicoMpyCom.getInstance().runCommand(
             "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc"
@@ -680,7 +689,7 @@ export default class Activator {
 
             const data = await PicoMpyCom.getInstance().uploadProject(
               syncDir[1],
-              settings.getSyncFileTypes(),
+              this.settings!.getSyncFileTypes(),
               ignoredSyncItems,
               (
                 totalChunksCount: number,
@@ -724,7 +733,7 @@ export default class Activator {
             //progress.report({ increment: 100, message: "Project uploaded." });
 
             // moved outside so if not uploaded because file already exists it still resets
-            if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
+            if (this.settings!.getBoolean(SettingsKey.softResetAfterUpload)) {
               //await this.pyb?.softReset();
               await vscode.commands.executeCommand(
                 commandPrefix + "reset.soft.listen"
@@ -748,6 +757,14 @@ export default class Activator {
           return;
         }
 
+        if (!this.settings) {
+          void vscode.window.showErrorMessage(
+            "Failed to upload file. Settings not available."
+          );
+
+          return;
+        }
+
         const file = resourceURI?.fsPath ?? (await getFocusedFile());
 
         if (file === undefined) {
@@ -758,7 +775,7 @@ export default class Activator {
 
         // TODO: maybe upload relative to project root like uploadProject does with files
 
-        if (settings.getBoolean(SettingsKey.gcBeforeUpload)) {
+        if (this.settings.getBoolean(SettingsKey.gcBeforeUpload)) {
           await PicoMpyCom.getInstance().runCommand(
             "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc"
           );
@@ -817,7 +834,9 @@ export default class Activator {
                 );
                 // TODO: maybe make sure to set 100% if needed to make notification dissapear
                 //progress.report({ increment: 100 });
-                if (settings.getBoolean(SettingsKey.softResetAfterUpload)) {
+                if (
+                  this.settings!.getBoolean(SettingsKey.softResetAfterUpload)
+                ) {
                   //await this.pyb?.softReset();
                   await vscode.commands.executeCommand(
                     commandPrefix + "reset.soft.listen"
@@ -843,8 +862,15 @@ export default class Activator {
 
           return;
         }
+        if (!this.settings) {
+          void vscode.window.showErrorMessage(
+            "Failed to download file. Settings not available."
+          );
 
-        const syncDir = await settings.requestSyncFolder("Download");
+          return;
+        }
+
+        const syncDir = await this.settings.requestSyncFolder("Download");
 
         if (syncDir === undefined) {
           void vscode.window.showWarningMessage(
@@ -928,8 +954,15 @@ export default class Activator {
 
           return;
         }
+        if (!this.settings) {
+          void vscode.window.showErrorMessage(
+            "Failed to download project. Settings not available."
+          );
 
-        const syncDir = await settings.requestSyncFolder("Download");
+          return;
+        }
+
+        const syncDir = await this.settings.requestSyncFolder("Download");
 
         if (syncDir === undefined) {
           void vscode.window.showWarningMessage(
@@ -1046,17 +1079,20 @@ export default class Activator {
       async () => {
         if (!PicoMpyCom.getInstance().isPortDisconnected()) {
           clearInterval(this.autoConnectTimer);
+          this.intentionalDisconnect = true;
           await PicoMpyCom.getInstance().closeSerialPort();
         } else {
-          this.comDevice = await settings.getComDevice();
+          this.comDevice = await this.settings?.getComDevice();
           if (this.comDevice === undefined) {
-            void vscode.window.showErrorMessage("No COM device found!");
+            void vscode.window.showErrorMessage(
+              "No COM device found! Starting auto connect..."
+            );
           } else {
             this.ui?.init();
             // TODO: check if this is a smooth transition between serialport devices
             await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-            this.setupAutoConnect(settings);
           }
+          this.setupAutoConnect();
         }
       }
     );
@@ -1170,13 +1206,6 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "switchPico",
       async () => {
-        // TODO: may not be needed with new switch port system in PicoMpyCom
-        if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-          // closes the port befor searching for ports, bad if use would
-          // like to connect to the same again
-          await PicoMpyCom.getInstance().closeSerialPort();
-        }
-
         const ports = await PicoMpyCom.getSerialPorts();
         if (ports.length === 0) {
           void vscode.window.showErrorMessage("No connected Pico found!");
@@ -1423,6 +1452,14 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "extra.switchStubs",
       async () => {
+        if (!this.settings) {
+          void vscode.window.showErrorMessage(
+            "Failed to switch stubs. Settings not available."
+          );
+
+          return;
+        }
+
         // let use chose between stub port
         const stubPort = await vscode.window.showQuickPick(
           ["Included", ...STUB_PORTS.map(stubPortToDisplayString)],
@@ -1437,8 +1474,8 @@ export default class Activator {
           return;
         }
 
-        if (stubPort.toLowerCase() === "included") {
-          await installIncludedStubs(settings);
+        if (stubPort.toLowerCase() === "included" && this.settings) {
+          await installIncludedStubs(this.settings);
 
           void vscode.window.showInformationMessage("Included stubs selected.");
         } else {
@@ -1492,7 +1529,7 @@ export default class Activator {
                 version.includes(" - ")
                   ? displayStringToStubPort(versionParts[0])
                   : versionParts[0],
-                settings
+                this.settings!
               );
 
               if (result) {
@@ -1587,7 +1624,9 @@ export default class Activator {
 
     // auto install selected stubs of a project they aren't installed yet
     // retuns null if stubs are installed and the pip package name plus version if not
-    const stubsInstalledResult: string | null = await stubsInstalled(settings);
+    const stubsInstalledResult: string | null = await stubsInstalled(
+      this.settings
+    );
     if (stubsInstalledResult !== null) {
       await vscode.window.withProgress(
         {
@@ -1604,7 +1643,7 @@ export default class Activator {
           // TODO: implement cancellation
           const result = await installStubsByPipVersion(
             stubsInstalledResult,
-            settings
+            this.settings!
           );
 
           if (result) {
@@ -1628,69 +1667,47 @@ export default class Activator {
     return this.ui;
   }
 
-  private setupAutoConnect(settings: Settings): void {
+  private boundOnError = this.boardOnError.bind(this);
+  private boundOnExit = this.boardOnExit.bind(this);
+  private boundOnOpen = this.boardOnOpen.bind(this);
+  /**
+   * Used to indicate that the disconnect is intentional
+   * stop the setupAutoConnect to be armed again.
+   */
+  private intentionalDisconnect = false;
+
+  private setupAutoConnect(): void {
+    if (this.intentionalDisconnect) {
+      this.intentionalDisconnect = false;
+      // TODO: maybe also remove listeners here
+
+      return;
+    }
+    if (this.settings === undefined) {
+      this.logger.error("Settings not provided for setupAutoConnect");
+
+      return;
+    }
     // if disconnected: check in a reasonable interval if a port is available and then connect
     // else: just subscribe to the closed event once and if it is triggered start the disconnected
     // routine and reflect the disconnected status in the UI
+    const instance = PicoMpyCom.getInstance();
 
-    PicoMpyCom.getInstance().on(
-      PicoSerialEvents.portError,
-      this.boardOnError.bind(this)
-    );
-    PicoMpyCom.getInstance().on(
-      PicoSerialEvents.portClosed,
-      this.boardOnExit.bind(this)
-    );
-    PicoMpyCom.getInstance().on(PicoSerialEvents.portOpened, () => {
-      if (this.ui?.getState()) {
-        return;
-      }
-      this.logger.debug(
-        "Connected to a board. Now executing *OnConnect stuff..."
-      );
-      this.logger.info("Connection to board successfully established");
+    // First, remove any existing listeners for the event
+    instance.off(PicoSerialEvents.portError, this.boundOnError);
+    instance.off(PicoSerialEvents.portClosed, this.boundOnExit);
+    instance.off(PicoSerialEvents.portOpened, this.boundOnOpen);
 
-      if (
-        !this.activationFilePresentAtLaunch &&
-        settings.getBoolean(SettingsKey.openOnStart) &&
-        this.comDevice !== undefined
-      ) {
-        void focusTerminal(this.terminalOptions);
-        // only keep for first connection on a launch without activation file
-        this.activationFilePresentAtLaunch = false;
-      }
-
-      if (this.terminal?.getIsOpen()) {
-        this.terminal?.cls();
-      }
-      //this.terminal?.open(undefined);
-      void focusTerminal(this.terminalOptions);
-
-      void vscode.window.showInformationMessage(
-        "Connection to MicoPython board established."
-      );
-
-      const scriptToExecute = settings.getString(SettingsKey.executeOnConnect);
-      if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
-        void vscode.commands.executeCommand(
-          commandPrefix + "remote.run",
-          scriptToExecute
-        );
-      }
-
-      const moduleToImport = settings.getString(SettingsKey.importOnConnect);
-      if (moduleToImport !== undefined && moduleToImport.trim() !== "") {
-        // TODO: check that voiding this is correct
-        void PicoMpyCom.getInstance().runCommand(`import ${moduleToImport}`);
-      }
-      this.ui?.refreshState(true);
-    });
+    instance.on(PicoSerialEvents.portError, this.boundOnError);
+    instance.on(PicoSerialEvents.portClosed, this.boundOnExit);
+    instance.on(PicoSerialEvents.portOpened, this.boundOnOpen);
 
     // TODO: check this condition, maybe this causes setupAutoConnect to be retriggered
     // if the settings ever change, maybe listen to settings change event
     if (
-      (settings.getString(SettingsKey.manualComDevice)?.length ?? 0) <= 0 &&
-      !settings.getBoolean(SettingsKey.autoConnect)
+      (this.settings.getString(SettingsKey.manualComDevice)?.length ?? 0) <=
+        0 &&
+      !this.settings.getBoolean(SettingsKey.autoConnect)
     ) {
       return;
     }
@@ -1705,10 +1722,10 @@ export default class Activator {
       // make sure the user is informed about the connection state
       // TODO: maybe called to often, reduce by only running at change of con state
       this.ui?.refreshState(false);
-      settings.reload();
-      const autoPort = settings.getBoolean(SettingsKey.autoConnect);
+      this.settings?.reload();
+      const autoPort = this.settings?.getBoolean(SettingsKey.autoConnect);
       const manualComDevice =
-        settings.getString(SettingsKey.manualComDevice) ?? "";
+        this.settings?.getString(SettingsKey.manualComDevice) ?? "";
 
       // TODO: maybe not reconnect to this.comDevice if autoConnect is disabled
       if (
@@ -1813,6 +1830,11 @@ export default class Activator {
       this.logger.info(`Connection to board was closed.`);
       if (this.comDevice !== undefined) {
         void vscode.window.showInformationMessage("Disconnected from board.");
+        this.terminal?.freeze();
+        this.terminal?.write(
+          "\r\n\x1b[31mConnection has been closed.\x1b[0m\r\n"
+        );
+        this.terminal?.clean();
       }
     } else if (!PicoMpyCom.getInstance().isPortDisconnected()) {
       // TODO: check the reason of this case or if it should be handled differently
@@ -1824,6 +1846,65 @@ export default class Activator {
       );
       void vscode.window.showErrorMessage("Connection to board has been lost.");
     }
+    this.setupAutoConnect();
+  }
+
+  private boardOnOpen(): void {
+    if (this.ui?.getState()) {
+      return;
+    }
+    if (!this.settings) {
+      void vscode.window.showErrorMessage(
+        "Failed to connect to board. Settings not available."
+      );
+
+      return;
+    }
+
+    this.logger.debug(
+      "Connected to a board. Now executing *OnConnect stuff..."
+    );
+    this.logger.info("Connection to board successfully established");
+
+    if (
+      !this.activationFilePresentAtLaunch &&
+      this.settings.getBoolean(SettingsKey.openOnStart) &&
+      this.comDevice !== undefined
+    ) {
+      void focusTerminal(this.terminalOptions);
+      // only keep for first connection on a launch without activation file
+      this.activationFilePresentAtLaunch = false;
+    }
+
+    if (this.terminal?.getIsOpen()) {
+      this.terminal?.cls();
+      //this.terminal?.open(undefined);
+      void focusTerminal(this.terminalOptions);
+      this.terminal?.callOpeningCb();
+    } else {
+      void focusTerminal(this.terminalOptions);
+    }
+
+    void vscode.window.showInformationMessage(
+      "Connection to MicoPython board established."
+    );
+
+    const scriptToExecute = this.settings.getString(
+      SettingsKey.executeOnConnect
+    );
+    if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
+      void vscode.commands.executeCommand(
+        commandPrefix + "remote.run",
+        scriptToExecute
+      );
+    }
+
+    const moduleToImport = this.settings.getString(SettingsKey.importOnConnect);
+    if (moduleToImport !== undefined && moduleToImport.trim() !== "") {
+      // TODO: check that voiding this is correct
+      void PicoMpyCom.getInstance().runCommand(`import ${moduleToImport}`);
+    }
+    this.ui?.refreshState(true);
   }
 
   private getPinMapHtml(variantName: string, imageUrl: string): string {

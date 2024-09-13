@@ -48,11 +48,19 @@ export class Terminal implements Pseudoterminal {
     this.isOpen = true;
     this.isFrozen = false;
 
+    this.callOpeningCb();
+  }
+
+  public callOpeningCb(): void {
     //this.writeEmitter.fire("\x1b[1;32mWelcome to the Virtual REPL!\x1b[0m\r\n");
     //this.writeEmitter.fire("Enter a message and it will be echoed back:\r\n");
     void this.openingMessageCallback().then((message: string) => {
       this.writeEmitter.fire(message);
-      this.writeEmitter.fire(PROMPT);
+      this.prompt();
+      //this.writeEmitter.fire(PROMPT);
+      if (this.isFrozen) {
+        this.melt();
+      }
     });
   }
 
