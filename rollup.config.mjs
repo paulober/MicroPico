@@ -13,7 +13,7 @@ export default {
         file: 'dist/extension.cjs',
         format: 'cjs',
         sourcemap: true,
-        exports: 'named',
+        exports: 'named'
     },
     external: [
         'vscode'

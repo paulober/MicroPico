@@ -227,6 +227,11 @@
         "command": "micropico.garbageCollect",
         "title": "Trigger garbage collection",
         "category": "MicroPico"
+      },
+      {
+        "command": "micropico.flashPico",
+        "title": "Flash Pico in BOOTSEL mode",
+        "category": "MicroPico"
       }
     ],
     "menus": {
@@ -651,6 +656,7 @@
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
     "rimraf": "^6.0.1",
+    "undici": "^6.19.8",
     "uuid": "^10.0.0",
     "which": "^4.0.0"
   },

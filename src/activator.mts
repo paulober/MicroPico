@@ -37,6 +37,7 @@ import {
   type ActiveEnvironmentPathChangeEvent,
   PythonExtension,
 } from "@vscode/python-extension";
+import { flashPicoInteractively } from "./flash.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -56,6 +57,7 @@ export default class Activator {
 
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
+  private noCheckForUSBMSDs = false;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -1588,6 +1590,32 @@ export default class Activator {
         );
       }
     );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "flashPico",
+      async () => {
+        const result = await vscode.window.showInformationMessage(
+          "This will flash the latest MicroPython firmware to your Pico. " +
+            "Do you want to continue?",
+          {
+            modal: true,
+            detail:
+              "Note: Only Raspberry Pi Pico boards are supported. " +
+              "Make sure it is connected and in BOOTSEL mode. " +
+              "You can verify this by checking if a drive " +
+              "labeled RPI-RP2 or RP2350 is mounted.",
+          }
+        );
+
+        if (result === undefined) {
+          return;
+        }
+
+        await flashPicoInteractively(true);
+      }
+    );
+    context.subscriptions.push(disposable);
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
       context.extensionUri
@@ -1739,6 +1767,12 @@ export default class Activator {
       PicoMpyCom.getSerialPorts()
         .then(async ports => {
           if (ports.length === 0) {
+            if (!this.noCheckForUSBMSDs) {
+              // must be reset after checkForUSBMSDs if it want to continue
+              this.noCheckForUSBMSDs = true;
+              await this.checkForUSBMSDs();
+            }
+
             return;
           }
 
@@ -1783,6 +1817,11 @@ export default class Activator {
     onAutoConnect();
     // setup interval
     this.autoConnectTimer = setInterval(onAutoConnect, 1500);
+  }
+
+  private async checkForUSBMSDs(): Promise<void> {
+    const result = await flashPicoInteractively();
+    this.noCheckForUSBMSDs = result;
   }
 
   private showNoActivePythonError(): void {
