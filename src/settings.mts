@@ -112,8 +112,9 @@ export default class Settings {
     if (!silent && (manualComDevice === undefined || manualComDevice === "")) {
       manualComDevice = undefined;
       void window.showErrorMessage(
-        "autoConnect setting has been disabled (or no Pico has been " +
-          "found automatically) but no manualComDevice has been set."
+        "No Pico has been found automatically " +
+          "or the `autoConnect` setting has been disabled " +
+          "but no `manualComDevice` has been set."
       );
     }
 
