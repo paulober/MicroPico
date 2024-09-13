@@ -10,6 +10,17 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.0.4] - 2024-09-13
+
+### Added
+
+- `flashPico` command to flash Raspberry Pi Pico boards with a MicroPython firmware (if it is in BOOTSEL mode)
+- Some Pimoroni boards to the list for auto detection
+
+### Changed
+
+- Fixed some auto-connect bugs
+
 ## [4.0.0] - 2024-09-10
 
 ### Added
