@@ -18,6 +18,7 @@ export enum SettingsKey {
   softResetAfterUpload = "softResetAfterUpload",
   executeOnConnect = "executeOnConnect",
   importOnConnect = "importOnConnect",
+  noSoftResetOnRun = "noSoftResetOnRun",
 }
 
 export type Setting = string | boolean | string[] | null | undefined;

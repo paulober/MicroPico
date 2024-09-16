@@ -488,6 +488,13 @@
           "title": "MicroPython module to import on connect",
           "description": "A MicroPython module to import in vREPL on connect. Leave empty to disable.",
           "order": 14
+        },
+        "micropico.noSoftResetOnRun": {
+          "type": "boolean",
+          "default": false,
+          "title": "Disable the soft-resets before and after executing a file.",
+          "description": "Soft-resets are used to clean REPL state so changes in classes and other structs are reflected correctly.",
+          "order": 15
         }
       }
     },

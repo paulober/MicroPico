@@ -10,6 +10,13 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.0.6] - 2024-09-16
+
+### Added
+
+- Soft-resets before and after executing scripts by default (#239)
+- `micropico.noSoftResetOnRun` setting to disable soft-resets before and after executing scripts (default: false)
+
 ## [4.0.5] - 2024-09-16
 
 ### Changed

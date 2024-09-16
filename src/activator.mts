@@ -446,7 +446,7 @@ export default class Activator {
     // [Command] Run File
     disposable = vscode.commands.registerCommand(
       commandPrefix + "run",
-      async (resourceURI?: vscode.Uri) => {
+      async (resourceURI?: vscode.Uri, noSoftReset = false) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
@@ -472,7 +472,12 @@ export default class Activator {
             return;
           }
         }
+        const forceDisableSoftReset =
+          this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
+        if (!noSoftReset && !forceDisableSoftReset) {
+          await PicoMpyCom.getInstance().softReset();
+        }
         await focusTerminal(this.terminalOptions);
         // TODO: maybe freeze terminal until this operation runs to prevent user input
         const data = await PicoMpyCom.getInstance().runFile(
@@ -493,6 +498,9 @@ export default class Activator {
             }
           }
         );
+        if (!noSoftReset && !forceDisableSoftReset) {
+          await PicoMpyCom.getInstance().softReset();
+        }
         this.ui?.userOperationStopped();
         if (data.type !== OperationResultType.commandResult || !data.result) {
           this.logger.warn("Failed to execute script on Pico.");
@@ -507,7 +515,7 @@ export default class Activator {
 
     disposable = vscode.commands.registerCommand(
       commandPrefix + "remote.run",
-      async (fileOverride?: string | vscode.Uri) => {
+      async (fileOverride?: string | vscode.Uri, noSoftReset = false) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
@@ -534,7 +542,12 @@ export default class Activator {
 
           return;
         }
+        const forceDisableSoftReset =
+          this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
+        if (!noSoftReset && !forceDisableSoftReset) {
+          await PicoMpyCom.getInstance().softReset();
+        }
         await focusTerminal(this.terminalOptions);
         await PicoMpyCom.getInstance().runRemoteFile(
           file,
@@ -556,6 +569,9 @@ export default class Activator {
             }
           }
         );
+        if (!noSoftReset && !forceDisableSoftReset) {
+          await PicoMpyCom.getInstance().softReset();
+        }
         this.ui?.userOperationStopped();
         commandExecuting = false;
         this.terminal?.melt();
@@ -1934,7 +1950,8 @@ export default class Activator {
     if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
       void vscode.commands.executeCommand(
         commandPrefix + "remote.run",
-        scriptToExecute
+        scriptToExecute,
+        true
       );
     }
 

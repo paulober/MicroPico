@@ -117,7 +117,7 @@ export async function flashPicoInteractively(
 
       devices = { is2040: type === "RP2040", type };
     }
-  } catch (error) {
+  } catch {
     /*this.logger.debug(
       "Failed to check for USB MSDs:",
       error instanceof Error
