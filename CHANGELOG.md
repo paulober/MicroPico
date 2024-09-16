@@ -10,6 +10,12 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.0.5] - 2024-09-16
+
+### Changed
+
+- Fix #252, py-launcher compatibility
+
 ## [4.0.4] - 2024-09-13
 
 ### Added

@@ -303,7 +303,6 @@ export async function installStubsByVersion(
 
     const pyCmd = python3 ?? py;
     if (pyCmd !== null) {
-      // TODO: check windows pylauncher compatibility
       const result = execSync(pyCmd + " -m pip");
       if (result.toString("utf-8").toLowerCase().includes("no module named")) {
         void window.showErrorMessage(
@@ -313,7 +312,7 @@ export async function installStubsByVersion(
 
         return false;
       }
-      command = `${pyCmd} -m pip`;
+      command = `"${pyCmd}" -m pip`;
     } else {
       void window.showErrorMessage(
         "python3 or py is required (in PATH) to install" +
@@ -324,7 +323,7 @@ export async function installStubsByVersion(
     }
   } else {
     assert(pip3 !== null || pip !== null);
-    command = (pip3 ?? pip)!;
+    command = `"${(pip3 ?? pip)!}"`;
   }
 
   const folderName = `${port}==${version}`;
@@ -334,7 +333,7 @@ export async function installStubsByVersion(
   const isWin = process.platform === "win32";
   // install stubs with pip vscode user directory
   const result = execSync(
-    `${isWin ? "&" : ""}"${command}" install ${port}==${version} ` +
+    `${isWin ? "&" : ""}${command} install ${port}==${version} ` +
       `--target "${target}" --no-user`,
     isWin ? { shell: "powershell" } : {}
   );
