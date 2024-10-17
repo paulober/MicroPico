@@ -1547,7 +1547,8 @@ export default class Activator {
                 version.includes(" - ")
                   ? displayStringToStubPort(versionParts[0])
                   : versionParts[0],
-                this.settings!
+                this.settings!,
+                this.pythonPath
               );
 
               if (result) {
