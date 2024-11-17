@@ -488,8 +488,7 @@ export default class Activator {
             }
 
             commandExecuting = true;
-            this.terminal?.clean(true);
-            this.terminal?.write("\r\n");
+            this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
           (data: Buffer) => {
@@ -506,9 +505,7 @@ export default class Activator {
           this.logger.warn("Failed to execute script on Pico.");
         }
         commandExecuting = false;
-        this.terminal?.melt();
-        this.terminal?.write("\r\n");
-        this.terminal?.prompt();
+        this.terminal?.restore();
       }
     );
     context.subscriptions.push(disposable);
@@ -559,8 +556,7 @@ export default class Activator {
             // tells the terminal that it should
             // emit input events to relay user input
             commandExecuting = true;
-            this.terminal?.clean(true);
-            this.terminal?.write("\r\n");
+            this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
           (data: Buffer) => {
@@ -574,9 +570,7 @@ export default class Activator {
         }
         this.ui?.userOperationStopped();
         commandExecuting = false;
-        this.terminal?.melt();
-        this.terminal?.write("\r\n");
-        this.terminal?.prompt();
+        this.terminal?.restore();
       }
     );
     context.subscriptions.push(disposable);
@@ -616,8 +610,7 @@ export default class Activator {
               }
 
               commandExecuting = true;
-              this.terminal?.clean(true);
-              this.terminal?.write("\r\n");
+              this.terminal?.cleanAndStore();
               this.ui?.userOperationStarted();
             },
             (data: Buffer) => {
@@ -634,8 +627,7 @@ export default class Activator {
             // const result = data as PyOutCommandResult;
             // TODO: reflect result.result in status bar
           }
-          this.terminal?.melt();
-          this.terminal?.prompt();
+          this.terminal?.restore();
         }
       }
     );
@@ -1339,9 +1331,6 @@ export default class Activator {
         }
 
         await focusTerminal(this.terminalOptions);
-        // performing hard reset in orange
-        this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
-
         const result = await PicoMpyCom.getInstance().hardReset(
           (open: boolean) => {
             if (!open) {
@@ -1349,14 +1338,17 @@ export default class Activator {
             }
 
             commandExecuting = true;
-            this.terminal?.clean(true);
-            this.terminal?.write("\r\n");
+            this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
+
+            // inform user about ongoing operation
+            this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
           },
           (data: Buffer) => {
             this.terminal?.write(data.toString("utf-8"));
           }
         );
+        this.terminal?.restore();
         commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {

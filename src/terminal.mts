@@ -9,6 +9,14 @@ const DEL = (count: number): string => `\x1b[${count}D\x1b[1P`;
 // Ctrl+D; Ctrl+E
 const IGNORED_CHARS = ["\x04", "\x05"];
 
+interface TerminalState {
+  buffer: string;
+  multilineMode: boolean;
+  indentation: number;
+  xCursor: number;
+  waitingForPrompt: boolean;
+}
+
 /**
  * A pseudo terminal (aka vREPL) so the serial connection can be used by
  * other parts of the extension while the user isn't executing a command in the REPL.
@@ -21,13 +29,16 @@ export class Terminal implements Pseudoterminal {
   private submitEmitter = new EventEmitter<string>();
   private tabCompEmitter = new EventEmitter<string>();
   private isOpen = false;
-  private buffer = "";
-  private multilineMode = false;
-  private indentation = 0;
-  private waitingForPrompt = false;
+  private state: TerminalState = {
+    buffer: "",
+    multilineMode: false,
+    indentation: 0,
+    xCursor: 0,
+    waitingForPrompt: false,
+  };
+  private backupState?: TerminalState;
   private history: History = new History();
   private controlSequence = false;
-  private xCursor = 0;
   private isFrozen = false;
   private awaitingCloseOp = false;
 
@@ -87,13 +98,13 @@ export class Terminal implements Pseudoterminal {
   }
 
   public clean(waitingForPrompt?: boolean): void {
-    this.waitingForPrompt = waitingForPrompt ?? this.waitingForPrompt;
+    this.state.waitingForPrompt =
+      waitingForPrompt ?? this.state.waitingForPrompt;
 
-    // TODO: maybe restore current state
-    this.buffer = "";
-    this.multilineMode = false;
-    this.indentation = 0;
-    this.xCursor = 0;
+    this.state.buffer = "";
+    this.state.multilineMode = false;
+    this.state.indentation = 0;
+    this.state.xCursor = 0;
   }
 
   public melt(): void {
@@ -101,13 +112,14 @@ export class Terminal implements Pseudoterminal {
   }
 
   private getRelativeCursor(): number {
-    let relativeCursor = this.xCursor;
-    if (this.multilineMode) {
-      const currentLineLength = this.buffer.split("\n").pop()?.length;
+    let relativeCursor = this.state.xCursor;
+    if (this.state.multilineMode) {
+      const currentLineLength = this.state.buffer.split("\n").pop()?.length;
       if (currentLineLength === undefined) {
         return -1;
       }
-      relativeCursor = this.xCursor + (this.buffer.length - currentLineLength);
+      relativeCursor =
+        this.state.xCursor + (this.state.buffer.length - currentLineLength);
     }
 
     return relativeCursor;
@@ -127,42 +139,43 @@ export class Terminal implements Pseudoterminal {
           const historyItem = this.history.arrowUp();
           // delete until last save positon
           this.writeEmitter.fire("\x1b[u\x1b[0J");
-          this.buffer = historyItem;
-          this.xCursor = this.buffer.length;
-          this.writeEmitter.fire(this.buffer);
+          this.state.buffer = historyItem;
+          this.state.xCursor = this.state.buffer.length;
+          this.writeEmitter.fire(this.state.buffer);
         } else if (data === "\x1b[B") {
           // arrow down
           const historyItem = this.history.arrowDown();
           // delete until last save positon
           this.writeEmitter.fire("\x1b[u\x1b[0J");
-          this.buffer = historyItem;
-          this.xCursor = this.buffer.length;
-          this.writeEmitter.fire(this.buffer);
+          this.state.buffer = historyItem;
+          this.state.xCursor = this.state.buffer.length;
+          this.writeEmitter.fire(this.state.buffer);
         } else if (data === "\x1b[C") {
           // arrow right
-          if (this.xCursor < this.buffer.length) {
-            this.xCursor++;
+          if (this.state.xCursor < this.state.buffer.length) {
+            this.state.xCursor++;
             this.writeEmitter.fire("\x1b[1C");
           }
         } else if (data === "\x1b[D") {
           // arrow left
           if (
-            this.xCursor > 0 &&
-            (!this.multilineMode || this.indentation < this.xCursor)
+            this.state.xCursor > 0 &&
+            (!this.state.multilineMode ||
+              this.state.indentation < this.state.xCursor)
           ) {
-            this.xCursor--;
+            this.state.xCursor--;
             this.writeEmitter.fire("\x1b[1D");
           }
         } else if (
           data === "\x1b[3~" &&
-          this.xCursor < this.buffer.split("\n")[-1].length
+          this.state.xCursor < this.state.buffer.split("\n")[-1].length
         ) {
           // delete
           this.writeEmitter.fire("\x1b[0K");
           // delete the character (if any) right of the cursor, index of which will be xCursor
-          this.buffer =
-            this.buffer.slice(0, this.xCursor) +
-            this.buffer.slice(this.xCursor + 1);
+          this.state.buffer =
+            this.state.buffer.slice(0, this.state.xCursor) +
+            this.state.buffer.slice(this.state.xCursor + 1);
         }
 
         break;
@@ -170,30 +183,30 @@ export class Terminal implements Pseudoterminal {
 
       if (char === "\r") {
         // don't allow multiline imput while we're waiting for a prompt
-        if (!this.waitingForPrompt) {
+        if (!this.state.waitingForPrompt) {
           this.checkMultilineMode();
         }
 
         if (
-          this.multilineMode &&
-          this.buffer.split("\n").pop()?.trim() === ""
+          this.state.multilineMode &&
+          this.state.buffer.split("\n").pop()?.trim() === ""
         ) {
-          this.multilineMode = false;
+          this.state.multilineMode = false;
           this.processMultilineInput();
-          this.buffer = "";
-          this.xCursor = 0;
+          this.state.buffer = "";
+          this.state.xCursor = 0;
         } else {
-          if (!this.multilineMode) {
-            if (this.buffer === "") {
+          if (!this.state.multilineMode) {
+            if (this.state.buffer === "") {
               this.writeEmitter.fire("\r\n");
               this.prompt();
             } else {
-              this.processInput(this.buffer);
+              this.processInput(this.state.buffer);
             }
-            this.buffer = "";
-            this.xCursor = 0;
+            this.state.buffer = "";
+            this.state.xCursor = 0;
           } else {
-            this.buffer += "\n";
+            this.state.buffer += "\n";
             this.writeEmitter.fire("\r\n");
             this.handleIndentation();
           }
@@ -206,13 +219,13 @@ export class Terminal implements Pseudoterminal {
         this.controlSequence = true;
       } else if (char === "\x03") {
         // Ctrl+C
-        if (!this.waitingForPrompt) {
+        if (!this.state.waitingForPrompt) {
           return;
         }
 
         this.submitEmitter.fire(char);
       } else if (char === "\t") {
-        if (this.multilineMode) {
+        if (this.state.multilineMode) {
           // Tab is treated as 4 spaces in multiline mode and not
           // for autocompletion like in normal mode
           this.handleInput("    ");
@@ -233,51 +246,51 @@ export class Terminal implements Pseudoterminal {
           return;
         }
 
-        // this.buffer += char; for xCursor
-        this.buffer =
-          this.buffer.slice(0, relativeCursor) +
+        // this.state.buffer += char; for xCursor
+        this.state.buffer =
+          this.state.buffer.slice(0, relativeCursor) +
           char +
-          this.buffer.slice(relativeCursor);
+          this.state.buffer.slice(relativeCursor);
         // if xCursor is not at the end of the row
-        if (relativeCursor < this.buffer.length) {
+        if (relativeCursor < this.state.buffer.length) {
           // shift the rest of the row to the right, to don't overwrite it
           this.writeEmitter.fire("\x1b[1@");
         }
         this.writeEmitter.fire(char);
-        this.xCursor++;
+        this.state.xCursor++;
       }
     }
   }
 
   private handleIndentation(): void {
-    const lastLine = this.buffer.split("\n").slice(-2)[0];
+    const lastLine = this.state.buffer.split("\n").slice(-2)[0];
     if (lastLine.trim().endsWith(":")) {
-      this.indentation += 4;
-      this.xCursor = this.indentation;
+      this.state.indentation += 4;
+      this.state.xCursor = this.state.indentation;
     }
-    const indentStr = " ".repeat(this.indentation);
+    const indentStr = " ".repeat(this.state.indentation);
     this.writeEmitter.fire(indentStr);
-    this.buffer += indentStr;
+    this.state.buffer += indentStr;
   }
 
   private handleBackspace(): void {
-    const currentLine = this.buffer.split("\n").pop();
+    const currentLine = this.state.buffer.split("\n").pop();
 
     if (currentLine === undefined) {
       return;
     }
 
     if (
-      this.multilineMode &&
-      this.indentation > 0 &&
-      currentLine?.length === this.indentation &&
+      this.state.multilineMode &&
+      this.state.indentation > 0 &&
+      currentLine?.length === this.state.indentation &&
       currentLine.trim() === ""
     ) {
-      this.indentation -= 4;
-      this.xCursor -= 4;
+      this.state.indentation -= 4;
+      this.state.xCursor -= 4;
 
       // Remove the last 4 characters from the buffer
-      this.buffer = this.buffer.slice(0, -4);
+      this.state.buffer = this.state.buffer.slice(0, -4);
       this.writeEmitter.fire(DEL(4));
     } else if (currentLine.length > 0) {
       const relativeCursor = this.getRelativeCursor();
@@ -286,22 +299,22 @@ export class Terminal implements Pseudoterminal {
       }
 
       // Remove the last character from the buffer at relativeCursor-1
-      this.buffer =
-        this.buffer.slice(0, relativeCursor - 1) +
-        this.buffer.slice(relativeCursor);
-      this.xCursor--;
+      this.state.buffer =
+        this.state.buffer.slice(0, relativeCursor - 1) +
+        this.state.buffer.slice(relativeCursor);
+      this.state.xCursor--;
       this.writeEmitter.fire(DEL(1));
     }
   }
 
   private handleTab(): void {
-    if (this.buffer === "") {
+    if (this.state.buffer === "") {
       return;
     }
     // move cursor into next line
     this.writeEmitter.fire("\r\n");
 
-    this.tabCompEmitter.fire(this.buffer);
+    this.tabCompEmitter.fire(this.state.buffer);
   }
 
   private checkMultilineMode(): void {
@@ -318,9 +331,9 @@ export class Terminal implements Pseudoterminal {
       "except",
       "finally",
     ];
-    const lastLine = this.buffer.split("\n").pop() ?? "";
-    if (!this.multilineMode) {
-      this.multilineMode = multilineKeywords.some(keyword =>
+    const lastLine = this.state.buffer.split("\n").pop() ?? "";
+    if (!this.state.multilineMode) {
+      this.state.multilineMode = multilineKeywords.some(keyword =>
         lastLine.trim().startsWith(keyword)
       );
     }
@@ -348,14 +361,14 @@ export class Terminal implements Pseudoterminal {
       return;
     } else if (input === ".ls") {
       this.writeEmitter.fire("\r\n");
-      this.waitingForPrompt = true;
+      this.state.waitingForPrompt = true;
       this.history.add(input);
       this.submitEmitter.fire("import uos; uos.listdir()\n");
 
       return;
     } else if (input === ".rtc") {
       this.writeEmitter.fire("\r\n");
-      this.waitingForPrompt = true;
+      this.state.waitingForPrompt = true;
       this.history.add(input);
       PicoMpyCom.getInstance()
         .getRtcTime()
@@ -412,25 +425,25 @@ export class Terminal implements Pseudoterminal {
       return;
     }
 
-    if (this.waitingForPrompt) {
+    if (this.state.waitingForPrompt) {
       // delete input as input(...) in repl echos input back
       this.writeEmitter.fire(DEL(input.length));
     } else {
       this.writeEmitter.fire("\r\n");
     }
 
-    this.waitingForPrompt = true;
+    this.state.waitingForPrompt = true;
     this.history.add(input);
     this.submitEmitter.fire(input + "\n");
   }
 
   private processMultilineInput(): void {
     //this.writeEmitter.fire("\nMultiline input submitted\r\n");
-    this.indentation = 0;
+    this.state.indentation = 0;
     this.writeEmitter.fire("\r\n");
-    this.waitingForPrompt = true;
-    this.history.add(this.buffer);
-    this.submitEmitter.fire(this.buffer);
+    this.state.waitingForPrompt = true;
+    this.history.add(this.state.buffer);
+    this.submitEmitter.fire(this.state.buffer);
   }
 
   public write(data: string): void {
@@ -438,7 +451,7 @@ export class Terminal implements Pseudoterminal {
   }
 
   public prompt(withoutPrint = false): void {
-    this.waitingForPrompt = false;
+    this.state.waitingForPrompt = false;
     if (!withoutPrint) {
       this.writeEmitter.fire(PROMPT);
     }
@@ -448,5 +461,51 @@ export class Terminal implements Pseudoterminal {
 
   public getIsOpen(): boolean {
     return this.isOpen;
+  }
+
+  private clearState(): void {
+    this.state = {
+      buffer: "",
+      multilineMode: false,
+      indentation: 0,
+      xCursor: 0,
+      waitingForPrompt: false,
+    };
+  }
+
+  /**
+   * Clean the terminal and store the current state (not submitted input).
+   *
+   * Can be used in combination with restore to keep the terminal state
+   * during an external operation.
+   */
+  public cleanAndStore(): void {
+    this.backupState = { ...this.state };
+    // delete until last save positon
+    this.writeEmitter.fire("\x1b[u\x1b[0J");
+    this.clean(true);
+    this.writeEmitter.fire("\r\n");
+  }
+
+  /**
+   * Restore the terminal state after an external operation.
+   *
+   * (does trigger prompt and newline for you)
+   */
+  public restore(): void {
+    // check if last content is prompt
+    this.writeEmitter.fire("\r\n");
+    this.prompt();
+    if (this.backupState !== undefined) {
+      this.clearState();
+
+      // write buffer
+      /*for (const char of this.backupState.buffer) {
+        this.handleInput(char);
+      }*/
+      this.state = { ...this.backupState };
+      this.writeEmitter.fire(this.state.buffer);
+      this.backupState = undefined;
+    }
   }
 }
