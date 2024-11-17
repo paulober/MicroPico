@@ -1,5 +1,6 @@
-import { lstat } from "fs";
+import { lstat, readdirSync } from "fs";
 import { readFile, stat, writeFile } from "fs/promises";
+import { basename, join } from "path";
 import { rimrafSync } from "rimraf";
 
 export async function pathExists(path: string): Promise<boolean> {
@@ -60,4 +61,25 @@ export function removeJunction(junctionPath: string): Promise<boolean> {
       }
     });
   });
+}
+
+/**
+ * Searches for a file in a directory and its subdirectories.
+ *
+ * @param directory The directory to search in.
+ * @param fileName The name of the file to search for.
+ * @returns The path to the file if found, otherwise undefined.
+ */
+export function searchFile(
+  directory: string,
+  fileName: string
+): string | undefined {
+  const contents = readdirSync(directory, {
+    encoding: "utf8",
+    recursive: true,
+  });
+
+  const file = contents.find(c => basename(c) === fileName);
+
+  return file ? join(directory, file) : undefined;
 }

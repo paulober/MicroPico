@@ -347,7 +347,7 @@
         "micropico.syncFolder": {
           "type": "string",
           "scope": "machine-overridable",
-          "default": "",
+          "default": null,
           "title": "Sync Folder",
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
           "order": 4

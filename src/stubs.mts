@@ -191,7 +191,6 @@ export default class Stubs {
     };
 
     if (!justUpdate) {
-      defaultSettings["micropico.syncFolder"] = "";
       defaultSettings["micropico.openOnStart"] = true;
     }
 
