@@ -251,7 +251,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async getChildren(element?: Wifi | undefined): Promise<Wifi[]> {
+  public async getChildren(element?: Wifi): Promise<Wifi[]> {
     const networks = await PicoMpyCom.getInstance().runCommand(
       DETECT_WIFIS_SCRIPT
     );
