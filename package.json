@@ -330,7 +330,7 @@
       "properties": {
         "micropico.autoConnect": {
           "type": "boolean",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "default": true,
           "title": "Autoconnect on USB",
           "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
@@ -338,7 +338,7 @@
         },
         "micropico.manualComDevice": {
           "type": "string",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "default": "",
           "title": "Manual COM device",
           "description": "If autoConnect is set to false MicroPico will automatically connect to the serial port specified here.",
@@ -346,7 +346,7 @@
         },
         "micropico.syncFolder": {
           "type": "string",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "default": "",
           "title": "Sync Folder",
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
@@ -354,7 +354,7 @@
         },
         "micropico.additionalSyncFolders": {
           "type": "array",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "items": {
             "type": "string",
             "uniqueItems": true
@@ -366,15 +366,15 @@
         },
         "micropico.syncAllFileTypes": {
           "type": "boolean",
+          "scope": "machine-overridable",
           "default": false,
-          "scope": "resource",
           "title": "Upload all file types",
           "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
           "order": 6
         },
         "micropico.syncFileTypes": {
           "type": "array",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "items": {
             "type": "string",
             "uniqueItems": true
@@ -396,7 +396,7 @@
         },
         "micropico.pyIgnore": {
           "title": "Pyignore list",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "markdownDescription": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `micropico.additionalSyncFolders` setting or the value from `micropico.syncFolder`.",
           "type": "array",
           "items": {
@@ -427,8 +427,8 @@
         },
         "micropico.statusbarButtons": {
           "type": "array",
+          "scope": "machine-overridable",
           "title": "Statusbar buttons",
-          "scope": "resource",
           "description": "Select which buttons to show in the statusbar",
           "items": {
             "type": "string",
@@ -468,30 +468,31 @@
         },
         "micropico.softResetAfterUpload": {
           "type": "boolean",
+          "scope": "machine-overridable",
           "default": false,
-          "scope": "resource",
           "title": "Soft-reset after upload",
           "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
           "order": 12
         },
         "micropico.executeOnConnect": {
           "type": "string",
+          "scope": "machine-overridable",
           "default": "",
-          "scope": "resource",
           "title": "Script to execute on connect",
           "description": "Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable.",
           "order": 13
         },
         "micropico.importOnConnect": {
           "type": "string",
+          "scope": "machine-overridable",
           "default": "",
-          "scope": "resource",
           "title": "MicroPython module to import on connect",
           "description": "A MicroPython module to import in vREPL on connect. Leave empty to disable.",
           "order": 14
         },
         "micropico.noSoftResetOnRun": {
           "type": "boolean",
+          "scope": "machine-overridable",
           "default": false,
           "title": "Disable the soft-resets before and after executing a file.",
           "description": "Soft-resets are used to clean REPL state so changes in classes and other structs are reflected correctly.",
