@@ -394,16 +394,16 @@ export class Terminal implements Pseudoterminal {
 
       return;
     } else if (input === ".sr") {
-      commands.executeCommand(commandPrefix + "reset.soft.listen");
+      void commands.executeCommand(commandPrefix + "reset.soft.listen");
 
       return;
     } else if (input === ".hr") {
-      commands.executeCommand(commandPrefix + "reset.hard.listen");
+      void commands.executeCommand(commandPrefix + "reset.hard.listen", true);
       this.writeEmitter.fire("\r\n");
 
       return;
     } else if (input === ".gc") {
-      commands.executeCommand(commandPrefix + "garbageCollect");
+      void commands.executeCommand(commandPrefix + "garbageCollect");
       this.writeEmitter.fire("\r\n");
       this.prompt();
 

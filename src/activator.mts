@@ -1264,7 +1264,7 @@ export default class Activator {
     // [Command] Hard reset pico
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.hard",
-      () => {
+      async () => {
         // TODO: maybe instead just run the command and if it retuns a type none
         // response show warning message as otherwise a second warning for this
         // case would be required to be implemented
@@ -1275,6 +1275,11 @@ export default class Activator {
 
           return;
         }
+
+        if (await this.bootPyWarning()) {
+          return;
+        }
+
         // performing hard reset in orange
         void vscode.window.withProgress(
           {
@@ -1318,7 +1323,7 @@ export default class Activator {
     // [Command] Hard reset pico (interactive)
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.hard.listen",
-      async () => {
+      async (terminalTriggered = false) => {
         // TODO: maybe instead just run the command and if it retuns a type none
         // response show warning message as otherwise a second warning for this
         // case would be required to be implemented
@@ -1326,6 +1331,15 @@ export default class Activator {
           void vscode.window.showWarningMessage(
             "Please connect to the Pico first."
           );
+
+          return;
+        }
+
+        if (await this.bootPyWarning()) {
+          if (terminalTriggered) {
+            this.terminal?.clean(true);
+            this.terminal?.prompt();
+          }
 
           return;
         }
@@ -1979,5 +1993,34 @@ export default class Activator {
     </body>
     </html>`
     );
+  }
+
+  private async bootPyWarning(): Promise<boolean> {
+    const bootPyResult = await PicoMpyCom.getInstance().getItemStat("/boot.py");
+
+    if (
+      bootPyResult.type === OperationResultType.getItemStat &&
+      bootPyResult.stat !== null
+    ) {
+      // warn that boot.py could prevent device from entering REPL or delay the amount we have to wait before we can reconnect
+      const result = await vscode.window.showWarningMessage(
+        "A boot.py script is present on the Pico. " +
+          "If it contains an infinite loop or long running code, " +
+          "the Pico may not enter the REPL or take longer to do so. " +
+          "Do you want to continue?",
+        { modal: true },
+        "Yes"
+      );
+
+      return result !== "Yes";
+    } else {
+      void vscode.window.showErrorMessage(
+        "Failed to retrieve details about the boot.py file."
+      );
+    }
+
+    // continue as we don't know if there is a boot.py file
+    // or the user wants to continue even if there is one
+    return false;
   }
 }
