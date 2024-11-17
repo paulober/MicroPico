@@ -233,6 +233,12 @@
         "command": "micropico.flashPico",
         "title": "Flash Pico in BOOTSEL mode",
         "category": "MicroPico"
+      },
+      {
+        "command": "micropico.redirectOutput",
+        "title": "MicroPython output redirection settings (experimental)",
+        "category": "MicroPico",
+        "enablement": "micropico.isConnected"
       }
     ],
     "menus": {
@@ -322,6 +328,13 @@
           "command": "micropico.device-wifi.refresh",
           "when": "view == micropico-device-wifi",
           "group": "navigation@0"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "micropico.redirectOutput",
+          "group": "MicroPico",
+          "when": "micropico.isConnected"
         }
       ]
     },

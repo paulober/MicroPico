@@ -38,6 +38,7 @@ import {
   PythonExtension,
 } from "@vscode/python-extension";
 import { flashPicoInteractively } from "./flash.mjs";
+import { appendFileSync } from "fs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -58,6 +59,9 @@ export default class Activator {
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
   private noCheckForUSBMSDs = false;
+  // TODO: currently only used as file path - replace with proper type
+  // to support different target if needed
+  private outputRedirectionTarget?: string;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -207,6 +211,7 @@ export default class Activator {
         },
         (data: Buffer) => {
           if (data.length > 0) {
+            this.redirectOutput(data);
             this.terminal?.write(data.toString("utf-8"));
           }
         },
@@ -493,6 +498,7 @@ export default class Activator {
           },
           (data: Buffer) => {
             if (data.length > 0) {
+              this.redirectOutput(data);
               this.terminal?.write(data.toString("utf-8"));
             }
           }
@@ -561,6 +567,7 @@ export default class Activator {
           },
           (data: Buffer) => {
             if (data.length > 0) {
+              this.redirectOutput(data);
               this.terminal?.write(data.toString("utf-8"));
             }
           }
@@ -615,6 +622,7 @@ export default class Activator {
             },
             (data: Buffer) => {
               if (data.length > 0) {
+                this.redirectOutput(data);
                 this.terminal?.write(data.toString("utf-8"));
               }
             },
@@ -1361,6 +1369,7 @@ export default class Activator {
             this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
           },
           (data: Buffer) => {
+            this.redirectOutput(data);
             this.terminal?.write(data.toString("utf-8"));
           }
         );
@@ -1401,6 +1410,7 @@ export default class Activator {
             }
           },
           (data: Buffer) => {
+            this.redirectOutput(data);
             this.terminal?.write(data.toString("utf-8"));
           }
         );
@@ -1641,6 +1651,50 @@ export default class Activator {
       }
     );
     context.subscriptions.push(disposable);
+
+    // TODO: add context key to show command in context menu only if vREPL is focused
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "redirectOutput",
+      async () => {
+        const location = await vscode.window.showQuickPick(
+          ["$(x) Disable", "$(info) Status", "$(arrow-right) File"],
+          {
+            canPickMany: false,
+            placeHolder: "Select the output location or manage settings",
+            title: "Output redirection for this session",
+            ignoreFocusOut: false,
+          }
+        );
+
+        switch (location) {
+          case "$(x) Disable":
+            this.outputRedirectionTarget = undefined;
+            break;
+          case "$(info) Status":
+            // show status if disabled to redirected into a file with path
+            void vscode.window.showInformationMessage(
+              this.outputRedirectionTarget
+                ? `Output is redirected to: ${this.outputRedirectionTarget}`
+                : "Output redirection is disabled"
+            );
+            break;
+          case "$(arrow-right) File":
+            const file = await vscode.window.showSaveDialog({
+              filters: {
+                "Text files": ["txt"],
+                "Log files": ["log"],
+                "All files": ["*"],
+              },
+              saveLabel: "Save output to file",
+            });
+
+            if (file) {
+              this.outputRedirectionTarget = file.fsPath;
+            }
+            break;
+        }
+      }
+    );
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
       context.extensionUri
@@ -2024,5 +2078,22 @@ export default class Activator {
     // continue as we don't know if there is a boot.py file
     // or the user wants to continue even if there is one
     return false;
+  }
+
+  // TODO: maybe use a stream instead of spaming syscalls
+  private redirectOutput(data: Buffer): void {
+    if (this.outputRedirectionTarget === undefined) {
+      return;
+    }
+
+    try {
+      appendFileSync(this.outputRedirectionTarget, data);
+    } catch (error) {
+      this.logger.error(
+        `Failed to redirect output to file: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
   }
 }
