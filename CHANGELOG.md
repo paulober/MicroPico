@@ -10,6 +10,25 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.1.0] - 2024-11-18
+
+### Added
+
+- Restore behavior for terminal content if an external action is triggered and takes over the terminal (like run file)
+- Boot.py warnings when performing hard resets
+- `micropico.redirectOutput` experimental command to redirect output of operations like running files into other target than the terminal (like a file)
+
+### Changed
+
+- Updated dependencies
+- Upgraded to `pyboard-serial-com` `v1.0.21` (Fixes #254)
+- Better Python utilization in stub switcher
+- Switch to release build for Pico 2 auto installs
+- Configure project command has been renamed to `Setup MicroPico project`
+- Reload settings before uploading and downloading projects to detect settings changes
+- SyncFolder auto-detection based on `.micropico` file location if not set
+- All settings are now scoped `machine-overridable`
+
 ## [4.0.6] - 2024-09-16
 
 ### Added
