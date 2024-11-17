@@ -80,7 +80,8 @@
       },
       {
         "command": "micropico.initialise",
-        "title": "Configure MicroPico Project",
+        "title": "Setup MicroPico project",
+        "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
