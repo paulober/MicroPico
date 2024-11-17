@@ -77,11 +77,7 @@ export async function downloadFirmware(
   firmwareType: SupportedFirmwareTypes
 ): Promise<string | undefined> {
   const url = firmwareTypeToDownloadURL(firmwareType);
-  const uf2Url = await extractUf2Url(
-    url,
-    // TODO: remove after stable builds for Pico2 are available
-    firmwareType === SupportedFirmwareTypes.pico2
-  );
+  const uf2Url = await extractUf2Url(url, false);
 
   if (!uf2Url) {
     console.error("No UF2 URL found.");
