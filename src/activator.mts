@@ -651,6 +651,7 @@ export default class Activator {
 
           return;
         }
+        this.settings.reload();
 
         const syncDir = await this.settings.requestSyncFolder("Upload");
 
