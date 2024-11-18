@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico boards running MicroPython firmware.",
-  "version": "4.0.6",
+  "version": "4.1.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/MicroPico/blob/main/README.md",
@@ -80,7 +80,8 @@
       },
       {
         "command": "micropico.initialise",
-        "title": "Configure MicroPico Project",
+        "title": "Setup MicroPico project",
+        "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
@@ -232,6 +233,12 @@
         "command": "micropico.flashPico",
         "title": "Flash Pico in BOOTSEL mode",
         "category": "MicroPico"
+      },
+      {
+        "command": "micropico.redirectOutput",
+        "title": "MicroPython output redirection settings (experimental)",
+        "category": "MicroPico",
+        "enablement": "micropico.isConnected"
       }
     ],
     "menus": {
@@ -322,6 +329,13 @@
           "when": "view == micropico-device-wifi",
           "group": "navigation@0"
         }
+      ],
+      "terminal/context": [
+        {
+          "command": "micropico.redirectOutput",
+          "group": "MicroPico",
+          "when": "micropico.isConnected"
+        }
       ]
     },
     "configuration": {
@@ -329,7 +343,7 @@
       "properties": {
         "micropico.autoConnect": {
           "type": "boolean",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "default": true,
           "title": "Autoconnect on USB",
           "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
@@ -337,7 +351,7 @@
         },
         "micropico.manualComDevice": {
           "type": "string",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "default": "",
           "title": "Manual COM device",
           "description": "If autoConnect is set to false MicroPico will automatically connect to the serial port specified here.",
@@ -345,15 +359,15 @@
         },
         "micropico.syncFolder": {
           "type": "string",
-          "scope": "resource",
-          "default": "",
+          "scope": "machine-overridable",
+          "default": null,
           "title": "Sync Folder",
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
           "order": 4
         },
         "micropico.additionalSyncFolders": {
           "type": "array",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "items": {
             "type": "string",
             "uniqueItems": true
@@ -365,15 +379,15 @@
         },
         "micropico.syncAllFileTypes": {
           "type": "boolean",
+          "scope": "machine-overridable",
           "default": false,
-          "scope": "resource",
           "title": "Upload all file types",
           "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
           "order": 6
         },
         "micropico.syncFileTypes": {
           "type": "array",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "items": {
             "type": "string",
             "uniqueItems": true
@@ -395,7 +409,7 @@
         },
         "micropico.pyIgnore": {
           "title": "Pyignore list",
-          "scope": "resource",
+          "scope": "machine-overridable",
           "markdownDescription": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `micropico.additionalSyncFolders` setting or the value from `micropico.syncFolder`.",
           "type": "array",
           "items": {
@@ -426,8 +440,8 @@
         },
         "micropico.statusbarButtons": {
           "type": "array",
+          "scope": "machine-overridable",
           "title": "Statusbar buttons",
-          "scope": "resource",
           "description": "Select which buttons to show in the statusbar",
           "items": {
             "type": "string",
@@ -467,30 +481,31 @@
         },
         "micropico.softResetAfterUpload": {
           "type": "boolean",
+          "scope": "machine-overridable",
           "default": false,
-          "scope": "resource",
           "title": "Soft-reset after upload",
           "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
           "order": 12
         },
         "micropico.executeOnConnect": {
           "type": "string",
+          "scope": "machine-overridable",
           "default": "",
-          "scope": "resource",
           "title": "Script to execute on connect",
           "description": "Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable.",
           "order": 13
         },
         "micropico.importOnConnect": {
           "type": "string",
+          "scope": "machine-overridable",
           "default": "",
-          "scope": "resource",
           "title": "MicroPython module to import on connect",
           "description": "A MicroPython module to import in vREPL on connect. Leave empty to disable.",
           "order": 14
         },
         "micropico.noSoftResetOnRun": {
           "type": "boolean",
+          "scope": "machine-overridable",
           "default": false,
           "title": "Disable the soft-resets before and after executing a file.",
           "description": "Soft-resets are used to clean REPL state so changes in classes and other structs are reflected correctly.",
@@ -619,10 +634,11 @@
   "scripts": {
     "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
     "vscode:prepublish": "npm run package",
-    "postinstall": "patch-package && python -m pip install -U micropython-rp2-rpi_pico_w-stubs==1.23.* --target ./mpy_stubs --no-user",
+    "postinstall": "patch-package && python3 -m pip install -U micropython-rp2-rpi_pico_w-stubs==1.23.* --target ./mpy_stubs --no-user",
+    "cp-prebuilds": "cp -r node_modules/@serialport/bindings-cpp/prebuilds ./prebuilds",
     "compile-uninstaller": "rollup -c uninstall.rollup.config.mjs --environment BUILD:production",
     "compile": "rollup -c && npm run compile-uninstaller",
-    "watch": "rollup -cw",
+    "watch": "npm run cp-prebuilds && rollup -cw",
     "package-local": "rimraf dist && rollup -c --environment BUILD:production --sourcemap hidden && npm run compile-uninstaller",
     "package": "rollup -c --environment BUILD:production && npm run compile-uninstaller",
     "compile-tests": "tsc -p . --outDir out",
@@ -632,40 +648,40 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.10.0",
-    "@rollup/plugin-commonjs": "^26.0.1",
+    "@eslint/js": "^9.15.0",
+    "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
+    "@rollup/plugin-typescript": "^12.1.1",
     "@serialport/bindings-cpp": "^12.0.1",
     "@types/eslint": "^9.6.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/lodash": "^4.17.7",
-    "@types/node": "^20.14.0",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^20.14",
     "@types/uuid": "^10.0.0",
     "@types/vscode": "^1.92.0",
     "@types/which": "^3.0.4",
     "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.10.0",
+    "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "patch-package": "^8.0.0",
-    "rollup": "^4.22.4",
+    "rollup": "^4.27.2",
     "rollup-plugin-copy": "^3.5.0",
-    "tslib": "^2.7.0",
-    "typescript": "^5.6.2",
-    "typescript-eslint": "^8.5.0"
+    "tslib": "^2.8.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.14.0"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^1.0.19",
+    "@paulober/pico-mpy-com": "^1.0.21",
     "@vscode/python-extension": "^1.0.5",
     "axios": "^1.7.7",
     "fs-extra": "^11.2.0",
     "lodash": "^4.17.21",
     "rimraf": "^6.0.1",
-    "undici": "^6.19.8",
-    "uuid": "^10.0.0",
-    "which": "^4.0.0"
+    "undici": "^6.21.0",
+    "uuid": "^11.0.3",
+    "which": "^5.0.0"
   },
   "packageManager": "npm@10.8.3+sha512.d08425c8062f56d43bb8e84315864218af2492eb769e1f1ca40740f44e85bd148969382d651660363942e5909cb7ffcbef7ca0ae963ddc2c57a51243b4da8f56"
 }

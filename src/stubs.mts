@@ -191,7 +191,6 @@ export default class Stubs {
     };
 
     if (!justUpdate) {
-      defaultSettings["micropico.syncFolder"] = "";
       defaultSettings["micropico.openOnStart"] = true;
     }
 
@@ -286,51 +285,84 @@ export function displayStringToStubPort(displayString: string): string {
 export async function installStubsByVersion(
   version: string,
   port: string,
-  settings: Settings
+  settings: Settings,
+  pythonPath?: string
 ): Promise<boolean> {
-  const pip3: string | null = await which("pip3", { nothrow: true });
-  // check if pip is available
-  const pip: string | null = await which("pip", { nothrow: true });
-
   let command = "";
-  // if not available check for python prefixed installations
-  if (pip3 === null && pip === null) {
-    const python3: string | null = await which("python3", { nothrow: true });
-    // windows py launcher
-    const py: string | null = await which("py", { nothrow: true });
+  const isWin = process.platform === "win32";
 
-    // if (py ?? python) -m pip returns sth containing "No module named" -> not installed
+  if (pythonPath) {
+    command = `"${pythonPath}" -m pip`;
 
-    const pyCmd = python3 ?? py;
-    if (pyCmd !== null) {
-      const result = execSync(pyCmd + " -m pip");
+    try {
+      const result = execSync(`${isWin ? "&" : ""}${command}`, {
+        windowsHide: true,
+        shell: process.platform === "win32" ? "powershell" : undefined,
+      });
       if (result.toString("utf-8").toLowerCase().includes("no module named")) {
+        void window.showWarningMessage(
+          "The selected python interpreter does not have pip installed."
+        );
+        command = "";
+      }
+    } catch (error) {
+      console.log(error);
+      void window.showErrorMessage(
+        "python3 or py (with pip) is required (in PATH) to install" +
+          " stubs different from the included ones."
+      );
+      command = "";
+    }
+  }
+
+  if (command.length <= 0) {
+    const pip3: string | null = await which("pip3", { nothrow: true });
+    // check if pip is available
+    const pip: string | null = await which("pip", { nothrow: true });
+
+    // if not available check for python prefixed installations
+    if (pip3 === null && pip === null) {
+      const python3: string | null = await which("python3", { nothrow: true });
+      // windows py launcher
+      const py: string | null = await which("py", { nothrow: true });
+
+      // if (py ?? python) -m pip returns sth containing "No module named" -> not installed
+
+      const pyCmd = python3 ?? py;
+      if (pyCmd !== null) {
+        const result = execSync(`${isWin ? "&" : ""}"${pyCmd}" -m pip`, {
+          windowsHide: true,
+          shell: process.platform === "win32" ? "powershell" : undefined,
+        });
+        if (
+          result.toString("utf-8").toLowerCase().includes("no module named")
+        ) {
+          void window.showErrorMessage(
+            `pip module is required (in ${pyCmd}) to install` +
+              " stubs different from the included ones."
+          );
+
+          return false;
+        }
+        command = `"${pyCmd}" -m pip`;
+      } else {
         void window.showErrorMessage(
-          `pip module is required (in ${pyCmd}) to install` +
+          "python3 or py is required (in PATH) to install" +
             " stubs different from the included ones."
         );
 
         return false;
       }
-      command = `"${pyCmd}" -m pip`;
     } else {
-      void window.showErrorMessage(
-        "python3 or py is required (in PATH) to install" +
-          " stubs different from the included ones."
-      );
-
-      return false;
+      assert(pip3 !== null || pip !== null);
+      command = `"${(pip3 ?? pip)!}"`;
     }
-  } else {
-    assert(pip3 !== null || pip !== null);
-    command = `"${(pip3 ?? pip)!}"`;
   }
 
   const folderName = `${port}==${version}`;
   const target = getStubsPathForVersionPosix(folderName);
   mkdirpSync(target);
 
-  const isWin = process.platform === "win32";
   // install stubs with pip vscode user directory
   const result = execSync(
     `${isWin ? "&" : ""}${command} install ${port}==${version} ` +

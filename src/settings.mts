@@ -1,8 +1,9 @@
 import type { Memento, Uri, WorkspaceConfiguration } from "vscode";
 import { window, workspace as vsWorkspace } from "vscode";
 import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
-import { join, relative } from "path";
+import { dirname, join, relative } from "path";
 import { PicoMpyCom } from "@paulober/pico-mpy-com";
+import { searchFile } from "./osHelper.mjs";
 
 export enum SettingsKey {
   autoConnect = "autoConnect",
@@ -75,6 +76,10 @@ export default class Settings {
     return this.config.update(key, value, true);
   }
 
+  public updateWorkspaceFolder<T>(key: string, value: T): Thenable<void> {
+    return this.config.update(key, value, null);
+  }
+
   public updatePython<T>(key: string, value: T): Thenable<void> {
     return this.pythonConfig.update(key, value, null);
   }
@@ -126,22 +131,22 @@ export default class Settings {
    * Returns the absolute path to the sync folder. If the sync folder is undefined,
    * the project path is returned.
    *
-   * @returns the absolute path to the sync folder
+   * @returns The absolute path to the sync folder and if the setting is undefined
    */
-  public getSyncFolderAbsPath(): string | undefined {
+  public getSyncFolderAbsPath(): [string | undefined, boolean] {
     const syncDir = this.getString(SettingsKey.syncFolder);
     const projectDir = getProjectPath();
 
-    if (syncDir === undefined) {
-      return projectDir;
+    if (syncDir === undefined || syncDir.length === 0) {
+      return [projectDir, true];
     }
 
     if (projectDir === undefined) {
       // How can this ever happen??!
-      return undefined;
+      return [undefined, false];
     }
 
-    return join(projectDir, syncDir);
+    return [join(projectDir, syncDir), false];
   }
 
   /**
@@ -158,12 +163,39 @@ export default class Settings {
   public async requestSyncFolder(
     actionTitle: string
   ): Promise<[string, string] | undefined> {
-    const syncFolder = this.getSyncFolderAbsPath();
+    let [syncFolder, syncSettingNotSet] = this.getSyncFolderAbsPath();
     const projectDir = getProjectPath();
 
     if (projectDir === undefined) {
       // How can this ever happen??!
       return;
+    }
+
+    // sync folder setting not set
+    if (syncSettingNotSet) {
+      const activationFile = searchFile(projectDir, ".micropico");
+      const actParent = activationFile ? dirname(activationFile) : undefined;
+
+      // check if activation file is not in project root
+      if (activationFile && actParent && actParent !== projectDir) {
+        syncFolder = actParent;
+
+        // update transparent to the user
+        await this.updateWorkspaceFolder(
+          SettingsKey.syncFolder,
+          relative(projectDir, actParent)
+        );
+
+        void window.showWarningMessage(
+          `Sync folder has been set to \`${relative(
+            projectDir,
+            actParent
+          )}\` ` +
+            "because the `.micropico` file was found in a subdirectory " +
+            "and no sync folder was set. To disable this behavior, " +
+            "set a sync folder in the settings to `.` for the project root."
+        );
+      }
     }
 
     let additionalSyncFolders = this.getArray(

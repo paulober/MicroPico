@@ -38,6 +38,7 @@ import {
   PythonExtension,
 } from "@vscode/python-extension";
 import { flashPicoInteractively } from "./flash.mjs";
+import { appendFileSync } from "fs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -58,6 +59,9 @@ export default class Activator {
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
   private noCheckForUSBMSDs = false;
+  // TODO: currently only used as file path - replace with proper type
+  // to support different target if needed
+  private outputRedirectionTarget?: string;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -207,6 +211,7 @@ export default class Activator {
         },
         (data: Buffer) => {
           if (data.length > 0) {
+            this.redirectOutput(data);
             this.terminal?.write(data.toString("utf-8"));
           }
         },
@@ -488,12 +493,12 @@ export default class Activator {
             }
 
             commandExecuting = true;
-            this.terminal?.clean(true);
-            this.terminal?.write("\r\n");
+            this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
           (data: Buffer) => {
             if (data.length > 0) {
+              this.redirectOutput(data);
               this.terminal?.write(data.toString("utf-8"));
             }
           }
@@ -506,9 +511,7 @@ export default class Activator {
           this.logger.warn("Failed to execute script on Pico.");
         }
         commandExecuting = false;
-        this.terminal?.melt();
-        this.terminal?.write("\r\n");
-        this.terminal?.prompt();
+        this.terminal?.restore();
       }
     );
     context.subscriptions.push(disposable);
@@ -559,12 +562,12 @@ export default class Activator {
             // tells the terminal that it should
             // emit input events to relay user input
             commandExecuting = true;
-            this.terminal?.clean(true);
-            this.terminal?.write("\r\n");
+            this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
           (data: Buffer) => {
             if (data.length > 0) {
+              this.redirectOutput(data);
               this.terminal?.write(data.toString("utf-8"));
             }
           }
@@ -574,9 +577,7 @@ export default class Activator {
         }
         this.ui?.userOperationStopped();
         commandExecuting = false;
-        this.terminal?.melt();
-        this.terminal?.write("\r\n");
-        this.terminal?.prompt();
+        this.terminal?.restore();
       }
     );
     context.subscriptions.push(disposable);
@@ -616,12 +617,12 @@ export default class Activator {
               }
 
               commandExecuting = true;
-              this.terminal?.clean(true);
-              this.terminal?.write("\r\n");
+              this.terminal?.cleanAndStore();
               this.ui?.userOperationStarted();
             },
             (data: Buffer) => {
               if (data.length > 0) {
+                this.redirectOutput(data);
                 this.terminal?.write(data.toString("utf-8"));
               }
             },
@@ -634,8 +635,7 @@ export default class Activator {
             // const result = data as PyOutCommandResult;
             // TODO: reflect result.result in status bar
           }
-          this.terminal?.melt();
-          this.terminal?.prompt();
+          this.terminal?.restore();
         }
       }
     );
@@ -659,6 +659,7 @@ export default class Activator {
 
           return;
         }
+        this.settings.reload();
 
         const syncDir = await this.settings.requestSyncFolder("Upload");
 
@@ -979,6 +980,7 @@ export default class Activator {
 
           return;
         }
+        this.settings.reload();
 
         const syncDir = await this.settings.requestSyncFolder("Download");
 
@@ -1272,7 +1274,7 @@ export default class Activator {
     // [Command] Hard reset pico
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.hard",
-      () => {
+      async () => {
         // TODO: maybe instead just run the command and if it retuns a type none
         // response show warning message as otherwise a second warning for this
         // case would be required to be implemented
@@ -1283,6 +1285,11 @@ export default class Activator {
 
           return;
         }
+
+        if (await this.bootPyWarning()) {
+          return;
+        }
+
         // performing hard reset in orange
         void vscode.window.withProgress(
           {
@@ -1326,7 +1333,7 @@ export default class Activator {
     // [Command] Hard reset pico (interactive)
     disposable = vscode.commands.registerCommand(
       commandPrefix + "reset.hard.listen",
-      async () => {
+      async (terminalTriggered = false) => {
         // TODO: maybe instead just run the command and if it retuns a type none
         // response show warning message as otherwise a second warning for this
         // case would be required to be implemented
@@ -1338,10 +1345,16 @@ export default class Activator {
           return;
         }
 
-        await focusTerminal(this.terminalOptions);
-        // performing hard reset in orange
-        this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
+        if (await this.bootPyWarning()) {
+          if (terminalTriggered) {
+            this.terminal?.clean(true);
+            this.terminal?.prompt();
+          }
 
+          return;
+        }
+
+        await focusTerminal(this.terminalOptions);
         const result = await PicoMpyCom.getInstance().hardReset(
           (open: boolean) => {
             if (!open) {
@@ -1349,14 +1362,18 @@ export default class Activator {
             }
 
             commandExecuting = true;
-            this.terminal?.clean(true);
-            this.terminal?.write("\r\n");
+            this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
+
+            // inform user about ongoing operation
+            this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
           },
           (data: Buffer) => {
+            this.redirectOutput(data);
             this.terminal?.write(data.toString("utf-8"));
           }
         );
+        this.terminal?.restore();
         commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
@@ -1393,6 +1410,7 @@ export default class Activator {
             }
           },
           (data: Buffer) => {
+            this.redirectOutput(data);
             this.terminal?.write(data.toString("utf-8"));
           }
         );
@@ -1547,7 +1565,8 @@ export default class Activator {
                 version.includes(" - ")
                   ? displayStringToStubPort(versionParts[0])
                   : versionParts[0],
-                this.settings!
+                this.settings!,
+                this.pythonPath
               );
 
               if (result) {
@@ -1632,6 +1651,50 @@ export default class Activator {
       }
     );
     context.subscriptions.push(disposable);
+
+    // TODO: add context key to show command in context menu only if vREPL is focused
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "redirectOutput",
+      async () => {
+        const location = await vscode.window.showQuickPick(
+          ["$(x) Disable", "$(info) Status", "$(arrow-right) File"],
+          {
+            canPickMany: false,
+            placeHolder: "Select the output location or manage settings",
+            title: "Output redirection for this session",
+            ignoreFocusOut: false,
+          }
+        );
+
+        switch (location) {
+          case "$(x) Disable":
+            this.outputRedirectionTarget = undefined;
+            break;
+          case "$(info) Status":
+            // show status if disabled to redirected into a file with path
+            void vscode.window.showInformationMessage(
+              this.outputRedirectionTarget
+                ? `Output is redirected to: ${this.outputRedirectionTarget}`
+                : "Output redirection is disabled"
+            );
+            break;
+          case "$(arrow-right) File":
+            const file = await vscode.window.showSaveDialog({
+              filters: {
+                "Text files": ["txt"],
+                "Log files": ["log"],
+                "All files": ["*"],
+              },
+              saveLabel: "Save output to file",
+            });
+
+            if (file) {
+              this.outputRedirectionTarget = file.fsPath;
+            }
+            break;
+        }
+      }
+    );
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
       context.extensionUri
@@ -1986,5 +2049,51 @@ export default class Activator {
     </body>
     </html>`
     );
+  }
+
+  private async bootPyWarning(): Promise<boolean> {
+    const bootPyResult = await PicoMpyCom.getInstance().getItemStat("/boot.py");
+
+    if (
+      bootPyResult.type === OperationResultType.getItemStat &&
+      bootPyResult.stat !== null
+    ) {
+      // warn that boot.py could prevent device from entering REPL or delay the amount we have to wait before we can reconnect
+      const result = await vscode.window.showWarningMessage(
+        "A boot.py script is present on the Pico. " +
+          "If it contains an infinite loop or long running code, " +
+          "the Pico may not enter the REPL or take longer to do so. " +
+          "Do you want to continue?",
+        { modal: true },
+        "Yes"
+      );
+
+      return result !== "Yes";
+    } else {
+      void vscode.window.showErrorMessage(
+        "Failed to retrieve details about the boot.py file."
+      );
+    }
+
+    // continue as we don't know if there is a boot.py file
+    // or the user wants to continue even if there is one
+    return false;
+  }
+
+  // TODO: maybe use a stream instead of spaming syscalls
+  private redirectOutput(data: Buffer): void {
+    if (this.outputRedirectionTarget === undefined) {
+      return;
+    }
+
+    try {
+      appendFileSync(this.outputRedirectionTarget, data);
+    } catch (error) {
+      this.logger.error(
+        `Failed to redirect output to file: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
   }
 }
