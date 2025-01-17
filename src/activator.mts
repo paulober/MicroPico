@@ -62,6 +62,7 @@ export default class Activator {
   // TODO: currently only used as file path - replace with proper type
   // to support different target if needed
   private outputRedirectionTarget?: string;
+  private commandExecuting = false;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -180,9 +181,9 @@ export default class Activator {
         "\x1b[0m\r\n" // Reset text color to default
       );
     });
-    let commandExecuting = false;
+
     this.terminal.onDidSubmit(async (cmd: string) => {
-      if (commandExecuting) {
+      if (this.commandExecuting) {
         PicoMpyCom.getInstance().emit(
           PicoSerialEvents.relayInput,
           Buffer.from(cmd.trim(), "utf-8")
@@ -199,7 +200,7 @@ export default class Activator {
 
       // TODO: maybe this.ui?.userOperationStarted();
       // this will make waiting for prompt falsethis.terminal.freeze();
-      commandExecuting = true;
+      this.commandExecuting = true;
       const result = await PicoMpyCom.getInstance().runFriendlyCommand(
         cmd,
         (open: boolean) => {
@@ -228,7 +229,7 @@ export default class Activator {
         this.terminal?.clean(true);
       }
       this.ui?.userOperationStopped();
-      commandExecuting = false;
+      this.commandExecuting = false;
       this.terminal?.prompt();
     });
     this.terminal.onDidRequestTabComp(async (buf: string) => {
@@ -492,7 +493,7 @@ export default class Activator {
               return;
             }
 
-            commandExecuting = true;
+            this.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
@@ -510,7 +511,7 @@ export default class Activator {
         if (data.type !== OperationResultType.commandResult || !data.result) {
           this.logger.warn("Failed to execute script on Pico.");
         }
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.terminal?.restore();
       }
     );
@@ -561,7 +562,7 @@ export default class Activator {
 
             // tells the terminal that it should
             // emit input events to relay user input
-            commandExecuting = true;
+            this.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
@@ -576,7 +577,7 @@ export default class Activator {
           await PicoMpyCom.getInstance().softReset();
         }
         this.ui?.userOperationStopped();
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.terminal?.restore();
       }
     );
@@ -616,7 +617,7 @@ export default class Activator {
                 return;
               }
 
-              commandExecuting = true;
+              this.commandExecuting = true;
               this.terminal?.cleanAndStore();
               this.ui?.userOperationStarted();
             },
@@ -629,7 +630,7 @@ export default class Activator {
             this.pythonPath,
             true
           );
-          commandExecuting = false;
+          this.commandExecuting = false;
           this.ui?.userOperationStopped();
           if (data.type === OperationResultType.commandResult) {
             // const result = data as PyOutCommandResult;
@@ -1361,7 +1362,7 @@ export default class Activator {
               return;
             }
 
-            commandExecuting = true;
+            this.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
 
@@ -1374,7 +1375,7 @@ export default class Activator {
           }
         );
         this.terminal?.restore();
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
@@ -1402,7 +1403,7 @@ export default class Activator {
         const result = await PicoMpyCom.getInstance().sendCtrlD(
           (open: boolean) => {
             if (open) {
-              commandExecuting = true;
+              this.commandExecuting = true;
               //terminal?.freeze();
               this.terminal?.clean(true);
               //terminal?.write("\r\n");
@@ -1414,7 +1415,7 @@ export default class Activator {
             this.terminal?.write(data.toString("utf-8"));
           }
         );
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
@@ -1678,7 +1679,7 @@ export default class Activator {
                 : "Output redirection is disabled"
             );
             break;
-          case "$(arrow-right) File":
+          case "$(arrow-right) File": {
             const file = await vscode.window.showSaveDialog({
               filters: {
                 "Text files": ["txt"],
@@ -1692,6 +1693,7 @@ export default class Activator {
               this.outputRedirectionTarget = file.fsPath;
             }
             break;
+          }
         }
       }
     );
@@ -1947,6 +1949,17 @@ export default class Activator {
     if (error === undefined) {
       this.logger.info(`Connection to board was closed.`);
       if (this.comDevice !== undefined) {
+        // check for running operation and cancel it
+        if (this.ui?.isUserOperationOngoing()) {
+          void vscode.window.showWarningMessage(
+            "Connection to board was closed. Stopping ongoing operation."
+          );
+          this.ui?.userOperationStopped();
+          this.commandExecuting = false;
+          // has no benefit as the terminal will be reloaded on reconnect anyway
+          //this.terminal?.restore();
+        }
+        // END
         void vscode.window.showInformationMessage("Disconnected from board.");
         this.terminal?.freeze();
         this.terminal?.write(
@@ -2058,7 +2071,8 @@ export default class Activator {
       bootPyResult.type === OperationResultType.getItemStat &&
       bootPyResult.stat !== null
     ) {
-      // warn that boot.py could prevent device from entering REPL or delay the amount we have to wait before we can reconnect
+      // warn that boot.py could prevent device from entering REPL or
+      // delay the amount we have to wait before we can reconnect
       const result = await vscode.window.showWarningMessage(
         "A boot.py script is present on the Pico. " +
           "If it contains an infinite loop or long running code, " +
@@ -2091,7 +2105,7 @@ export default class Activator {
     } catch (error) {
       this.logger.error(
         `Failed to redirect output to file: ${
-          error instanceof Error ? error.message : error
+          error instanceof Error ? error.message : (error as string)
         }`
       );
     }
