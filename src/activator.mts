@@ -21,7 +21,7 @@ import Stubs, {
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
 import Logger from "./logger.mjs";
-import { basename, dirname, join } from "path";
+import { basename, dirname, extname, join } from "path";
 import { PicoRemoteFileSystem } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
@@ -62,6 +62,9 @@ export default class Activator {
   // TODO: currently only used as file path - replace with proper type
   // to support different target if needed
   private outputRedirectionTarget?: string;
+  private commandExecuting = false;
+
+  private disableExtWarning = false;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -180,9 +183,9 @@ export default class Activator {
         "\x1b[0m\r\n" // Reset text color to default
       );
     });
-    let commandExecuting = false;
+
     this.terminal.onDidSubmit(async (cmd: string) => {
-      if (commandExecuting) {
+      if (this.commandExecuting) {
         PicoMpyCom.getInstance().emit(
           PicoSerialEvents.relayInput,
           Buffer.from(cmd.trim(), "utf-8")
@@ -199,7 +202,7 @@ export default class Activator {
 
       // TODO: maybe this.ui?.userOperationStarted();
       // this will make waiting for prompt falsethis.terminal.freeze();
-      commandExecuting = true;
+      this.commandExecuting = true;
       const result = await PicoMpyCom.getInstance().runFriendlyCommand(
         cmd,
         (open: boolean) => {
@@ -228,7 +231,7 @@ export default class Activator {
         this.terminal?.clean(true);
       }
       this.ui?.userOperationStopped();
-      commandExecuting = false;
+      this.commandExecuting = false;
       this.terminal?.prompt();
     });
     this.terminal.onDidRequestTabComp(async (buf: string) => {
@@ -425,14 +428,51 @@ export default class Activator {
     // [Command] Connect
     disposable = vscode.commands.registerCommand(
       commandPrefix + "connect",
-      () => {
-        /*this.comDevice = await this.settings?.getComDevice();
-        if (this.comDevice !== undefined) {
-          this.ui?.init();
-          // TODO: verify that this does allow smooth transition between serialport devices
-          await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-        }*/
-        this.setupAutoConnect();
+      async () => {
+        /*
+        this.comDevice = await this.settings?.getComDevice();
+          if (this.comDevice === undefined) {
+            if (this.settings?.getBoolean(SettingsKey.autoConnect)) {
+              void vscode.window.showErrorMessage(
+                "No COM device found! Starting auto connect..."
+              );
+            }
+          } else {
+            this.ui?.init();
+            // TODO: check if this is a smooth transition between serialport devices
+            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
+          }
+          this.setupAutoConnect();
+          */
+        if (!this.setupAutoConnect()) {
+          // auto connect is probably disable and no manual com device is set
+          const boards = await PicoMpyCom.getSerialPorts();
+          if (boards.length > 1) {
+            const comDevice = await vscode.window.showQuickPick(boards, {
+              placeHolder: "Select the board to connect to",
+              canPickMany: false,
+              ignoreFocusOut: false,
+              title: "Connect to Micropython board",
+            });
+
+            if (comDevice !== undefined) {
+              this.comDevice = comDevice;
+              await PicoMpyCom.getInstance().openSerialPort(comDevice);
+            }
+
+            return;
+          } else {
+            if (boards.length === 1) {
+              this.comDevice = boards[0];
+              await PicoMpyCom.getInstance().openSerialPort(boards[0]);
+            } else {
+              void vscode.window.showWarningMessage(
+                "No board running MicroPython has been found."
+              );
+              await this.checkForUSBMSDs();
+            }
+          }
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -441,9 +481,14 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "disconnect",
       async () => {
-        clearInterval(this.autoConnectTimer);
-        this.intentionalDisconnect = true;
-        await PicoMpyCom.getInstance().closeSerialPort();
+        if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+          clearInterval(this.autoConnectTimer);
+          this.intentionalDisconnect = true;
+          this.ui?.setDisconnecting();
+          // wait 1500ms
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          await PicoMpyCom.getInstance().closeSerialPort();
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -477,6 +522,26 @@ export default class Activator {
             return;
           }
         }
+
+        // check file extension
+        if (
+          !this.disableExtWarning &&
+          ![".py", ".mpy"].includes(extname(file))
+        ) {
+          // warn it's not a python file do you still want to run it
+          const choice = await vscode.window.showWarningMessage(
+            "The selected file is not a Python file. " +
+              "Do you still want to run it?",
+            "Yes",
+            "No",
+            "Yes, don't show this again"
+          );
+
+          if (choice !== "Yes") {
+            return;
+          }
+        }
+
         const forceDisableSoftReset =
           this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
@@ -492,7 +557,7 @@ export default class Activator {
               return;
             }
 
-            commandExecuting = true;
+            this.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
@@ -510,7 +575,7 @@ export default class Activator {
         if (data.type !== OperationResultType.commandResult || !data.result) {
           this.logger.warn("Failed to execute script on Pico.");
         }
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.terminal?.restore();
       }
     );
@@ -561,7 +626,7 @@ export default class Activator {
 
             // tells the terminal that it should
             // emit input events to relay user input
-            commandExecuting = true;
+            this.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
@@ -576,7 +641,7 @@ export default class Activator {
           await PicoMpyCom.getInstance().softReset();
         }
         this.ui?.userOperationStopped();
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.terminal?.restore();
       }
     );
@@ -616,7 +681,7 @@ export default class Activator {
                 return;
               }
 
-              commandExecuting = true;
+              this.commandExecuting = true;
               this.terminal?.cleanAndStore();
               this.ui?.userOperationStarted();
             },
@@ -629,7 +694,7 @@ export default class Activator {
             this.pythonPath,
             true
           );
-          commandExecuting = false;
+          this.commandExecuting = false;
           this.ui?.userOperationStopped();
           if (data.type === OperationResultType.commandResult) {
             // const result = data as PyOutCommandResult;
@@ -1096,23 +1161,16 @@ export default class Activator {
     // [Command] Toggle connection
     disposable = vscode.commands.registerCommand(
       commandPrefix + "toggleConnect",
-      async () => {
+      () => {
+        // don't allow reconnect before port has been closed properly
+        if (this.intentionalDisconnect) {
+          return;
+        }
+
         if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-          clearInterval(this.autoConnectTimer);
-          this.intentionalDisconnect = true;
-          await PicoMpyCom.getInstance().closeSerialPort();
+          void vscode.commands.executeCommand(commandPrefix + "disconnect");
         } else {
-          this.comDevice = await this.settings?.getComDevice();
-          if (this.comDevice === undefined) {
-            void vscode.window.showErrorMessage(
-              "No COM device found! Starting auto connect..."
-            );
-          } else {
-            this.ui?.init();
-            // TODO: check if this is a smooth transition between serialport devices
-            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-          }
-          this.setupAutoConnect();
+          void vscode.commands.executeCommand(commandPrefix + "connect");
         }
       }
     );
@@ -1361,7 +1419,7 @@ export default class Activator {
               return;
             }
 
-            commandExecuting = true;
+            this.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
 
@@ -1374,7 +1432,7 @@ export default class Activator {
           }
         );
         this.terminal?.restore();
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
@@ -1402,7 +1460,7 @@ export default class Activator {
         const result = await PicoMpyCom.getInstance().sendCtrlD(
           (open: boolean) => {
             if (open) {
-              commandExecuting = true;
+              this.commandExecuting = true;
               //terminal?.freeze();
               this.terminal?.clean(true);
               //terminal?.write("\r\n");
@@ -1414,7 +1472,7 @@ export default class Activator {
             this.terminal?.write(data.toString("utf-8"));
           }
         );
-        commandExecuting = false;
+        this.commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
@@ -1678,11 +1736,14 @@ export default class Activator {
                 : "Output redirection is disabled"
             );
             break;
-          case "$(arrow-right) File":
+          case "$(arrow-right) File": {
             const file = await vscode.window.showSaveDialog({
               filters: {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 "Text files": ["txt"],
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 "Log files": ["log"],
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 "All files": ["*"],
               },
               saveLabel: "Save output to file",
@@ -1692,6 +1753,7 @@ export default class Activator {
               this.outputRedirectionTarget = file.fsPath;
             }
             break;
+          }
         }
       }
     );
@@ -1783,17 +1845,17 @@ export default class Activator {
    */
   private intentionalDisconnect = false;
 
-  private setupAutoConnect(): void {
+  private setupAutoConnect(): boolean {
     if (this.intentionalDisconnect) {
       this.intentionalDisconnect = false;
       // TODO: maybe also remove listeners here
 
-      return;
+      return false;
     }
     if (this.settings === undefined) {
       this.logger.error("Settings not provided for setupAutoConnect");
 
-      return;
+      return false;
     }
     // if disconnected: check in a reasonable interval if a port is available and then connect
     // else: just subscribe to the closed event once and if it is triggered start the disconnected
@@ -1816,7 +1878,7 @@ export default class Activator {
         0 &&
       !this.settings.getBoolean(SettingsKey.autoConnect)
     ) {
-      return;
+      return false;
     }
 
     const onAutoConnect = (): void => {
@@ -1896,6 +1958,8 @@ export default class Activator {
     onAutoConnect();
     // setup interval
     this.autoConnectTimer = setInterval(onAutoConnect, 1500);
+
+    return true;
   }
 
   private async checkForUSBMSDs(): Promise<void> {
@@ -1947,6 +2011,17 @@ export default class Activator {
     if (error === undefined) {
       this.logger.info(`Connection to board was closed.`);
       if (this.comDevice !== undefined) {
+        // check for running operation and cancel it
+        if (this.ui?.isUserOperationOngoing()) {
+          void vscode.window.showWarningMessage(
+            "Connection to board was closed. Stopping ongoing operation."
+          );
+          this.ui?.userOperationStopped();
+          this.commandExecuting = false;
+          // has no benefit as the terminal will be reloaded on reconnect anyway
+          //this.terminal?.restore();
+        }
+        // END
         void vscode.window.showInformationMessage("Disconnected from board.");
         this.terminal?.freeze();
         this.terminal?.write(
@@ -2058,7 +2133,8 @@ export default class Activator {
       bootPyResult.type === OperationResultType.getItemStat &&
       bootPyResult.stat !== null
     ) {
-      // warn that boot.py could prevent device from entering REPL or delay the amount we have to wait before we can reconnect
+      // warn that boot.py could prevent device from entering REPL or
+      // delay the amount we have to wait before we can reconnect
       const result = await vscode.window.showWarningMessage(
         "A boot.py script is present on the Pico. " +
           "If it contains an infinite loop or long running code, " +
@@ -2091,7 +2167,7 @@ export default class Activator {
     } catch (error) {
       this.logger.error(
         `Failed to redirect output to file: ${
-          error instanceof Error ? error.message : error
+          error instanceof Error ? error.message : (error as string)
         }`
       );
     }

@@ -149,18 +149,21 @@ export async function flashPicoInteractively(
 
   if (devices !== undefined) {
     const result = await window.showInformationMessage(
-      "Found a connected Pico in BOOTSEL mode. Before you can use it with " +
-        "this extension, you need to flash the MicroPython firmware to it. " +
-        "Do you want to flash it now? (Raspberry Pi boards only)",
+      "Found a connected Pico in BOOTSEL mode. Before using it with " +
+        "this extension, you need to flash the MicroPython firmware. " +
+        "Do you want to flash it now? " +
+        "(Auto-flash for Raspberry Pi boards only)",
       "Yes",
       "Flash manually",
-      "Search only for MicroPython boards"
+      "Don't ask again"
     );
 
     if (result !== "Yes") {
       if (result === "Flash manually") {
         // open micropython download website
         void env.openExternal(Uri.parse("https://micropython.org/download/"));
+
+        // TODO: maybe also search for drive and open it in system file explorer
       }
 
       //this.noCheckForUSBMSDs = true;

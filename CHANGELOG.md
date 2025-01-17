@@ -10,6 +10,15 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.2.0] - 2025-01-17
+
+### Changed
+
+- Updated dependencies
+- Configure project command has been renamed to `Initialize MicroPico project`
+- Fixed #269, Frozen 'Stop' button after running unplugging
+- Refined the disconnect behavior
+
 ## [4.1.0] - 2024-11-18
 
 ### Added

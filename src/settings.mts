@@ -163,6 +163,7 @@ export default class Settings {
   public async requestSyncFolder(
     actionTitle: string
   ): Promise<[string, string] | undefined> {
+    // eslint-disable-next-line prefer-const
     let [syncFolder, syncSettingNotSet] = this.getSyncFolderAbsPath();
     const projectDir = getProjectPath();
 

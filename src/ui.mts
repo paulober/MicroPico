@@ -107,9 +107,13 @@ export default class UI {
     this.lastState = connected;
     this.setButton(
       "status",
-      connected ? "check" : "chrome-close",
+      connected ? "check" : "debug-disconnect",
       connected ? "Pico Connected" : "Pico Disconnected"
     );
+  }
+
+  public setDisconnecting(): void {
+    this.setButton("status", "watch", "Closing port...");
   }
 
   public getState(): boolean {
