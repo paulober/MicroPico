@@ -673,7 +673,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^1.0.21",
+    "@paulober/pico-mpy-com": "^1.0.22",
     "@vscode/python-extension": "^1.0.5",
     "axios": "^1.7.7",
     "fs-extra": "^11.3.0",
