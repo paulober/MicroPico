@@ -21,7 +21,7 @@ import Stubs, {
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
 import Logger from "./logger.mjs";
-import { basename, dirname, join } from "path";
+import { basename, dirname, extname, join } from "path";
 import { PicoRemoteFileSystem } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { fileURLToPath } from "url";
@@ -63,6 +63,8 @@ export default class Activator {
   // to support different target if needed
   private outputRedirectionTarget?: string;
   private commandExecuting = false;
+
+  private disableExtWarning = false;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -426,14 +428,51 @@ export default class Activator {
     // [Command] Connect
     disposable = vscode.commands.registerCommand(
       commandPrefix + "connect",
-      () => {
-        /*this.comDevice = await this.settings?.getComDevice();
-        if (this.comDevice !== undefined) {
-          this.ui?.init();
-          // TODO: verify that this does allow smooth transition between serialport devices
-          await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-        }*/
-        this.setupAutoConnect();
+      async () => {
+        /*
+        this.comDevice = await this.settings?.getComDevice();
+          if (this.comDevice === undefined) {
+            if (this.settings?.getBoolean(SettingsKey.autoConnect)) {
+              void vscode.window.showErrorMessage(
+                "No COM device found! Starting auto connect..."
+              );
+            }
+          } else {
+            this.ui?.init();
+            // TODO: check if this is a smooth transition between serialport devices
+            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
+          }
+          this.setupAutoConnect();
+          */
+        if (!this.setupAutoConnect()) {
+          // auto connect is probably disable and no manual com device is set
+          const boards = await PicoMpyCom.getSerialPorts();
+          if (boards.length > 1) {
+            const comDevice = await vscode.window.showQuickPick(boards, {
+              placeHolder: "Select the board to connect to",
+              canPickMany: false,
+              ignoreFocusOut: false,
+              title: "Connect to Micropython board",
+            });
+
+            if (comDevice !== undefined) {
+              this.comDevice = comDevice;
+              await PicoMpyCom.getInstance().openSerialPort(comDevice);
+            }
+
+            return;
+          } else {
+            if (boards.length === 1) {
+              this.comDevice = boards[0];
+              await PicoMpyCom.getInstance().openSerialPort(boards[0]);
+            } else {
+              void vscode.window.showWarningMessage(
+                "No board running MicroPython has been found."
+              );
+              await this.checkForUSBMSDs();
+            }
+          }
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -442,9 +481,14 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "disconnect",
       async () => {
-        clearInterval(this.autoConnectTimer);
-        this.intentionalDisconnect = true;
-        await PicoMpyCom.getInstance().closeSerialPort();
+        if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+          clearInterval(this.autoConnectTimer);
+          this.intentionalDisconnect = true;
+          this.ui?.setDisconnecting();
+          // wait 1500ms
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          await PicoMpyCom.getInstance().closeSerialPort();
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -478,6 +522,26 @@ export default class Activator {
             return;
           }
         }
+
+        // check file extension
+        if (
+          !this.disableExtWarning &&
+          ![".py", ".mpy"].includes(extname(file))
+        ) {
+          // warn it's not a python file do you still want to run it
+          const choice = await vscode.window.showWarningMessage(
+            "The selected file is not a Python file. " +
+              "Do you still want to run it?",
+            "Yes",
+            "No",
+            "Yes, don't show this again"
+          );
+
+          if (choice !== "Yes") {
+            return;
+          }
+        }
+
         const forceDisableSoftReset =
           this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
@@ -1097,23 +1161,16 @@ export default class Activator {
     // [Command] Toggle connection
     disposable = vscode.commands.registerCommand(
       commandPrefix + "toggleConnect",
-      async () => {
+      () => {
+        // don't allow reconnect before port has been closed properly
+        if (this.intentionalDisconnect) {
+          return;
+        }
+
         if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-          clearInterval(this.autoConnectTimer);
-          this.intentionalDisconnect = true;
-          await PicoMpyCom.getInstance().closeSerialPort();
+          void vscode.commands.executeCommand(commandPrefix + "disconnect");
         } else {
-          this.comDevice = await this.settings?.getComDevice();
-          if (this.comDevice === undefined) {
-            void vscode.window.showErrorMessage(
-              "No COM device found! Starting auto connect..."
-            );
-          } else {
-            this.ui?.init();
-            // TODO: check if this is a smooth transition between serialport devices
-            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-          }
-          this.setupAutoConnect();
+          void vscode.commands.executeCommand(commandPrefix + "connect");
         }
       }
     );
@@ -1785,17 +1842,17 @@ export default class Activator {
    */
   private intentionalDisconnect = false;
 
-  private setupAutoConnect(): void {
+  private setupAutoConnect(): boolean {
     if (this.intentionalDisconnect) {
       this.intentionalDisconnect = false;
       // TODO: maybe also remove listeners here
 
-      return;
+      return false;
     }
     if (this.settings === undefined) {
       this.logger.error("Settings not provided for setupAutoConnect");
 
-      return;
+      return false;
     }
     // if disconnected: check in a reasonable interval if a port is available and then connect
     // else: just subscribe to the closed event once and if it is triggered start the disconnected
@@ -1818,7 +1875,7 @@ export default class Activator {
         0 &&
       !this.settings.getBoolean(SettingsKey.autoConnect)
     ) {
-      return;
+      return false;
     }
 
     const onAutoConnect = (): void => {
@@ -1898,6 +1955,8 @@ export default class Activator {
     onAutoConnect();
     // setup interval
     this.autoConnectTimer = setInterval(onAutoConnect, 1500);
+
+    return true;
   }
 
   private async checkForUSBMSDs(): Promise<void> {
