@@ -1739,8 +1739,11 @@ export default class Activator {
           case "$(arrow-right) File": {
             const file = await vscode.window.showSaveDialog({
               filters: {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 "Text files": ["txt"],
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 "Log files": ["log"],
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 "All files": ["*"],
               },
               saveLabel: "Save output to file",
