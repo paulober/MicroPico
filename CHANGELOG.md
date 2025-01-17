@@ -30,7 +30,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 ### Changed
 
 - Updated dependencies
-- Upgraded to `pyboard-serial-com` `v1.0.21` (Fixes #254)
+- Upgraded to `pico-mpy-com` `v1.0.21` (Fixes #254)
 - Better Python utilization in stub switcher
 - Switch to release build for Pico 2 auto installs
 - Configure project command has been renamed to `Setup MicroPico project`
