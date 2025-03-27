@@ -1,5 +1,5 @@
-import { window } from "vscode";
-import type { LogOutputChannel } from "vscode";
+import { env, window } from "vscode";
+import { type LogOutputChannel, LogLevel as VSCodeLogLevel } from "vscode";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 
@@ -21,6 +21,19 @@ interface Stringable {
   toString(): string;
 }
 
+function customLogLevelToVscode(logLevel: LogLevel): VSCodeLogLevel {
+  switch (logLevel) {
+    case "info":
+      return VSCodeLogLevel.Info;
+    case "warn":
+      return VSCodeLogLevel.Warning;
+    case "error":
+      return VSCodeLogLevel.Error;
+    case "debug":
+      return VSCodeLogLevel.Debug;
+  }
+}
+
 export default class Logger {
   private className: string;
   private static outputChannel?: LogOutputChannel;
@@ -33,6 +46,7 @@ export default class Logger {
       /*Logger.outputChannel = window.createOutputChannel("Pico-W-Go", {
         log: true,
       });*/
+      //env.logLevel = customLogLevelToVscode(logLevel);
       Logger.outputChannel = window.createOutputChannel("MicroPico", {
         log: true,
       });

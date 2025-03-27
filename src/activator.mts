@@ -65,6 +65,7 @@ export default class Activator {
   private commandExecuting = false;
 
   private disableExtWarning = false;
+  private statusbarMsgDisposable?: vscode.Disposable;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -542,13 +543,16 @@ export default class Activator {
           }
         }
 
+        if (await this.checkForRunningOperation()) {
+          return;
+        }
+
         const forceDisableSoftReset =
           this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
         if (!noSoftReset && !forceDisableSoftReset) {
           await PicoMpyCom.getInstance().softReset();
         }
-        await focusTerminal(this.terminalOptions);
         // TODO: maybe freeze terminal until this operation runs to prevent user input
         const data = await PicoMpyCom.getInstance().runFile(
           file,
@@ -557,6 +561,7 @@ export default class Activator {
               return;
             }
 
+            void focusTerminal(this.terminalOptions);
             this.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
@@ -610,6 +615,11 @@ export default class Activator {
 
           return;
         }
+
+        if (await this.checkForRunningOperation()) {
+          return;
+        }
+
         const forceDisableSoftReset =
           this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
@@ -2171,5 +2181,48 @@ export default class Activator {
         }`
       );
     }
+  }
+
+  /**
+   * Checks if there is a running operation and asks the user if it should be canceled.
+   *
+   * @returns `true` if the user does not want to cancel the already running
+   * operation, `false` otherwise.
+   */
+  private async checkForRunningOperation(): Promise<boolean> {
+    if (this.commandExecuting) {
+      // ask user if it want to cancel running operation or cancel the new one
+      const choice = await vscode.window.showWarningMessage(
+        "An operation is already running. Do you want to cancel it?",
+        {
+          modal: true,
+        },
+        "Yes",
+        "No"
+      );
+
+      if (choice === "Yes") {
+        if (this.commandExecuting) {
+          PicoMpyCom.getInstance().interruptExecution();
+
+          // wait for 500ms for operation to stop and clean up local state
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } else {
+        if (this.statusbarMsgDisposable) {
+          this.statusbarMsgDisposable.dispose();
+        }
+
+        // void vscode.window.showWarningMessage("Operation canceled.");
+        this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
+          "Operation canceled.",
+          5000
+        );
+
+        return true;
+      }
+    }
+
+    return false;
   }
 }
