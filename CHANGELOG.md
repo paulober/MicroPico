@@ -10,6 +10,14 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.2.2] - 2025-03-27
+
+### Changed
+
+- Updated dependencies
+- Updated included stubs to 1.24.* (Fix #289)
+- Fixed #288, Extension freezes when run command is triggered while a command is still running
+
 ## [4.2.0] - 2025-01-17
 
 ### Changed
