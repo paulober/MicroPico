@@ -50,6 +50,7 @@ export default class UI {
         item.tooltip
       );
     }
+    this.statusbarItemPriority = Object.keys(this.items).length;
 
     this.setState(false);
 
@@ -128,7 +129,7 @@ export default class UI {
     return;
   }
 
-  private statusbarItemPriority = 11;
+  private statusbarItemPriority = 14;
 
   private createStatusBarItem(
     key: string,
