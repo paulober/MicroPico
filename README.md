@@ -60,7 +60,7 @@ pin = Pin("LED", Pin.OUT)
 print("LED starts flashing...")
 while True:
     try:
-        pin.toggle()
+        pin.value(not pin.value())
         sleep(1) # sleep 1sec
     except KeyboardInterrupt:
         break
