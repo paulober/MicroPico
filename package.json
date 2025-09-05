@@ -85,6 +85,11 @@
         "category": "MicroPico"
       },
       {
+        "command": "micropico.newProject",
+        "title": "Create new Project",
+        "category": "MicroPico"
+      },
+      {
         "command": "micropico.upload",
         "title": "Upload project to Pico",
         "enablement": "micropico.isConnected && (resourceScheme != pico && isFileSystemResource) || inQuickOpen",
@@ -543,7 +548,14 @@
           "type": "webview"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "explorer",
+        "contents": "[Create MicroPico Project](command:micropico.newProject)",
+        "when": "workspaceFolderCount == 0"
+      }
+    ]
   },
   "statusBar": [
     {

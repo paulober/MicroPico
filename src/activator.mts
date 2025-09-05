@@ -38,7 +38,8 @@ import {
   PythonExtension,
 } from "@vscode/python-extension";
 import { flashPicoInteractively } from "./flash.mjs";
-import { appendFileSync } from "fs";
+import { appendFileSync, existsSync } from "fs";
+import { unknownErrorToString } from "./errorHelper.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -1767,6 +1768,117 @@ export default class Activator {
         }
       }
     );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "newProject",
+      async () => {
+        const result = await vscode.window.showOpenDialog({
+          canSelectFiles: false,
+          canSelectFolders: true,
+          canSelectMany: false,
+          openLabel: "Select",
+          title: "Select location for new project folder",
+        });
+
+        if (result === undefined || result.length === 0) {
+          return;
+        }
+
+        const folderUri = result[0];
+        const folderPath = folderUri.fsPath;
+
+        const projectName = await vscode.window.showInputBox({
+          prompt: "Enter the new project name",
+          placeHolder: "Project name",
+          validateInput: (value: string) => {
+            if (value.trim().length === 0) {
+              return "Project name cannot be empty.";
+            }
+            // check for invalid characters in folder names
+            // or reserved names
+            if (!this.isValidFolderName(value)) {
+              return (
+                "Project name contains invalid" +
+                " characters or is a reserved name."
+              );
+            }
+            if (existsSync(join(folderPath, value))) {
+              return (
+                "A folder with this name already" +
+                " exists in the selected location."
+              );
+            }
+
+            return null;
+          },
+        });
+
+        if (projectName === undefined || projectName.trim().length === 0) {
+          return;
+        }
+
+        const projectPath = join(folderPath, projectName);
+
+        try {
+          // create project folder
+          //await mkdir(projectPath);
+          await vscode.workspace.fs.createDirectory(
+            vscode.Uri.file(projectPath)
+          );
+
+          // also create a blink.py in it with a import machine
+          const blinkPyCode = `from machine import Pin
+from utime import sleep
+
+pin = Pin("LED", Pin.OUT)
+
+print("LED starts flashing...")
+while True:
+    try:
+        pin.toggle()
+        sleep(1) # sleep 1sec
+    except KeyboardInterrupt:
+        break
+pin.off()
+print("Finished.")\r\n`;
+          const filePath = join(projectPath, "blink.py");
+          await vscode.workspace.fs.writeFile(
+            vscode.Uri.file(filePath),
+            new TextEncoder().encode(blinkPyCode)
+          );
+
+          await vscode.commands.executeCommand(
+            commandPrefix + "initialise",
+            vscode.Uri.file(projectPath)
+          );
+
+          // wait 2 seconds to give user option to read notifications
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
+          const forceNewWindow =
+            vscode.workspace.workspaceFolders !== undefined &&
+            vscode.workspace.workspaceFolders.length > 0;
+          // open the folder in current window if no workspace is opened yet
+          // else open in new window
+          void vscode.commands.executeCommand(
+            "vscode.openFolder",
+            vscode.Uri.file(projectPath),
+            {
+              forceNewWindow,
+              forceReuseWindow: !forceNewWindow,
+            }
+          );
+        } catch (error) {
+          void vscode.window.showErrorMessage(
+            `Failed to create project folder: ${unknownErrorToString(error)}`
+          );
+
+          return;
+        }
+      }
+    );
+    context.subscriptions.push(disposable);
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
       context.extensionUri
@@ -2224,5 +2336,32 @@ export default class Activator {
     }
 
     return false;
+  }
+
+  private isValidFolderName(name: string): boolean {
+    // Check for invalid characters and reserved names
+    const invalidChars = /[<>:"/\\|?*]/g;
+    const reservedNames = ["CON", "PRN", "AUX", "NUL", "LPT", "COM"];
+
+    if (invalidChars.test(name)) {
+      return false;
+    }
+
+    // test for controll characters (ASCII 0–31)
+    for (let i = 0; i < name.length; i++) {
+      if (name.charCodeAt(i) < 32) {
+        return false;
+      }
+    }
+
+    const upperName = name.toUpperCase();
+    if (
+      reservedNames.includes(upperName) ||
+      /^(COM[1-9]|LPT[1-9])$/.test(upperName)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 }
