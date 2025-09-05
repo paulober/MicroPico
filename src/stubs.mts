@@ -105,7 +105,7 @@ export default class Stubs {
   }
 
   public async addToWorkspace(location?: string): Promise<void> {
-    const workspace = location ? location : getProjectPath();
+    const workspace = location ?? getProjectPath();
 
     // no folfer opened in vscode
     if (!workspace) {

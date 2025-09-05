@@ -21,6 +21,7 @@ interface Stringable {
   toString(): string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function customLogLevelToVscode(logLevel: LogLevel): VSCodeLogLevel {
   switch (logLevel) {
     case "info":
@@ -41,16 +42,14 @@ export default class Logger {
   constructor(className: string) {
     this.className = className;
 
-    if (Logger.outputChannel === undefined) {
-      // TODO: Does currently crash the auto reconnect after unplugging the device
-      /*Logger.outputChannel = window.createOutputChannel("Pico-W-Go", {
+    // TODO: Does currently crash the auto reconnect after unplugging the device
+    /*Logger.outputChannel = window.createOutputChannel("Pico-W-Go", {
         log: true,
       });*/
-      //env.logLevel = customLogLevelToVscode(logLevel);
-      Logger.outputChannel = window.createOutputChannel("MicroPico", {
-        log: true,
-      });
-    }
+    //env.logLevel = customLogLevelToVscode(logLevel);
+    Logger.outputChannel ??= window.createOutputChannel("MicroPico", {
+      log: true,
+    });
   }
 
   private shouldLog(level: LogLevel): boolean {
