@@ -10,6 +10,20 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.3.0] - 2025-09-06
+
+### Added
+
+- `micropico.newProject` command to create a new MicroPico project in a new or existing folder
+- "Create new MicroPico project" button to empty explorer view (#292)
+
+### Changed
+
+- Updated dependencies
+- Changed minimum Visual Studio Code version to `1.103.2`
+- Update MicroPthon stubs to `1.26.0` stable (Thanks to @Josverl)
+- Changed `toggle()` to `value()` in README example (#280 by @FunDeckHermit)
+
 ## [4.2.2] - 2025-03-27
 
 ### Changed
