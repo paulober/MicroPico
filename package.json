@@ -2,10 +2,10 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico boards running MicroPython firmware.",
-  "version": "4.2.2",
+  "version": "4.3.0",
   "publisher": "paulober",
   "license": "MPL-2.0",
-  "homepage": "https://github.com/paulober/MicroPico/blob/main/README.md",
+  "homepage": "https://github.com/paulober/MicroPico#readme",
   "bugs": {
     "url": "https://github.com/paulober/MicroPico/issues"
   },
@@ -20,8 +20,8 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.92.1",
-    "node": ">=20.14.0"
+    "vscode": "^1.103.2",
+    "node": ">=22.17.0"
   },
   "keywords": [
     "raspberry",
@@ -65,7 +65,7 @@
     "arm64",
     "arm"
   ],
-  "minimumNodeVersion": 20,
+  "minimumNodeVersion": 22,
   "contributes": {
     "commands": [
       {
@@ -82,6 +82,11 @@
         "command": "micropico.initialise",
         "title": "Initialize MicroPico project",
         "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
+        "category": "MicroPico"
+      },
+      {
+        "command": "micropico.newProject",
+        "title": "Create new Project",
         "category": "MicroPico"
       },
       {
@@ -543,7 +548,14 @@
           "type": "webview"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "explorer",
+        "contents": "[Create MicroPico Project](command:micropico.newProject)",
+        "when": "workspaceFolderCount == 0"
+      }
+    ]
   },
   "statusBar": [
     {
@@ -634,7 +646,7 @@
   "scripts": {
     "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
     "vscode:prepublish": "npm run package",
-    "postinstall": "patch-package && python3 -m pip install -U micropython-rp2-rpi_pico_w-stubs==1.24.* --target ./mpy_stubs --no-user",
+    "postinstall": "patch-package && python3 -m pip install -U micropython-rp2-rpi_pico2_w-stubs==1.26.* --target ./mpy_stubs --no-user",
     "cp-prebuilds": "cp -r node_modules/@serialport/bindings-cpp/prebuilds ./prebuilds",
     "compile-uninstaller": "rollup -c uninstall.rollup.config.mjs --environment BUILD:production",
     "compile": "rollup -c && npm run compile-uninstaller",
@@ -648,35 +660,35 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.23.0",
-    "@rollup/plugin-commonjs": "^28.0.3",
+    "@eslint/js": "^9.35.0",
+    "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@serialport/bindings-cpp": "^13.0.1",
     "@types/eslint": "^9.6.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/lodash": "^4.17.16",
-    "@types/node": "^20.14",
+    "@types/lodash": "^4.17.20",
+    "@types/node": "22.17.0",
     "@types/uuid": "^10.0.0",
-    "@types/vscode": "^1.92.0",
+    "@types/vscode": "^1.103.0",
     "@types/which": "^3.0.4",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.23.0",
-    "eslint-config-prettier": "^10.1.1",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
     "patch-package": "^8.0.0",
-    "rollup": "^4.37.0",
+    "rollup": "^4.50.0",
     "rollup-plugin-copy": "^3.5.0",
     "tslib": "^2.8.1",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.28.0"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^1.0.22",
-    "@vscode/python-extension": "^1.0.5",
+    "@paulober/pico-mpy-com": "^1.0.23",
+    "@vscode/python-extension": "^1.0.6",
     "axios": "^1.8.4",
-    "fs-extra": "^11.3.0",
+    "fs-extra": "^11.3.1",
     "lodash": "^4.17.21",
     "rimraf": "^6.0.1",
     "undici": "^6.21.1",

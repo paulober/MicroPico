@@ -299,11 +299,9 @@ export default class Settings {
     let typeshedStubsPath = typeshedPaths?.find(path =>
       path.includes(settingsStubsBasePath())
     );
-    if (typeshedStubsPath === undefined) {
-      typeshedStubsPath = extraPaths?.find(path =>
-        path.includes(settingsStubsBasePath())
-      );
-    }
+    typeshedStubsPath ??= extraPaths?.find(path =>
+      path.includes(settingsStubsBasePath())
+    );
     const version = typeshedStubsPath?.split("/").pop();
 
     return version;

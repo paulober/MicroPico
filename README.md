@@ -4,7 +4,7 @@
 
 **MicroPico** is a Visual Studio Code extension designed to simplify and accelerate the development of MicroPython projects for the Raspberry Pi Pico and Pico W boards. This tool streamlines the coding process, providing code highlighting, auto-completion, code snippets, and project management features, all tailored for the seamless development experience with MicroPython on Raspberry Pi Pico and Pico W microcontrollers.
 
-> __Included auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO_W-20241129-v1.24.1.uf2](https://micropython.org/resources/firmware/RPI_PICO_W-20241129-v1.24.1.uf2) from the [micropython-stubs project](https://github.com/Josverl/micropython-stubs)__
+> __Included auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO2_W-20250809-v1.26.0.uf2](https://micropython.org/resources/firmware/RPI_PICO2_W-20250809-v1.26.0.uf2) from the [micropython-stubs project](https://github.com/Josverl/micropython-stubs)__
 
 Works with:
 | Platform | x86 | arm64 | armhf |
@@ -29,7 +29,7 @@ Works with:
 
 ## Requirements
 
-* [Visual Studio Code v1.92.1 or newer](https://code.visualstudio.com/Download)
+* [Visual Studio Code v1.103.2 or newer](https://code.visualstudio.com/Download)
 * [Python 3.10 or newer](https://www.python.org/downloads/)
 
 * [MicroPython firmware](https://micropython.org/download) flashed onto the Raspberry Pi Pico:
@@ -47,7 +47,7 @@ On most Linux installations the device file of the Pico serial port is owned by 
 
 ## Getting started
 
-- First of all open a folder and run `> MicroPico > Initialize MicroPico Project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the autocompletion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in [\#Requirements](#requirements).
+- First of all open a folder and run `> MicroPico > Initialize MicroPico project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the autocompletion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in [\#Requirements](#requirements).
 
 - Have the onboard LED flashing in under 5 minutes:
 
@@ -60,7 +60,7 @@ pin = Pin("LED", Pin.OUT)
 print("LED starts flashing...")
 while True:
     try:
-        pin.toggle()
+        pin.value(not pin.value())
         sleep(1) # sleep 1sec
     except KeyboardInterrupt:
         break

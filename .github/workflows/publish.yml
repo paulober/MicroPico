@@ -12,15 +12,15 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Setup Node v20.9.0
-        uses: actions/setup-node@v4
+      - name: Setup Node v22.17.0
+        uses: actions/setup-node@v5
         with:
-          node-version: '20.14.0'
+          node-version: '22.17.0'
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
