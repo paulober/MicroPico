@@ -20,7 +20,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 ### Changed
 
 - Updated dependencies
-- Changed minimum Visual Studio Code version to `1.103.2`
+- Changed minimum Visual Studio Code version to `1.99.3`
 - Update MicroPthon stubs to `1.26.0` stable (Thanks to @Josverl)
 - Changed `toggle()` to `value()` in README example (#280 by @FunDeckHermit)
 
