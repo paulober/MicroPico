@@ -2,7 +2,7 @@
   "name": "pico-w-go",
   "displayName": "MicroPico",
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico boards running MicroPython firmware.",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "publisher": "paulober",
   "license": "MPL-2.0",
   "homepage": "https://github.com/paulober/MicroPico#readme",
@@ -646,8 +646,8 @@
   "scripts": {
     "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
     "vscode:prepublish": "npm run package",
-    "postinstall": "patch-package && python3 -m pip install -U micropython-rp2-rpi_pico2_w-stubs==1.26.* --target ./mpy_stubs --no-user",
-    "cp-prebuilds": "cp -r node_modules/@serialport/bindings-cpp/prebuilds ./prebuilds",
+    "postinstall": "patch-package && node ./scripts/postinstall.js",
+    "cp-prebuilds": "node -e \"const fs=require('fs');fs.rmSync('prebuilds',{recursive:true,force:true});fs.cpSync('node_modules/@serialport/bindings-cpp/prebuilds','prebuilds',{recursive:true});\"",
     "compile-uninstaller": "rollup -c uninstall.rollup.config.mjs --environment BUILD:production",
     "compile": "rollup -c && npm run compile-uninstaller",
     "watch": "npm run cp-prebuilds && rollup -cw",
@@ -660,7 +660,7 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
+    "@eslint/js": "^9.36.0",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
@@ -671,29 +671,28 @@
     "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.17.20",
     "@types/node": "^20.19",
-    "@types/uuid": "^10.0.0",
     "@types/vscode": "^1.99.1",
     "@types/which": "^3.0.4",
     "@vscode/test-electron": "^2.5.2",
-    "eslint": "^9.35.0",
+    "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
     "patch-package": "^8.0.0",
-    "rollup": "^4.50.0",
+    "rollup": "^4.52.2",
     "rollup-plugin-copy": "^3.5.0",
     "tslib": "^2.8.1",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.42.0"
+    "typescript-eslint": "^8.44.1"
   },
   "dependencies": {
     "@paulober/pico-mpy-com": "^1.0.23",
     "@vscode/python-extension": "^1.0.6",
-    "axios": "^1.12.0",
-    "fs-extra": "^11.3.1",
+    "axios": "^1.12.2",
+    "fs-extra": "^11.3.2",
     "lodash": "^4.17.21",
     "rimraf": "^6.0.1",
-    "undici": "^6.21.1",
-    "uuid": "^11.1.0",
+    "undici": "^7.16.0",
+    "uuid": "^13.0.0",
     "which": "^5.0.0"
   },
-  "packageManager": "npm@10.8.3+sha512.d08425c8062f56d43bb8e84315864218af2492eb769e1f1ca40740f44e85bd148969382d651660363942e5909cb7ffcbef7ca0ae963ddc2c57a51243b4da8f56"
+  "packageManager": "npm@11.6.0+sha512.77f3fb0dbbd881835d7bd1217deabdf7ed77fc4ec4f363df64fc3cb986404abf6c437661041080f5c5d225103508e7c9ea30cb2742b7e942675d05a10af2d7b9"
 }

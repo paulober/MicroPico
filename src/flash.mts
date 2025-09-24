@@ -218,18 +218,14 @@ export async function flashPicoInteractively(
 
     let wirelessFirmware = false;
 
-    // if the type is RP2040 ask if the user wants to flash Wireless firmware or not
-    // else just flash the non wireless firmware for the other boards
-    if (device?.is2040) {
-      const flashWireless = await window.showInformationMessage(
-        "Do you want to flash the Wireless firmware?",
-        "Yes",
-        "No"
-      );
+    const flashWireless = await window.showInformationMessage(
+      "Do you want to flash the Wireless firmware?",
+      "Yes",
+      "No"
+    );
 
-      if (flashWireless === "Yes") {
-        wirelessFirmware = true;
-      }
+    if (flashWireless === "Yes") {
+      wirelessFirmware = true;
     }
 
     let firmwareType: SupportedFirmwareTypes | undefined;
@@ -242,7 +238,9 @@ export async function flashPicoInteractively(
         break;
 
       case "RP2350":
-        firmwareType = SupportedFirmwareTypes.pico2;
+        firmwareType = wirelessFirmware
+          ? SupportedFirmwareTypes.pico2w
+          : SupportedFirmwareTypes.pico2;
         break;
     }
 

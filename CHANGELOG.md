@@ -10,6 +10,13 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.3.2] - 2025-09-24
+
+### Changed
+- Updated dependencies
+- Add support for Pico 2 W auto firmeware install
+
+## [4.3.1] - 2025-09-24
 ## [4.3.0] - 2025-09-06
 
 ### Added

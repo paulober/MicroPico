@@ -7,6 +7,7 @@ export enum SupportedFirmwareTypes {
   pico,
   picow,
   pico2,
+  pico2w,
 }
 
 function firmwareTypeToDownloadURL(
@@ -19,6 +20,8 @@ function firmwareTypeToDownloadURL(
       return "https://micropython.org/download/RPI_PICO_W/";
     case SupportedFirmwareTypes.pico2:
       return "https://micropython.org/download/RPI_PICO2/";
+    case SupportedFirmwareTypes.pico2w:
+      return "https://micropython.org/download/RPI_PICO2_W/";
   }
 }
 
