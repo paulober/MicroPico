@@ -1,4 +1,4 @@
-import { env, window } from "vscode";
+import { window } from "vscode";
 import { type LogOutputChannel, LogLevel as VSCodeLogLevel } from "vscode";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
