@@ -1,7 +1,6 @@
-import { lstat, readdirSync } from "fs";
+import { lstat, readdirSync, unlinkSync } from "fs";
 import { readFile, stat, writeFile } from "fs/promises";
 import { basename, join } from "path";
-import { rimrafSync } from "rimraf";
 
 export async function pathExists(path: string): Promise<boolean> {
   try {
@@ -53,8 +52,12 @@ export function removeJunction(junctionPath: string): Promise<boolean> {
         //reject(err);
         resolve(false);
       } else if (stats.isSymbolicLink()) {
-        const result = rimrafSync(junctionPath);
-        resolve(result);
+        try {
+          unlinkSync(junctionPath);
+          resolve(true);
+        } catch {
+          resolve(false);
+        }
       } else {
         //reject(new Error(`${junctionPath} is not a directory junction.`));
         resolve(false);

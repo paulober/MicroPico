@@ -1,36 +1,64 @@
+# ── Repo / tooling ─────────────────────────────────────────────────────────────
+.git/**
 .vscode/**
 .vscode-test/**
 .idea/**
+.github/**
+scripts/**
+
+# ── Build artifacts & dependencies (we bundle; keep prebuilds separately) ─────
 out/**
 node_modules/**
-!prebuilds
-patches/
+
+# ── Source & TS-only artifacts (webpack emits runtime JS) ─────────────────────
 src/**
+**/*.ts
+**/*.mts
+**/*.tsbuildinfo
+
+# ── Project/config files not needed in the VSIX ───────────────────────────────
 .gitignore
 .yarnrc
 *rollup.config.mjs
+*webpack.config.js
 **/tsconfig.json
 **/eslint.config.mjs
-vscodeUninstall.mjs
-**/*.ts
+azure-pipelines.yml
+patches/
 
-.github/**
-scripts/**
+# ── Large/media not needed ────────────────────────────────────────────────────
 images/*.xcf
 images/MicroPico-Socialmedia.png
 images/PicoWGo-Socialmedia.png
 
-# instance files
+# ── Misc local/CI artifacts ───────────────────────────────────────────────────
 connection_state.json
-azure-pipelines.yml
-
-# other
 *.vsix
+*.zip
 
-!dist/*.cjs
-!mpy_stubs/
-!web/
+# ── Python caches (global) ────────────────────────────────────────────────────
+**/__pycache__/**
+**/*.pyc
+
+# ── Exclude the source uninstaller; we ship the built one from dist ───────────
+vscodeUninstall.mjs
+
+# ── Re-include: runtime bundles, assets, docs, and prebuilds ──────────────────
+!dist/extension.js
+!dist/vscodeUninstall.mjs
+!dist/**/*.cjs
+!web/**
+!prebuilds/**
 !LICENSE.txt
 !README.md
 !CHANGELOG.md
 
+# ── mpy_stubs: keep stubs, drop caches and wheel metadata ─────────────────────
+mpy_stubs/**/__pycache__/**
+mpy_stubs/**/*.pyc
+mpy_stubs/**/*.pyo
+mpy_stubs/**/RECORD
+mpy_stubs/**/WHEEL
+mpy_stubs/**/METADATA
+mpy_stubs/**/REQUESTED
+mpy_stubs/**/INSTALLER

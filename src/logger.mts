@@ -1,5 +1,5 @@
 import { window } from "vscode";
-import { type LogOutputChannel, LogLevel as VSCodeLogLevel } from "vscode";
+import { type LogOutputChannel } from "vscode";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 
@@ -8,31 +8,13 @@ const logLevel: LogLevel = "debug";
 
 // ANSI escape code for red color
 const red = "\x1b[31m";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const green = "\x1b[32m";
 const yellow = "\x1b[33m";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const blue = "\x1b[34m";
 const magenta = "\x1b[35m";
 // ANSI escape code to reset color
 const reset = "\x1b[0m";
 
 interface Stringable {
   toString(): string;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function customLogLevelToVscode(logLevel: LogLevel): VSCodeLogLevel {
-  switch (logLevel) {
-    case "info":
-      return VSCodeLogLevel.Info;
-    case "warn":
-      return VSCodeLogLevel.Warning;
-    case "error":
-      return VSCodeLogLevel.Error;
-    case "debug":
-      return VSCodeLogLevel.Debug;
-  }
 }
 
 export default class Logger {

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { homedir } from "os";
 import { join } from "path";
-import { rimraf } from "rimraf";
+import { rm } from "fs/promises";
 
 function getVsCodeUserPath() {
   const homeDir = homedir();
@@ -28,10 +28,10 @@ function getVsCodeUserPath() {
 const stubsFolder = join(getVsCodeUserPath(), "Pico-W-Stub");
 const newStubsFolder = join(homedir(), ".micropico-stubs")
 
-const result = await rimraf(stubsFolder, { glob: false });
-console.log("Pico-W-Stub uninstall result: ", result ? "success" : "failure");
+await rm(stubsFolder, { recursive: true, force: true });
+console.log("Pico-W-Go stubs uninstall result: success");
 
-const result2 = await rimraf(newStubsFolder, { glob: false });
-console.log("New stubs uninstall result: ", result2 ? "success" : "failure");
+await rm(newStubsFolder, { recursive: true, force: true });
+console.log("MicroPico stubs uninstall result: success");
 
 /* eslint-enable */
