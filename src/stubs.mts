@@ -1,4 +1,4 @@
-import { commands, window } from "vscode";
+import { commands, Uri, window } from "vscode";
 import { join } from "path";
 import {
   getProjectPath,
@@ -28,7 +28,7 @@ import { strict as assert } from "assert";
 export default class Stubs {
   private logger: Logger;
 
-  constructor() {
+  constructor(private readonly extensionUri: Uri) {
     this.logger = new Logger("Stubs");
   }
 
@@ -39,6 +39,7 @@ export default class Stubs {
    */
   public async update(settings: Settings): Promise<void> {
     const installedStubsFolder = getStubsPathForVersion("included");
+    const currentFolder = Uri.joinPath(this.extensionUri, "mpy_stubs").fsPath;
 
     if (!(await pathExists(join(installedStubsFolder, "version.json")))) {
       // ensure config folder exists
@@ -56,8 +57,6 @@ export default class Stubs {
           installedVersion = installedMatchingFolders[0];
         }
       }
-
-      const currentFolder = join(__dirname, "..", "mpy_stubs");
 
       if (await pathExists(currentFolder)) {
         const currentMatchingFolders = (await readdir(currentFolder)).filter(
@@ -86,7 +85,7 @@ export default class Stubs {
     try {
       // update stubs folder
       await emptyDir(installedStubsFolder);
-      await copy(join(__dirname, "..", "mpy_stubs"), installedStubsFolder);
+      await copy(currentFolder, installedStubsFolder);
 
       this.logger.info("Updated stubs successfully!");
 

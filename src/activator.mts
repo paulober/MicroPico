@@ -21,10 +21,9 @@ import Stubs, {
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
 import Logger from "./logger.mjs";
-import { basename, dirname, extname, join } from "path";
+import { basename, extname, join } from "path";
 import { PicoRemoteFileSystem } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
-import { fileURLToPath } from "url";
 import { ContextKeys } from "./models/contextKeys.mjs";
 import DeviceWifiProvider from "./activitybar/deviceWifiTree.mjs";
 import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
@@ -100,7 +99,7 @@ export default class Activator {
       true
     );
 
-    this.stubs = new Stubs();
+    this.stubs = new Stubs(context.extensionUri);
     await this.stubs.update(this.settings);
 
     const workspaceFolder = vscode.workspace.workspaceFolders;
@@ -275,13 +274,10 @@ export default class Activator {
 
     this.terminalOptions = {
       name: TERMINAL_NAME,
-      iconPath: vscode.Uri.file(
-        join(
-          dirname(fileURLToPath(import.meta.url)),
-          "..",
-          "images",
-          "logo-256.png"
-        )
+      iconPath: vscode.Uri.joinPath(
+        context.extensionUri,
+        "images",
+        "logo-256.png"
       ),
       isTransient: true,
       pty: this.terminal,
@@ -1246,7 +1242,7 @@ export default class Activator {
             enableScripts: false,
             // Only allow the webview to access resources in our extension's media directory
             localResourceRoots: [
-              vscode.Uri.file(join(context.extensionPath, "images")),
+              vscode.Uri.joinPath(context.extensionUri, "images"),
             ],
           }
         );
