@@ -672,7 +672,7 @@
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
-    "patch-package": "^8.0.0",
+    "patch-package": "^8.0.1",
     "ts-loader": "^9.5.4",
     "tslib": "^2.8.1",
     "typescript": "^5.9.2",
