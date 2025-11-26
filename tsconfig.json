@@ -5,18 +5,20 @@
     "lib": [
       "ES2022"
     ],
-    "sourceMap": false,
-    "inlineSourceMap": true,
+    "sourceMap": true,
+    "inlineSourceMap": false,
+    "noEmit": true,
     "removeComments": true,
     "noUnusedLocals": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "out",
     "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node16"
+    "moduleResolution": "node16",
+    "esModuleInterop": true
   }
 }

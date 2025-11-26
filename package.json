@@ -54,7 +54,7 @@
     "workspaceContains:.micropico",
     "onFileSystem:pico"
   ],
-  "main": "./dist/extension",
+  "main": "./dist/extension.js",
   "os": [
     "win32",
     "darwin",
@@ -648,8 +648,8 @@
     "vscode:prepublish": "npm run package",
     "postinstall": "patch-package && node ./scripts/postinstall.mjs",
     "cp-prebuilds": "node -e \"const fs=require('fs');fs.rmSync('prebuilds',{recursive:true,force:true});fs.cpSync('node_modules/@serialport/bindings-cpp/prebuilds','prebuilds',{recursive:true});\"",
-    "compile": "tsc --build tsconfig.json",
-    "watch": "npm run cp-prebuilds && tsc --build tsconfig.json --watch",
+    "compile": "tsc --build tsconfig.json --noEmit false",
+    "watch": "npm run cp-prebuilds && webpack --watch --mode development",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "package-local": "npm run clean && webpack --mode production && npm run cp-prebuilds",
     "package": "npm run clean && webpack --mode production",
