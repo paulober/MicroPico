@@ -10,6 +10,12 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.3.4] - 2025-11-28
+
+### Changed
+- Updated dependencies
+- Fix unicode decoding on vREPL
+
 ## [4.3.2] - 2025-09-24
 
 ### Changed

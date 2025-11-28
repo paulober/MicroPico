@@ -39,6 +39,7 @@ import {
 import { flashPicoInteractively } from "./flash.mjs";
 import { appendFileSync, existsSync } from "fs";
 import { unknownErrorToString } from "./errorHelper.mjs";
+import { StringDecoder } from "string_decoder";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -201,6 +202,7 @@ export default class Activator {
         return;
       }
 
+      const decoder = new StringDecoder("utf-8");
       // TODO: maybe this.ui?.userOperationStarted();
       // this will make waiting for prompt falsethis.terminal.freeze();
       this.commandExecuting = true;
@@ -216,7 +218,10 @@ export default class Activator {
         (data: Buffer) => {
           if (data.length > 0) {
             this.redirectOutput(data);
-            this.terminal?.write(data.toString("utf-8"));
+            const text = decoder.write(data); // streaming decode
+            if (text.length > 0) {
+              this.terminal?.write(text);
+            }
           }
         },
         this.pythonPath,
@@ -550,6 +555,7 @@ export default class Activator {
         if (!noSoftReset && !forceDisableSoftReset) {
           await PicoMpyCom.getInstance().softReset();
         }
+        const decoder = new StringDecoder("utf-8");
         // TODO: maybe freeze terminal until this operation runs to prevent user input
         const data = await PicoMpyCom.getInstance().runFile(
           file,
@@ -566,7 +572,10 @@ export default class Activator {
           (data: Buffer) => {
             if (data.length > 0) {
               this.redirectOutput(data);
-              this.terminal?.write(data.toString("utf-8"));
+              const text = decoder.write(data); // streaming decode
+              if (text.length > 0) {
+                this.terminal?.write(text);
+              }
             }
           }
         );
@@ -624,6 +633,7 @@ export default class Activator {
           await PicoMpyCom.getInstance().softReset();
         }
         await focusTerminal(this.terminalOptions);
+        const decoder = new StringDecoder("utf-8");
         await PicoMpyCom.getInstance().runRemoteFile(
           file,
           (open: boolean) => {
@@ -640,7 +650,10 @@ export default class Activator {
           (data: Buffer) => {
             if (data.length > 0) {
               this.redirectOutput(data);
-              this.terminal?.write(data.toString("utf-8"));
+              const text = decoder.write(data); // streaming decode
+              if (text.length > 0) {
+                this.terminal?.write(text);
+              }
             }
           }
         );
@@ -680,6 +693,7 @@ export default class Activator {
           return;
         } else {
           await focusTerminal(this.terminalOptions);
+          const decoder = new StringDecoder("utf-8");
           const data = await PicoMpyCom.getInstance().runFriendlyCommand(
             code,
             (open: boolean) => {
@@ -695,7 +709,10 @@ export default class Activator {
             (data: Buffer) => {
               if (data.length > 0) {
                 this.redirectOutput(data);
-                this.terminal?.write(data.toString("utf-8"));
+                const text = decoder.write(data); // streaming decode
+                if (text.length > 0) {
+                  this.terminal?.write(text);
+                }
               }
             },
             this.pythonPath,
@@ -1420,6 +1437,7 @@ export default class Activator {
         }
 
         await focusTerminal(this.terminalOptions);
+        const decoder = new StringDecoder("utf-8");
         const result = await PicoMpyCom.getInstance().hardReset(
           (open: boolean) => {
             if (!open) {
@@ -1435,7 +1453,10 @@ export default class Activator {
           },
           (data: Buffer) => {
             this.redirectOutput(data);
-            this.terminal?.write(data.toString("utf-8"));
+            const text = decoder.write(data); // streaming decode
+            if (text.length > 0) {
+              this.terminal?.write(text);
+            }
           }
         );
         this.terminal?.restore();
@@ -1464,6 +1485,7 @@ export default class Activator {
         }
 
         await focusTerminal(this.terminalOptions);
+        const decoder = new StringDecoder("utf-8");
         const result = await PicoMpyCom.getInstance().sendCtrlD(
           (open: boolean) => {
             if (open) {
@@ -1476,7 +1498,10 @@ export default class Activator {
           },
           (data: Buffer) => {
             this.redirectOutput(data);
-            this.terminal?.write(data.toString("utf-8"));
+            const text = decoder.write(data); // streaming decode
+            if (text.length > 0) {
+              this.terminal?.write(text);
+            }
           }
         );
         this.commandExecuting = false;
