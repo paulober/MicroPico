@@ -36,10 +36,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           cache: 'npm'
 
-      - name: Setup Python v3.12
+      - name: Setup Python v3.14
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       - name: Install NPM Dependencies And Download Stubs
         shell: bash
