@@ -165,7 +165,7 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
             this._isDisabled
               ? "<p>Your board must be connected to Wifi for this feature to work</p>"
               : `
-          <input type="text" id="packageInput" placeholder="mip package" style=""/>
+          <input type="text" id="packageInput" placeholder="Enter package name" style=""/>
           <button id="installButton"><strong>Install</strong></button>`
           }
           
