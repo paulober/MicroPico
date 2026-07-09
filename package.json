@@ -685,7 +685,7 @@
     "@vscode/python-extension": "^1.0.6",
     "axios": "^1.13.2",
     "fs-extra": "^11.3.2",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "undici": "^7.16.0",
     "uuid": "^13.0.0",
     "which": "^5.0.0"
