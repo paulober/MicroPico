@@ -64,5 +64,13 @@ export default tseslint.config(
             "no-unexpected-multiline": "error",
             "prefer-const": "warn",
         }
+    },
+    {
+        files: ["src/**/*.test.mts"],
+        rules: {
+            // node:test's test()/describe() return promises that the runner
+            // awaits itself, so treating them as floating is a false positive.
+            "@typescript-eslint/no-floating-promises": "off",
+        },
     }
 );

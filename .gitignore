@@ -481,3 +481,5 @@ fabric.properties
 mpy_stubs/
 prebuilds/
 pico-mpy-com/
+
+test-out/

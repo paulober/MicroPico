@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "node16",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "node16",
+    "rootDir": "src",
+    "outDir": "test-out",
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "declaration": false,
+    "sourceMap": false,
+    "removeComments": true
+  },
+  "include": ["src/**/*.test.mts"],
+  "exclude": ["node_modules", "dist", "out", "pico-mpy-com"]
+}

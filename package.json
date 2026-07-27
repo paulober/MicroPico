@@ -675,11 +675,13 @@
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "package-local": "npm run clean && webpack --mode production && npm run cp-prebuilds",
     "package": "npm run clean && webpack --mode production",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "compile-tests": "tsc -p tsconfig.test.json",
+    "watch-tests": "tsc -p tsconfig.test.json -w",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint src",
-    "test": "node ./out/test/runTest.js"
+    "pretest": "node -e \"require('fs').rmSync('test-out',{recursive:true,force:true})\"",
+    "test": "npm run compile-tests && node --test \"test-out/**/*.test.mjs\"",
+    "verify:vsix": "node ./scripts/check-vsix.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
