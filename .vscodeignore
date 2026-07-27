@@ -9,6 +9,7 @@ scripts/**
 # ── Build artifacts & dependencies (we bundle; keep prebuilds separately) ─────
 out/**
 test-out/**
+test/**
 node_modules/**
 pico-mpy-com/**
 

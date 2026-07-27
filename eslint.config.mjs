@@ -66,11 +66,17 @@ export default tseslint.config(
         }
     },
     {
-        files: ["src/**/*.test.mts"],
+        files: ["src/**/*.test.mts", "src/test-support/**/*.mts"],
         rules: {
             // node:test's test()/describe() return promises that the runner
             // awaits itself, so treating them as floating is a false positive.
             "@typescript-eslint/no-floating-promises": "off",
+            // Test doubles/stubs intentionally omit return types and use loose
+            // shapes; strict production rules add noise without value here.
+            "@typescript-eslint/explicit-function-return-type": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unused-vars": "off",
+            "@typescript-eslint/no-empty-function": "off",
         },
     }
 );

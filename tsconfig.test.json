@@ -16,6 +16,6 @@
     "sourceMap": false,
     "removeComments": true
   },
-  "include": ["src/**/*.test.mts"],
+  "include": ["src/**/*.test.mts", "src/test-support/**/*.mts"],
   "exclude": ["node_modules", "dist", "out", "pico-mpy-com"]
 }

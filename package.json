@@ -680,7 +680,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint src",
     "pretest": "node -e \"require('fs').rmSync('test-out',{recursive:true,force:true})\"",
-    "test": "npm run compile-tests && node --test \"test-out/**/*.test.mjs\"",
+    "test": "npm run compile-tests && node --import ./test/register.mjs --test \"test-out/**/*.test.mjs\"",
     "verify:vsix": "node ./scripts/check-vsix.mjs"
   },
   "devDependencies": {
