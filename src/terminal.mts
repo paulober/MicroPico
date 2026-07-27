@@ -363,7 +363,10 @@ export class Terminal implements Pseudoterminal {
       this.writeEmitter.fire("\r\n");
       this.state.waitingForPrompt = true;
       this.history.add(input);
-      this.submitEmitter.fire("import uos; uos.listdir()\n");
+      // print() is required: this line is exec'd on the board (it is a
+      // statement + expression), and exec discards the expression value, so
+      // a bare `uos.listdir()` produces no output. See MicroPico #315.
+      this.submitEmitter.fire("import uos; print(uos.listdir())\n");
 
       return;
     } else if (input === ".rtc") {
