@@ -2,12 +2,13 @@ import type { Memento, Uri, WorkspaceConfiguration } from "vscode";
 import { window, workspace as vsWorkspace } from "vscode";
 import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
 import { dirname, join, relative } from "path";
-import { PicoMpyCom } from "@paulober/pico-mpy-com";
+import { PicoMpyCom, type VidPidPair } from "@paulober/pico-mpy-com";
 import { searchFile } from "./osHelper.mjs";
 
 export enum SettingsKey {
   autoConnect = "autoConnect",
   manualComDevice = "manualComDevice",
+  customVidPidPairs = "customVidPidPairs",
   syncFolder = "syncFolder",
   additionalSyncFolders = "additionalSyncFolders",
   syncAllFileTypes = "syncAllFileTypes",
@@ -72,6 +73,22 @@ export default class Settings {
     return Array.isArray(value) ? value : undefined;
   }
 
+  public getCustomVidPidPairs(): VidPidPair[] | undefined {
+    const value: unknown = this.get(SettingsKey.customVidPidPairs);
+    if (!Array.isArray(value)) {
+      return undefined;
+    }
+
+    // Validate and filter the array
+    return (value as unknown[]).filter(
+      (pair): pair is VidPidPair =>
+        typeof pair === "object" &&
+        pair !== null &&
+        typeof (pair as VidPidPair).vid === "number" &&
+        typeof (pair as VidPidPair).pid === "number",
+    );
+  }
+
   public update<T>(key: SettingsKey | string, value: T): Thenable<void> {
     return this.config.update(key, value, true);
   }
@@ -97,7 +114,8 @@ export default class Settings {
     if (this.getBoolean(SettingsKey.autoConnect) === true) {
       try {
         // process.env.NODE_ENV = "production";
-        const ports = await PicoMpyCom.getSerialPorts();
+        const customVidPidPairs = this.getCustomVidPidPairs();
+        const ports = await PicoMpyCom.getSerialPorts(customVidPidPairs);
         if (ports.length > 0) {
           return ports[0];
         }
@@ -108,7 +126,7 @@ export default class Settings {
           const message =
             typeof e === "string" ? e : e instanceof Error ? e.message : "";
           void window.showErrorMessage(
-            "Error while reading (COM) ports for autoConnect: " + message
+            "Error while reading (COM) ports for autoConnect: " + message,
           );
         }
       }
@@ -120,7 +138,7 @@ export default class Settings {
       void window.showErrorMessage(
         "No Pico has been found automatically " +
           "or the `autoConnect` setting has been disabled " +
-          "but no `manualComDevice` has been set."
+          "but no `manualComDevice` has been set.",
       );
     }
 
@@ -161,7 +179,7 @@ export default class Settings {
    * The absolute path to one sync folder]
    */
   public async requestSyncFolder(
-    actionTitle: string
+    actionTitle: string,
   ): Promise<[string, string] | undefined> {
     // eslint-disable-next-line prefer-const
     let [syncFolder, syncSettingNotSet] = this.getSyncFolderAbsPath();
@@ -184,23 +202,23 @@ export default class Settings {
         // update transparent to the user
         await this.updateWorkspaceFolder(
           SettingsKey.syncFolder,
-          relative(projectDir, actParent)
+          relative(projectDir, actParent),
         );
 
         void window.showWarningMessage(
           `Sync folder has been set to \`${relative(
             projectDir,
-            actParent
+            actParent,
           )}\` ` +
             "because the `.micropico` file was found in a subdirectory " +
             "and no sync folder was set. To disable this behavior, " +
-            "set a sync folder in the settings to `.` for the project root."
+            "set a sync folder in the settings to `.` for the project root.",
         );
       }
     }
 
     let additionalSyncFolders = this.getArray(
-      SettingsKey.additionalSyncFolders
+      SettingsKey.additionalSyncFolders,
     )?.map(sf => join(projectDir, sf));
 
     if (
@@ -247,7 +265,7 @@ export default class Settings {
   public getSyncFileTypes(): string[] {
     return this.getBoolean(SettingsKey.syncAllFileTypes)
       ? []
-      : this.getArray(SettingsKey.syncFileTypes) ?? [];
+      : (this.getArray(SettingsKey.syncFileTypes) ?? []);
   }
 
   public getIngoredSyncItems(): string[] {
@@ -269,12 +287,12 @@ export default class Settings {
     const filteredTypeshedPaths = typeshedPaths.filter(
       path =>
         !path.startsWith(settingsStubsBasePath()) &&
-        !path.includes("Pico-W-Stub")
+        !path.includes("Pico-W-Stub"),
     );
     const filteredExtraPaths = extraPaths.filter(
       path =>
         !path.startsWith(settingsStubsBasePath()) &&
-        !path.includes("Pico-W-Stub")
+        !path.includes("Pico-W-Stub"),
     );
 
     // Add newStubs to both arrays
@@ -297,10 +315,10 @@ export default class Settings {
     }
 
     let typeshedStubsPath = typeshedPaths?.find(path =>
-      path.includes(settingsStubsBasePath())
+      path.includes(settingsStubsBasePath()),
     );
     typeshedStubsPath ??= extraPaths?.find(path =>
-      path.includes(settingsStubsBasePath())
+      path.includes(settingsStubsBasePath()),
     );
     const version = typeshedStubsPath?.split("/").pop();
 

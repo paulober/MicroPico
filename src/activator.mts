@@ -73,7 +73,7 @@ export default class Activator {
   }
 
   public async activate(
-    context: vscode.ExtensionContext
+    context: vscode.ExtensionContext,
   ): Promise<UI | undefined> {
     // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
     this.settings = new Settings(context.workspaceState);
@@ -85,8 +85,8 @@ export default class Activator {
       pythonApi.environments.onDidChangeActiveEnvironmentPath(
         (e: ActiveEnvironmentPathChangeEvent) => {
           this.pythonPath = e.path;
-        }
-      )
+        },
+      ),
     );
     setImmediate(() => {
       // get currently selected environment
@@ -97,7 +97,7 @@ export default class Activator {
     void vscode.commands.executeCommand(
       "setContext",
       ContextKeys.isActivated,
-      true
+      true,
     );
 
     this.stubs = new Stubs(context.extensionUri);
@@ -112,13 +112,13 @@ export default class Activator {
         .stat(micropico)
         .then(
           () => true,
-          () => false
+          () => false,
         );
     }
 
     // TODO: maybe not call getComDevice if no activationFile is present
     this.comDevice = await this.settings.getComDevice(
-      !this.activationFilePresentAtLaunch
+      !this.activationFilePresentAtLaunch,
     );
 
     if (
@@ -134,7 +134,7 @@ export default class Activator {
             "setting to the path of your COM device in the settings but " +
             "make sure to deactivate autoConnect. For Linux users: check you " +
             "sufficient permission to access the device file of the Pico.",
-          "Open Settings"
+          "Open Settings",
         )
         .then((choice: "Open Settings" | undefined) => {
           if (choice === "Open Settings") {
@@ -165,7 +165,7 @@ export default class Activator {
       const result = await PicoMpyCom.getInstance().runCommand(
         "\rfrom sys import implementation as _pe_impl, version as _pe_vers\n" +
           "print(_pe_vers.split('; ')[1] + '; ' + _pe_impl._machine)\n" +
-          "del _pe_impl, _pe_vers"
+          "del _pe_impl, _pe_vers",
       );
       if (result.type === OperationResultType.commandResponse) {
         return (
@@ -190,7 +190,7 @@ export default class Activator {
       if (this.commandExecuting) {
         PicoMpyCom.getInstance().emit(
           PicoSerialEvents.relayInput,
-          Buffer.from(cmd.trim(), "utf-8")
+          Buffer.from(cmd.trim(), "utf-8"),
         );
 
         return;
@@ -225,7 +225,7 @@ export default class Activator {
           }
         },
         this.pythonPath,
-        true
+        true,
       );
       if (result.type !== OperationResultType.commandResult || !result.result) {
         // write red text into terminal
@@ -244,9 +244,8 @@ export default class Activator {
       this.terminal?.freeze();
       const nlIdx = buf.lastIndexOf("\n");
       const lastLineTrimmed = buf.slice(nlIdx + 1).trim();
-      const result = await PicoMpyCom.getInstance().retrieveTabCompletion(
-        lastLineTrimmed
-      );
+      const result =
+        await PicoMpyCom.getInstance().retrieveTabCompletion(lastLineTrimmed);
       // to be modified if simple tab completion
       let newUserInp = buf;
       if (
@@ -282,7 +281,7 @@ export default class Activator {
       iconPath: vscode.Uri.joinPath(
         context.extensionUri,
         "images",
-        "logo-256.png"
+        "logo-256.png",
       ),
       isTransient: true,
       pty: this.terminal,
@@ -300,7 +299,7 @@ export default class Activator {
             return undefined;
           }
         },
-      })
+      }),
     );
 
     context.subscriptions.push(
@@ -314,7 +313,7 @@ export default class Activator {
             // this situation can occur
             if (
               vscode.window.terminals.filter(
-                t => t.creationOptions.name === TERMINAL_NAME
+                t => t.creationOptions.name === TERMINAL_NAME,
               ).length < 2
             ) {
               return;
@@ -322,7 +321,7 @@ export default class Activator {
 
             void vscode.window.showWarningMessage(
               "Only one instance of MicroPico vREPL is recommended. " +
-                "Closing new instance."
+                "Closing new instance.",
             );
             // would freeze old terminal if this is not set
             this.terminal.awaitClose();
@@ -338,7 +337,7 @@ export default class Activator {
             //newTerminal.sendText("\n");
           }
         }
-      })
+      }),
     );
 
     /*
@@ -360,7 +359,7 @@ export default class Activator {
       vscode.workspace.registerFileSystemProvider("pico", this.picoFs, {
         isCaseSensitive: true,
         isReadonly: false,
-      })
+      }),
     );
 
     if (
@@ -377,10 +376,10 @@ export default class Activator {
       function () {
         void vscode.env.openExternal(
           vscode.Uri.parse(
-            "https://github.com/paulober/MicroPico/blob/main/README.md"
-          )
+            "https://github.com/paulober/MicroPico/blob/main/README.md",
+          ),
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -389,7 +388,7 @@ export default class Activator {
       commandPrefix + "listCommands",
       () => {
         this.ui?.showQuickPick();
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -400,7 +399,7 @@ export default class Activator {
         // set python executable
         if (pythonExecutable !== undefined && pythonExecutable.length > 0) {
           await pythonApi.environments.updateActiveEnvironmentPath(
-            pythonExecutable
+            pythonExecutable,
           );
         }
 
@@ -424,7 +423,7 @@ export default class Activator {
           await vscode.commands.executeCommand(commandPrefix + "connect");
           this.ui?.show();
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -449,7 +448,42 @@ export default class Activator {
           */
         if (!this.setupAutoConnect()) {
           // auto connect is probably disable and no manual com device is set
-          const boards = await PicoMpyCom.getSerialPorts();
+          const customVidPidPairs = this.settings?.getCustomVidPidPairs();
+          const manualComDevice =
+            this.settings?.getString(SettingsKey.manualComDevice) ?? "";
+
+          // If manual COM device is set, try to connect directly
+          if (manualComDevice.length > 0) {
+            try {
+              const allPorts = await PicoMpyCom.getAllSerialPorts();
+
+              if (allPorts.includes(manualComDevice)) {
+                this.comDevice = manualComDevice;
+                await PicoMpyCom.getInstance().openSerialPort(manualComDevice);
+
+                return;
+              } else {
+                const availablePorts =
+                  allPorts.length > 0 ? allPorts.join(", ") : "none";
+                void vscode.window.showErrorMessage(
+                  `Manual COM device '${manualComDevice}' not found. ` +
+                    `Available ports: ${availablePorts}`,
+                );
+
+                return;
+              }
+            } catch (error) {
+              const errorMsg =
+                error instanceof Error ? error.message : String(error);
+              void vscode.window.showErrorMessage(
+                "Failed to connect to manual COM device: " + errorMsg,
+              );
+
+              return;
+            }
+          }
+
+          const boards = await PicoMpyCom.getSerialPorts(customVidPidPairs);
           if (boards.length > 1) {
             const comDevice = await vscode.window.showQuickPick(boards, {
               placeHolder: "Select the board to connect to",
@@ -470,13 +504,14 @@ export default class Activator {
               await PicoMpyCom.getInstance().openSerialPort(boards[0]);
             } else {
               void vscode.window.showWarningMessage(
-                "No board running MicroPython has been found."
+                "No board running MicroPython has been found. " +
+                  "Check your connection and VID/PID settings.",
               );
               await this.checkForUSBMSDs();
             }
           }
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -492,7 +527,7 @@ export default class Activator {
           await new Promise(resolve => setTimeout(resolve, 1500));
           await PicoMpyCom.getInstance().closeSerialPort();
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -502,7 +537,7 @@ export default class Activator {
       async (resourceURI?: vscode.Uri, noSoftReset = false) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -537,7 +572,7 @@ export default class Activator {
               "Do you still want to run it?",
             "Yes",
             "No",
-            "Yes, don't show this again"
+            "Yes, don't show this again",
           );
 
           if (choice !== "Yes") {
@@ -577,7 +612,7 @@ export default class Activator {
                 this.terminal?.write(text);
               }
             }
-          }
+          },
         );
         if (!noSoftReset && !forceDisableSoftReset) {
           await PicoMpyCom.getInstance().softReset();
@@ -588,7 +623,7 @@ export default class Activator {
         }
         this.commandExecuting = false;
         this.terminal?.restore();
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -597,7 +632,7 @@ export default class Activator {
       async (fileOverride?: string | vscode.Uri, noSoftReset = false) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -616,7 +651,7 @@ export default class Activator {
 
         if (file === undefined) {
           void vscode.window.showWarningMessage(
-            "No remote file open and focused."
+            "No remote file open and focused.",
           );
 
           return;
@@ -655,7 +690,7 @@ export default class Activator {
                 this.terminal?.write(text);
               }
             }
-          }
+          },
         );
         if (!noSoftReset && !forceDisableSoftReset) {
           await PicoMpyCom.getInstance().softReset();
@@ -663,7 +698,7 @@ export default class Activator {
         this.ui?.userOperationStopped();
         this.commandExecuting = false;
         this.terminal?.restore();
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -673,7 +708,7 @@ export default class Activator {
       async () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -716,7 +751,7 @@ export default class Activator {
               }
             },
             this.pythonPath,
-            true
+            true,
           );
           this.commandExecuting = false;
           this.ui?.userOperationStopped();
@@ -726,7 +761,7 @@ export default class Activator {
           }
           this.terminal?.restore();
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -736,14 +771,14 @@ export default class Activator {
       async () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
         }
         if (!this.settings) {
           void vscode.window.showErrorMessage(
-            "Failed to upload project. Settings not available."
+            "Failed to upload project. Settings not available.",
           );
 
           return;
@@ -754,7 +789,7 @@ export default class Activator {
 
         if (syncDir === undefined) {
           void vscode.window.showWarningMessage(
-            "Upload canceled. No sync folder selected."
+            "Upload canceled. No sync folder selected.",
           );
 
           return;
@@ -771,13 +806,13 @@ export default class Activator {
 
             return acc;
           },
-          ["**/.picowgo", "**/.micropico", "**/.DS_Store"]
+          ["**/.picowgo", "**/.micropico", "**/.DS_Store"],
         );
 
         if (this.settings.getBoolean(SettingsKey.gcBeforeUpload)) {
           // TODO: maybe do soft reboot instead of gc for bigger impact
           await PicoMpyCom.getInstance().runCommand(
-            "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc"
+            "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc",
           );
         }
 
@@ -791,8 +826,8 @@ export default class Activator {
             // cancellation is possible
             token.onCancellationRequested(
               PicoMpyCom.getInstance().interruptExecution.bind(
-                PicoMpyCom.getInstance()
-              )
+                PicoMpyCom.getInstance(),
+              ),
             );
 
             const data = await PicoMpyCom.getInstance().uploadProject(
@@ -802,14 +837,14 @@ export default class Activator {
               (
                 totalChunksCount: number,
                 currentChunk: number,
-                relativePath: string
+                relativePath: string,
               ) => {
                 if (currentChunk === 1) {
                   this.ui?.userOperationStarted();
                 }
                 this.logger.debug(
                   "upload progress: " +
-                    `${currentChunk}/${totalChunksCount} - ${relativePath}`
+                    `${currentChunk}/${totalChunksCount} - ${relativePath}`,
                 );
 
                 // increment progress bar
@@ -819,7 +854,7 @@ export default class Activator {
                   message: relativePath,
                 });
                 // message: sep + relative(syncDir[1], status.filePath),
-              }
+              },
             );
             this.ui?.userOperationStopped();
 
@@ -844,12 +879,12 @@ export default class Activator {
             if (this.settings!.getBoolean(SettingsKey.softResetAfterUpload)) {
               //await this.pyb?.softReset();
               await vscode.commands.executeCommand(
-                commandPrefix + "reset.soft.listen"
+                commandPrefix + "reset.soft.listen",
               );
             }
-          }
+          },
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -859,7 +894,7 @@ export default class Activator {
       async (resourceURI?: vscode.Uri) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -867,7 +902,7 @@ export default class Activator {
 
         if (!this.settings) {
           void vscode.window.showErrorMessage(
-            "Failed to upload file. Settings not available."
+            "Failed to upload file. Settings not available.",
           );
 
           return;
@@ -885,7 +920,7 @@ export default class Activator {
 
         if (this.settings.getBoolean(SettingsKey.gcBeforeUpload)) {
           await PicoMpyCom.getInstance().runCommand(
-            "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc"
+            "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc",
           );
         }
 
@@ -899,8 +934,8 @@ export default class Activator {
             // cancellation is possible
             token.onCancellationRequested(
               PicoMpyCom.getInstance().interruptExecution.bind(
-                PicoMpyCom.getInstance()
-              )
+                PicoMpyCom.getInstance(),
+              ),
             );
 
             const data = await PicoMpyCom.getInstance().uploadFiles(
@@ -910,7 +945,7 @@ export default class Activator {
               (
                 totalChunksCount: number,
                 currentChunk: number,
-                relativePath: string
+                relativePath: string,
               ) => {
                 if (currentChunk === 1) {
                   this.ui?.userOperationStarted();
@@ -925,7 +960,7 @@ export default class Activator {
                       : // TODO: maybe add something like: uploading...
                         relativePath,
                 });
-              }
+              },
             );
             this.ui?.userOperationStopped();
             if (data && data.type === OperationResultType.commandResult) {
@@ -935,10 +970,10 @@ export default class Activator {
                   vscode.Uri.from({
                     scheme: "pico",
                     path: "/" + basename(file),
-                  })
+                  }),
                 );
                 void vscode.window.showInformationMessage(
-                  `${file} was uploaded successfully.`
+                  `${file} was uploaded successfully.`,
                 );
                 // TODO: maybe make sure to set 100% if needed to make notification dissapear
                 //progress.report({ increment: 100 });
@@ -947,16 +982,16 @@ export default class Activator {
                 ) {
                   //await this.pyb?.softReset();
                   await vscode.commands.executeCommand(
-                    commandPrefix + "reset.soft.listen"
+                    commandPrefix + "reset.soft.listen",
                   );
                 }
               } else {
                 void vscode.window.showErrorMessage("File upload failed.");
               }
             }
-          }
+          },
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -965,14 +1000,14 @@ export default class Activator {
       async (resourceURI?: vscode.Uri) => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
         }
         if (!this.settings) {
           void vscode.window.showErrorMessage(
-            "Failed to download file. Settings not available."
+            "Failed to download file. Settings not available.",
           );
 
           return;
@@ -982,7 +1017,7 @@ export default class Activator {
 
         if (syncDir === undefined) {
           void vscode.window.showWarningMessage(
-            "Download canceled. No sync folder selected."
+            "Download canceled. No sync folder selected.",
           );
 
           return;
@@ -1008,8 +1043,8 @@ export default class Activator {
             // cancellation is possible
             token.onCancellationRequested(
               PicoMpyCom.getInstance().interruptExecution.bind(
-                PicoMpyCom.getInstance()
-              )
+                PicoMpyCom.getInstance(),
+              ),
             );
 
             const data = await PicoMpyCom.getInstance().downloadFiles(
@@ -1019,7 +1054,7 @@ export default class Activator {
               (
                 totalChunksCount: number,
                 currentChunk: number,
-                relativePath: string
+                relativePath: string,
               ) => {
                 if (currentChunk === 1) {
                   this.ui?.userOperationStarted();
@@ -1033,21 +1068,21 @@ export default class Activator {
                       : // TODO: maybe add something like: uploading...
                         relativePath,
                 });
-              }
+              },
             );
             this.ui?.userOperationStopped();
             if (data && data.type === OperationResultType.commandResult) {
               if (data.result) {
                 void vscode.window.showInformationMessage(
-                  `${file} was downloaded successfully.`
+                  `${file} was downloaded successfully.`,
                 );
               } else {
                 void vscode.window.showErrorMessage("File download failed.");
               }
             }
-          }
+          },
         );
-      }
+      },
     );
 
     // [Command] Download project
@@ -1057,14 +1092,14 @@ export default class Activator {
       async () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
         }
         if (!this.settings) {
           void vscode.window.showErrorMessage(
-            "Failed to download project. Settings not available."
+            "Failed to download project. Settings not available.",
           );
 
           return;
@@ -1075,7 +1110,7 @@ export default class Activator {
 
         if (syncDir === undefined) {
           void vscode.window.showWarningMessage(
-            "Download canceled. No sync folder selected."
+            "Download canceled. No sync folder selected.",
           );
 
           return;
@@ -1091,8 +1126,8 @@ export default class Activator {
             // cancellation is possible
             token.onCancellationRequested(
               PicoMpyCom.getInstance().interruptExecution.bind(
-                PicoMpyCom.getInstance()
-              )
+                PicoMpyCom.getInstance(),
+              ),
             );
 
             const data = await PicoMpyCom.getInstance().downloadProject(
@@ -1104,7 +1139,7 @@ export default class Activator {
               (
                 totalChunksCount: number,
                 currentChunk: number,
-                relativePath: string
+                relativePath: string,
               ) => {
                 if (currentChunk === 1) {
                   this.ui?.userOperationStarted();
@@ -1117,7 +1152,7 @@ export default class Activator {
                       ? "Project downloaded"
                       : relativePath,
                 });
-              }
+              },
             );
             this.ui?.userOperationStopped();
             if (data && data.type === OperationResultType.commandResult) {
@@ -1128,15 +1163,15 @@ export default class Activator {
                 });*/
                 // TODO: maybe second notification isn't needed
                 void vscode.window.showInformationMessage(
-                  "Project downloaded."
+                  "Project downloaded.",
                 );
               } else {
                 void vscode.window.showErrorMessage("Project download failed.");
               }
             }
-          }
+          },
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1146,7 +1181,7 @@ export default class Activator {
       async () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1156,29 +1191,29 @@ export default class Activator {
         if (data.type === OperationResultType.commandResult) {
           if (data.result) {
             void vscode.window.showInformationMessage(
-              "All files on Pico were deleted."
+              "All files on Pico were deleted.",
             );
           } else {
             void vscode.window.showErrorMessage(
-              "File deletion on Pico failed."
+              "File deletion on Pico failed.",
             );
           }
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
     // [Command] Global settings
     disposable = vscode.commands.registerCommand(
       commandPrefix + "globalSettings",
-      openSettings
+      openSettings,
     );
     context.subscriptions.push(disposable);
 
     // [Command] Workspace settings
     disposable = vscode.commands.registerCommand(
       commandPrefix + "workspaceSettings",
-      () => openSettings(true)
+      () => openSettings(true),
     );
     context.subscriptions.push(disposable);
 
@@ -1196,7 +1231,7 @@ export default class Activator {
         } else {
           void vscode.commands.executeCommand(commandPrefix + "connect");
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1205,7 +1240,7 @@ export default class Activator {
       commandPrefix + "toggleFileSystem",
       () => {
         const findWorkspace = vscode.workspace.workspaceFolders?.find(
-          folder => folder.uri.scheme === "pico"
+          folder => folder.uri.scheme === "pico",
         );
         if (findWorkspace !== undefined) {
           // remove findWorkspace
@@ -1216,7 +1251,7 @@ export default class Activator {
 
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1230,9 +1265,9 @@ export default class Activator {
           {
             uri: vscode.Uri.parse("pico://"),
             name: "Mpy Remote Workspace",
-          }
+          },
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1261,7 +1296,7 @@ export default class Activator {
             localResourceRoots: [
               vscode.Uri.joinPath(context.extensionUri, "images"),
             ],
-          }
+          },
         );
 
         panel.webview.html = this.getPinMapHtml(
@@ -1272,13 +1307,13 @@ export default class Activator {
                 join(
                   context.extensionPath,
                   "images",
-                  PICO_VARAINTS_PINOUTS[variantIdx]
-                )
-              )
+                  PICO_VARAINTS_PINOUTS[variantIdx],
+                ),
+              ),
             )
-            .toString()
+            .toString(),
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1286,21 +1321,22 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "extra.getSerial",
       async () => {
-        const ports = await PicoMpyCom.getSerialPorts();
+        const customVidPidPairs = this.settings?.getCustomVidPidPairs();
+        const ports = await PicoMpyCom.getSerialPorts(customVidPidPairs);
         if (ports.length > 1) {
           // TODO: maybe replace with quick pick in the future
           void vscode.window.showInformationMessage(
-            "Found: " + ports.join(", ")
+            "Found: " + ports.join(", "),
           );
         } else if (ports.length === 1) {
           writeIntoClipboard(ports[0]);
           void vscode.window.showInformationMessage(
-            `Found: ${ports[0]} (copied to clipboard).`
+            `Found: ${ports[0]} (copied to clipboard).`,
           );
         } else {
           void vscode.window.showWarningMessage("No connected Pico found.");
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1308,7 +1344,8 @@ export default class Activator {
     disposable = vscode.commands.registerCommand(
       commandPrefix + "switchPico",
       async () => {
-        const ports = await PicoMpyCom.getSerialPorts();
+        const customVidPidPairs = this.settings?.getCustomVidPidPairs();
+        const ports = await PicoMpyCom.getSerialPorts(customVidPidPairs);
         if (ports.length === 0) {
           void vscode.window.showErrorMessage("No connected Pico found!");
         }
@@ -1324,7 +1361,7 @@ export default class Activator {
           this.comDevice = port;
           await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1334,7 +1371,7 @@ export default class Activator {
       async () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1349,7 +1386,7 @@ export default class Activator {
           }
         }
         void vscode.window.showErrorMessage("Soft reset failed");
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1362,7 +1399,7 @@ export default class Activator {
         // case would be required to be implemented
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1382,8 +1419,8 @@ export default class Activator {
           async (progress, token) => {
             token.onCancellationRequested(
               PicoMpyCom.getInstance().interruptExecution.bind(
-                PicoMpyCom.getInstance()
-              )
+                PicoMpyCom.getInstance(),
+              ),
             );
 
             const result = await PicoMpyCom.getInstance().hardReset(
@@ -1393,22 +1430,22 @@ export default class Activator {
                 }
 
                 this.ui?.userOperationStarted();
-              }
+              },
             );
             progress.report({ increment: 100 });
             this.ui?.userOperationStopped();
             if (result.type === OperationResultType.commandResult) {
               if (result.result) {
                 void vscode.window.showInformationMessage(
-                  "Hard reset is done."
+                  "Hard reset is done.",
                 );
               } else {
                 void vscode.window.showErrorMessage("Hard reset has failed.");
               }
             }
-          }
+          },
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1421,7 +1458,7 @@ export default class Activator {
         // case would be required to be implemented
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1457,7 +1494,7 @@ export default class Activator {
             if (text.length > 0) {
               this.terminal?.write(text);
             }
-          }
+          },
         );
         this.terminal?.restore();
         this.commandExecuting = false;
@@ -1469,7 +1506,7 @@ export default class Activator {
             void vscode.window.showErrorMessage("Hard reset failed");
           }
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1478,7 +1515,7 @@ export default class Activator {
       async () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1502,14 +1539,14 @@ export default class Activator {
             if (text.length > 0) {
               this.terminal?.write(text);
             }
-          }
+          },
         );
         this.commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
             void vscode.window.showInformationMessage(
-              "Interactive Soft Reset finished"
+              "Interactive Soft Reset finished",
             );
           } else {
             void vscode.window.showErrorMessage("Soft reset failed");
@@ -1517,7 +1554,7 @@ export default class Activator {
         }
         this.terminal?.melt();
         this.terminal?.prompt(true);
-      }
+      },
     );
 
     disposable = vscode.commands.registerCommand(
@@ -1525,7 +1562,7 @@ export default class Activator {
       async () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1540,7 +1577,7 @@ export default class Activator {
             void vscode.window.showErrorMessage("RTC synchronization failed");
           }
         }
-      }
+      },
     );
 
     disposable = vscode.commands.registerCommand(
@@ -1560,7 +1597,7 @@ export default class Activator {
 
         // wait for the program to stop
         await new Promise(resolve => setTimeout(resolve, 100));
-      }
+      },
     );
 
     // [Command] Check for firmware updates
@@ -1568,9 +1605,9 @@ export default class Activator {
       commandPrefix + "extra.firmwareUpdates",
       () => {
         void vscode.env.openExternal(
-          vscode.Uri.parse("https://micropython.org/download/")
+          vscode.Uri.parse("https://micropython.org/download/"),
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1580,7 +1617,7 @@ export default class Activator {
       async () => {
         if (!this.settings) {
           void vscode.window.showErrorMessage(
-            "Failed to switch stubs. Settings not available."
+            "Failed to switch stubs. Settings not available.",
           );
 
           return;
@@ -1593,7 +1630,7 @@ export default class Activator {
             canPickMany: false,
             placeHolder: "Select the stubs port you want to use",
             ignoreFocusOut: false,
-          }
+          },
         );
 
         if (stubPort === undefined) {
@@ -1605,9 +1642,8 @@ export default class Activator {
 
           void vscode.window.showInformationMessage("Included stubs selected.");
         } else {
-          const availableStubVersions = await fetchAvailableStubsVersions(
-            stubPort
-          );
+          const availableStubVersions =
+            await fetchAvailableStubsVersions(stubPort);
           const versions: string[] = [];
 
           Object.entries(availableStubVersions).forEach(([key, values]) => {
@@ -1620,8 +1656,8 @@ export default class Activator {
                 // but still support multiple ports per selection
                 Object.keys(availableStubVersions).length > 1
                   ? `${stubPortToDisplayString(key)} - ${value}`
-                  : value
-              )
+                  : value,
+              ),
             );
           });
 
@@ -1656,7 +1692,7 @@ export default class Activator {
                   ? displayStringToStubPort(versionParts[0])
                   : versionParts[0],
                 this.settings!,
-                this.pythonPath
+                this.pythonPath,
               );
 
               if (result) {
@@ -1667,13 +1703,13 @@ export default class Activator {
                 void vscode.window.showInformationMessage("Stubs installed.");
               } else {
                 void vscode.window.showErrorMessage(
-                  "Stubs installation failed."
+                  "Stubs installation failed.",
                 );
               }
-            }
+            },
           );
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1682,7 +1718,7 @@ export default class Activator {
       () => {
         if (PicoMpyCom.getInstance().isPortDisconnected()) {
           void vscode.window.showWarningMessage(
-            "Please connect to the Pico first."
+            "Please connect to the Pico first.",
           );
 
           return;
@@ -1704,16 +1740,16 @@ export default class Activator {
               result.result
             ) {
               void vscode.window.showInformationMessage(
-                "Garbage collection done"
+                "Garbage collection done",
               );
 
               return;
             }
 
             void vscode.window.showErrorMessage("Garbage collection failed");
-          }
+          },
         );
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1730,7 +1766,7 @@ export default class Activator {
               "Make sure it is connected and in BOOTSEL mode. " +
               "You can verify this by checking if a drive " +
               "labeled RPI-RP2 or RP2350 is mounted.",
-          }
+          },
         );
 
         if (result === undefined) {
@@ -1738,7 +1774,7 @@ export default class Activator {
         }
 
         await flashPicoInteractively(true);
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1753,7 +1789,7 @@ export default class Activator {
             placeHolder: "Select the output location or manage settings",
             title: "Output redirection for this session",
             ignoreFocusOut: false,
-          }
+          },
         );
 
         switch (location) {
@@ -1765,7 +1801,7 @@ export default class Activator {
             void vscode.window.showInformationMessage(
               this.outputRedirectionTarget
                 ? `Output is redirected to: ${this.outputRedirectionTarget}`
-                : "Output redirection is disabled"
+                : "Output redirection is disabled",
             );
             break;
           case "$(arrow-right) File": {
@@ -1787,7 +1823,7 @@ export default class Activator {
             break;
           }
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
@@ -1845,7 +1881,7 @@ export default class Activator {
           // create project folder
           //await mkdir(projectPath);
           await vscode.workspace.fs.createDirectory(
-            vscode.Uri.file(projectPath)
+            vscode.Uri.file(projectPath),
           );
 
           // also create a blink.py in it with a import machine
@@ -1866,12 +1902,12 @@ print("Finished.")\r\n`;
           const filePath = join(projectPath, "blink.py");
           await vscode.workspace.fs.writeFile(
             vscode.Uri.file(filePath),
-            new TextEncoder().encode(blinkPyCode)
+            new TextEncoder().encode(blinkPyCode),
           );
 
           await vscode.commands.executeCommand(
             commandPrefix + "initialise",
-            vscode.Uri.file(projectPath)
+            vscode.Uri.file(projectPath),
           );
 
           // wait 2 seconds to give user option to read notifications
@@ -1888,56 +1924,56 @@ print("Finished.")\r\n`;
             {
               forceNewWindow,
               forceReuseWindow: !forceNewWindow,
-            }
+            },
           );
         } catch (error) {
           void vscode.window.showErrorMessage(
-            `Failed to create project folder: ${unknownErrorToString(error)}`
+            `Failed to create project folder: ${unknownErrorToString(error)}`,
           );
 
           return;
         }
-      }
+      },
     );
     context.subscriptions.push(disposable);
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
-      context.extensionUri
+      context.extensionUri,
     );
     const deviceWifiProvider = new DeviceWifiProvider(
       packagesWebviewProvider,
       // TODO: maybe use extensionUri
-      context.extensionPath
+      context.extensionPath,
     );
     disposable = vscode.commands.registerCommand(
       commandPrefix + "device-wifi.refresh",
       async () => {
         await deviceWifiProvider.checkConnection();
-      }
+      },
     );
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand(
       commandPrefix + "device-wifi.itemClicked",
-      deviceWifiProvider.elementSelected.bind(deviceWifiProvider)
+      deviceWifiProvider.elementSelected.bind(deviceWifiProvider),
     );
     context.subscriptions.push(disposable);
 
     disposable = vscode.window.registerWebviewViewProvider(
       PackagesWebviewProvider.viewType,
-      packagesWebviewProvider
+      packagesWebviewProvider,
     );
     context.subscriptions.push(disposable);
 
     disposable = vscode.window.registerTreeDataProvider(
       DeviceWifiProvider.viewType,
-      deviceWifiProvider
+      deviceWifiProvider,
     );
     context.subscriptions.push(disposable);
 
     // auto install selected stubs of a project they aren't installed yet
     // retuns null if stubs are installed and the pip package name plus version if not
     const stubsInstalledResult: string | null = await stubsInstalled(
-      this.settings
+      this.settings,
     );
     if (stubsInstalledResult !== null) {
       await vscode.window.withProgress(
@@ -1955,7 +1991,7 @@ print("Finished.")\r\n`;
           // TODO: implement cancellation
           const result = await installStubsByPipVersion(
             stubsInstalledResult,
-            this.settings!
+            this.settings!,
           );
 
           if (result) {
@@ -1964,15 +2000,15 @@ print("Finished.")\r\n`;
               message: "Stubs installed successfully.",
             });
             void vscode.window.showInformationMessage(
-              "Stubs installed successfully."
+              "Stubs installed successfully.",
             );
           } else {
             void vscode.window.showErrorMessage(
               "Stubs installation failed. " +
-                "Selecting a different version might help."
+                "Selecting a different version might help.",
             );
           }
-        }
+        },
       );
     }
 
@@ -2024,7 +2060,7 @@ print("Finished.")\r\n`;
       return false;
     }
 
-    const onAutoConnect = (): void => {
+    const onAutoConnect = async (): Promise<void> => {
       if (!PicoMpyCom.getInstance().isPortDisconnected()) {
         clearInterval(this.autoConnectTimer);
 
@@ -2038,6 +2074,7 @@ print("Finished.")\r\n`;
       const autoPort = this.settings?.getBoolean(SettingsKey.autoConnect);
       const manualComDevice =
         this.settings?.getString(SettingsKey.manualComDevice) ?? "";
+      const customVidPidPairs = this.settings?.getCustomVidPidPairs();
 
       // TODO: maybe not reconnect to this.comDevice if autoConnect is disabled
       if (
@@ -2048,7 +2085,46 @@ print("Finished.")\r\n`;
         return;
       }
 
-      PicoMpyCom.getSerialPorts()
+      // If manual COM device is set, try to connect directly without VID/PID filtering
+      if (manualComDevice.length > 0 && !autoPort) {
+        try {
+          // Verify the port exists by checking all available ports
+          const allPorts = await PicoMpyCom.getAllSerialPorts();
+
+          if (allPorts.includes(manualComDevice)) {
+            clearInterval(this.autoConnectTimer);
+            this.comDevice = manualComDevice;
+            await PicoMpyCom.getInstance().openSerialPort(manualComDevice);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            if (!PicoMpyCom.getInstance().isPortDisconnected()) {
+              return;
+            }
+
+            // If connection failed, restart the interval
+            this.autoConnectTimer = setInterval(
+              () => void onAutoConnect(),
+              1500,
+            );
+          } else {
+            // Port doesn't exist, log warning
+            this.logger.warn(
+              `Manual COM device '${manualComDevice}' not found in ` +
+                `available ports: ${allPorts.join(", ")}`,
+            );
+          }
+        } catch (error) {
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
+          this.logger.error(
+            "Failed to connect to manual COM device: " + errorMsg,
+          );
+        }
+
+        return;
+      }
+
+      PicoMpyCom.getSerialPorts(customVidPidPairs)
         .then(async ports => {
           if (ports.length === 0) {
             if (!this.noCheckForUSBMSDs) {
@@ -2080,17 +2156,10 @@ print("Finished.")\r\n`;
             this.comDevice = port;
             await PicoMpyCom.getInstance().openSerialPort(port);
             await new Promise(resolve => setTimeout(resolve, 1000));
-          } else if (
-            manualComDevice.length > 0 &&
-            ports.includes(manualComDevice)
-          ) {
-            this.comDevice = manualComDevice;
-            await PicoMpyCom.getInstance().openSerialPort(manualComDevice);
-            await new Promise(resolve => setTimeout(resolve, 1000));
           }
 
           // restart this interval
-          this.autoConnectTimer = setInterval(onAutoConnect, 1500);
+          this.autoConnectTimer = setInterval(() => void onAutoConnect(), 1500);
         })
         .catch(error => {
           this.logger.error("Failed to get serial ports: " + error);
@@ -2098,9 +2167,9 @@ print("Finished.")\r\n`;
     };
 
     // required because setInterval would call it first after 1500ms
-    onAutoConnect();
+    void onAutoConnect();
     // setup interval
-    this.autoConnectTimer = setInterval(onAutoConnect, 1500);
+    this.autoConnectTimer = setInterval(() => void onAutoConnect(), 1500);
 
     return true;
   }
@@ -2116,15 +2185,15 @@ print("Finished.")\r\n`;
         "Python path not found. Please check your Python environment.\n" +
           "See the Python extension for instructions on how to select " +
           "a Python interpreter.",
-        "Open Documentation"
+        "Open Documentation",
       )
       .then(selection => {
         if (selection?.toLocaleLowerCase().startsWith("open")) {
           vscode.env.openExternal(
             vscode.Uri.parse(
               // eslint-disable-next-line max-len
-              "https://code.visualstudio.com/docs/languages/python#_environments"
-            )
+              "https://code.visualstudio.com/docs/languages/python#_environments",
+            ),
           );
         }
       });
@@ -2136,8 +2205,8 @@ print("Finished.")\r\n`;
         error instanceof Error
           ? error.message
           : typeof error === "string"
-          ? error
-          : "Unknown error"
+            ? error
+            : "Unknown error",
       );
     }
   }
@@ -2157,7 +2226,7 @@ print("Finished.")\r\n`;
         // check for running operation and cancel it
         if (this.ui?.isUserOperationOngoing()) {
           void vscode.window.showWarningMessage(
-            "Connection to board was closed. Stopping ongoing operation."
+            "Connection to board was closed. Stopping ongoing operation.",
           );
           this.ui?.userOperationStopped();
           this.commandExecuting = false;
@@ -2168,7 +2237,7 @@ print("Finished.")\r\n`;
         void vscode.window.showInformationMessage("Disconnected from board.");
         this.terminal?.freeze();
         this.terminal?.write(
-          "\r\n\x1b[31mConnection has been closed.\x1b[0m\r\n"
+          "\r\n\x1b[31mConnection has been closed.\x1b[0m\r\n",
         );
         this.terminal?.clean();
       }
@@ -2178,7 +2247,7 @@ print("Finished.")\r\n`;
       this.logger.error(
         `Connection to board lost: ${
           error instanceof Error ? error.message : error
-        }`
+        }`,
       );
       void vscode.window.showErrorMessage("Connection to board has been lost.");
     }
@@ -2191,14 +2260,14 @@ print("Finished.")\r\n`;
     }
     if (!this.settings) {
       void vscode.window.showErrorMessage(
-        "Failed to connect to board. Settings not available."
+        "Failed to connect to board. Settings not available.",
       );
 
       return;
     }
 
     this.logger.debug(
-      "Connected to a board. Now executing *OnConnect stuff..."
+      "Connected to a board. Now executing *OnConnect stuff...",
     );
     this.logger.info("Connection to board successfully established");
 
@@ -2222,17 +2291,17 @@ print("Finished.")\r\n`;
     }
 
     void vscode.window.showInformationMessage(
-      "Connection to MicoPython board established."
+      "Connection to MicoPython board established.",
     );
 
     const scriptToExecute = this.settings.getString(
-      SettingsKey.executeOnConnect
+      SettingsKey.executeOnConnect,
     );
     if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
       void vscode.commands.executeCommand(
         commandPrefix + "remote.run",
         scriptToExecute,
-        true
+        true,
       );
     }
 
@@ -2284,13 +2353,13 @@ print("Finished.")\r\n`;
           "the Pico may not enter the REPL or take longer to do so. " +
           "Do you want to continue?",
         { modal: true },
-        "Yes"
+        "Yes",
       );
 
       return result !== "Yes";
     } else {
       void vscode.window.showErrorMessage(
-        "Failed to retrieve details about the boot.py file."
+        "Failed to retrieve details about the boot.py file.",
       );
     }
 
@@ -2311,7 +2380,7 @@ print("Finished.")\r\n`;
       this.logger.error(
         `Failed to redirect output to file: ${
           error instanceof Error ? error.message : (error as string)
-        }`
+        }`,
       );
     }
   }
@@ -2331,7 +2400,7 @@ print("Finished.")\r\n`;
           modal: true,
         },
         "Yes",
-        "No"
+        "No",
       );
 
       if (choice === "Yes") {
@@ -2349,7 +2418,7 @@ print("Finished.")\r\n`;
         // void vscode.window.showWarningMessage("Operation canceled.");
         this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
           "Operation canceled.",
-          5000
+          5000,
         );
 
         return true;
