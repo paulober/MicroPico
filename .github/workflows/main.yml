@@ -1,4 +1,4 @@
-name: Build MicroPico extension
+name: CI
 
 on:
   pull_request: ~
@@ -8,40 +8,42 @@ on:
     paths-ignore:
       - ".idea/**"
       - ".vscode/**"
-      - "scripts/**"
       - "**/*.md"
       - ".prettierrc.json"
       - "LICENSE"
       - ".editorconfig"
-      - ".eslintrc.json"
 
 permissions:
   contents: read
   packages: read
 
 jobs:
-  build:
-    name: "Build ubuntu-latest"
-    runs-on: ubuntu-latest
+  test:
+    name: Test ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup Node v22.20.0
+      - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: "22.17.0"
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
-          cache: 'npm'
+          cache: "npm"
 
-      - name: Setup Python v3.14
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: "3.14"
 
-      - name: Install NPM Dependencies And Download Stubs
+      - name: Install dependencies
         shell: bash
         run: |
           sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
@@ -49,20 +51,60 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get Short Commit SHA
-        run: |
-          short_sha=$(git rev-parse --short "$GITHUB_SHA")
-          echo "SHORT_SHA=${short_sha}" >> $GITHUB_ENV
+      - name: Lint
+        run: npm run lint
 
-      - name: Run Package Script
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+  build:
+    name: Build VSIX
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.17.0"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@paulober"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          cache: "npm"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
+          npm ci --no-audit
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify VSIX contents (leakage guard)
+        run: npm run verify:vsix
+
+      - name: Get short commit SHA
+        run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+
+      - name: Package
         run: |
           chmod +x ./scripts/package.sh
           ./scripts/package.sh
         env:
           RELEASE_TAG_NAME: ${{ env.SHORT_SHA }}
 
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: micropico-${{ env.SHORT_SHA }}.vsix
-          path: micropico-${{ env.SHORT_SHA }}.vsix
+          name: micropico-${{ env.SHORT_SHA }}
+          path: micropico-*.vsix

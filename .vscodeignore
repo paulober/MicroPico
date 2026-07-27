@@ -8,6 +8,7 @@ scripts/**
 
 # ── Build artifacts & dependencies (we bundle; keep prebuilds separately) ─────
 out/**
+test-out/**
 node_modules/**
 pico-mpy-com/**
 
@@ -22,7 +23,7 @@ src/**
 .yarnrc
 *rollup.config.mjs
 *webpack.config.js
-**/tsconfig.json
+**/tsconfig*.json
 **/eslint.config.mjs
 azure-pipelines.yml
 patches/
