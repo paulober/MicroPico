@@ -20,8 +20,8 @@
   },
   "markdown": "github",
   "engines": {
-    "vscode": "^1.99.3",
-    "node": ">=20.19"
+    "vscode": "^1.105.0",
+    "node": ">=22.19"
   },
   "keywords": [
     "raspberry",
@@ -362,13 +362,35 @@
           "description": "If autoConnect is set to false MicroPico will automatically connect to the serial port specified here.",
           "order": 3
         },
+        "micropico.customVidPidPairs": {
+          "type": "array",
+          "scope": "machine-overridable",
+          "items": {
+            "type": "object",
+            "properties": {
+              "vid": {
+                "type": "number",
+                "description": "Vendor ID (VID) in decimal (e.g., 1027 for 0x0403)"
+              },
+              "pid": {
+                "type": "number",
+                "description": "Product ID (PID) in decimal (e.g., 24592 for 0x6010)"
+              }
+            },
+            "required": ["vid", "pid"]
+          },
+          "default": [],
+          "title": "Custom VID/PID pairs",
+          "markdownDescription": "Additional USB Vendor ID (VID) and Product ID (PID) pairs to recognize as MicroPython boards. Useful for boards with custom USB-to-serial adapters not in the built-in list. Enter values in **decimal** format (e.g., `{\"vid\": 1027, \"pid\": 24592}` for FTDI FT2232H with VID 0x0403 and PID 0x6010).",
+          "order": 4
+        },
         "micropico.syncFolder": {
           "type": "string",
           "scope": "machine-overridable",
           "default": null,
           "title": "Sync Folder",
           "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
-          "order": 4
+          "order": 5
         },
         "micropico.additionalSyncFolders": {
           "type": "array",
@@ -380,7 +402,7 @@
           "default": [],
           "title": "Additional Sync Folders",
           "description": "Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.",
-          "order": 5
+          "order": 6
         },
         "micropico.syncAllFileTypes": {
           "type": "boolean",
@@ -388,7 +410,7 @@
           "default": false,
           "title": "Upload all file types",
           "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
-          "order": 6
+          "order": 7
         },
         "micropico.syncFileTypes": {
           "type": "array",
@@ -410,7 +432,7 @@
           ],
           "title": "Upload file types",
           "description": "All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action",
-          "order": 7
+          "order": 8
         },
         "micropico.pyIgnore": {
           "title": "Pyignore list",
@@ -433,7 +455,7 @@
             "**/.venv",
             "**/.idea"
           ],
-          "order": 8
+          "order": 9
         },
         "micropico.openOnStart": {
           "type": "boolean",
@@ -441,7 +463,7 @@
           "scope": "machine-overridable",
           "title": "Open on start",
           "description": "Automatically open the MicroPico vREPL after starting VS Code. Could cause random terminal freezes on Linux.",
-          "order": 9
+          "order": 10
         },
         "micropico.statusbarButtons": {
           "type": "array",
@@ -474,7 +496,7 @@
             "softreset",
             "togglepicowfs"
           ],
-          "order": 10
+          "order": 11
         },
         "micropico.gcBeforeUpload": {
           "type": "boolean",
@@ -482,7 +504,7 @@
           "scope": "machine-overridable",
           "title": "Garbage collection before upload",
           "description": "Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
-          "order": 11
+          "order": 12
         },
         "micropico.softResetAfterUpload": {
           "type": "boolean",
@@ -490,7 +512,7 @@
           "default": false,
           "title": "Soft-reset after upload",
           "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
-          "order": 12
+          "order": 13
         },
         "micropico.executeOnConnect": {
           "type": "string",
@@ -498,7 +520,7 @@
           "default": "",
           "title": "Script to execute on connect",
           "description": "Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable.",
-          "order": 13
+          "order": 14
         },
         "micropico.importOnConnect": {
           "type": "string",
@@ -506,7 +528,7 @@
           "default": "",
           "title": "MicroPython module to import on connect",
           "description": "A MicroPython module to import in vREPL on connect. Leave empty to disable.",
-          "order": 14
+          "order": 15
         },
         "micropico.noSoftResetOnRun": {
           "type": "boolean",
@@ -514,7 +536,7 @@
           "default": false,
           "title": "Disable the soft-resets before and after executing a file.",
           "description": "Soft-resets are used to clean REPL state so changes in classes and other structs are reflected correctly.",
-          "order": 15
+          "order": 16
         }
       }
     },
@@ -660,35 +682,35 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^9.39.4",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@serialport/bindings-cpp": "^13.0.1",
     "@types/eslint": "^9.6.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/lodash": "^4.17.21",
-    "@types/node": "^20.19",
-    "@types/vscode": "^1.99.1",
+    "@types/lodash": "^4.17.24",
+    "@types/node": "^22.19",
+    "@types/vscode": "^1.105.0",
     "@types/which": "^3.0.4",
     "@vscode/test-electron": "^2.5.2",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "patch-package": "^8.0.1",
     "ts-loader": "^9.5.4",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.48.0",
-    "webpack": "^5.103.0",
+    "typescript-eslint": "^8.57.0",
+    "webpack": "^5.105.4",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^1.0.23",
+    "@paulober/pico-mpy-com": "^1.0.26",
     "@vscode/python-extension": "^1.0.6",
-    "axios": "^1.13.2",
-    "fs-extra": "^11.3.2",
-    "lodash": "^4.17.21",
-    "undici": "^7.16.0",
+    "axios": "^1.13.6",
+    "fs-extra": "^11.3.4",
+    "lodash": "^4.17.23",
+    "undici": "^7.22.0",
     "uuid": "^13.0.0",
     "which": "^5.0.0"
   },
-  "packageManager": "npm@11.6.0+sha512.77f3fb0dbbd881835d7bd1217deabdf7ed77fc4ec4f363df64fc3cb986404abf6c437661041080f5c5d225103508e7c9ea30cb2742b7e942675d05a10af2d7b9"
+  "packageManager": "npm@11.11.0+sha512.f36811c4aae1fde639527368ae44c571d050006a608d67a191f195a801a52637a312d259186254aa3a3799b05335b7390539cf28656d18f0591a1125ba35f973"
 }
