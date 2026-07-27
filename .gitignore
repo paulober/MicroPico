@@ -480,3 +480,4 @@ fabric.properties
 *.zip
 mpy_stubs/
 prebuilds/
+pico-mpy-com/

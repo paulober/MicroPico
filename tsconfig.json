@@ -20,5 +20,9 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node16",
     "esModuleInterop": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "pico-mpy-com"
+  ]
 }
