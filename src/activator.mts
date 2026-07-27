@@ -547,7 +547,7 @@ export default class Activator {
 
         if (
           file === undefined ||
-          (resourceURI && resourceURI.scheme === "pico")
+          (resourceURI?.scheme === "pico")
         ) {
           file = await getFocusedFile(true);
           if (file === undefined) {
@@ -963,7 +963,7 @@ export default class Activator {
               },
             );
             this.ui?.userOperationStopped();
-            if (data && data.type === OperationResultType.commandResult) {
+            if (data?.type === OperationResultType.commandResult) {
               if (data.result) {
                 this.picoFs?.fileChanged(
                   vscode.FileChangeType.Created,
@@ -1071,7 +1071,7 @@ export default class Activator {
               },
             );
             this.ui?.userOperationStopped();
-            if (data && data.type === OperationResultType.commandResult) {
+            if (data?.type === OperationResultType.commandResult) {
               if (data.result) {
                 void vscode.window.showInformationMessage(
                   `${file} was downloaded successfully.`,
@@ -1155,7 +1155,7 @@ export default class Activator {
               },
             );
             this.ui?.userOperationStopped();
-            if (data && data.type === OperationResultType.commandResult) {
+            if (data?.type === OperationResultType.commandResult) {
               if (data.result) {
                 // TODO: maybe set to 100% if needed to make notification dissapear
                 /*progress.report({
