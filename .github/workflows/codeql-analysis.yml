@@ -43,7 +43,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - run: sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
+      - run: echo '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' >> .npmrc
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
@@ -63,7 +63,7 @@ jobs:
       - name: Install Dependencies for custom build
         shell: bash
         run: |
-          sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
+          echo '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' >> .npmrc
           npm ci --no-audit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

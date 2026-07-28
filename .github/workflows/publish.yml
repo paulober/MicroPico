@@ -33,7 +33,7 @@ jobs:
       - name: Install NPM dependencies And Download Stubs
         shell: bash
         run: |
-          sed -i '1i//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' .npmrc
+          echo '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' >> .npmrc
           npm ci --no-audit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
