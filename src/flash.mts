@@ -14,8 +14,10 @@ import {
   downloadFirmware,
   SupportedFirmwareTypes,
 } from "./downloadFirmware.mjs";
+import Logger from "./logger.mjs";
 
 const execAsync = promisify(exec);
+const logger = new Logger("Flash");
 
 export async function flashPicoInteractively(
   verbose = false
@@ -311,7 +313,7 @@ export async function flashPicoInteractively(
               : "Unknown error"
           );*/
 
-          console.error(
+          logger.error(
             error instanceof Error
               ? error.message
               : typeof error === "string"

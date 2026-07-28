@@ -25,6 +25,8 @@ import axios, { HttpStatusCode } from "axios";
 import type Settings from "./settings.mjs";
 import { strict as assert } from "assert";
 
+const logger = new Logger("Stubs");
+
 export default class Stubs {
   private logger: Logger;
 
@@ -305,7 +307,7 @@ export async function installStubsByVersion(
         command = "";
       }
     } catch (error) {
-      console.log(error);
+      logger.error(error instanceof Error ? error.message : String(error));
       void window.showErrorMessage(
         "python3 or py (with pip) is required (in PATH) to install" +
           " stubs different from the included ones."

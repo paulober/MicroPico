@@ -4,6 +4,9 @@ import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
 import { dirname, join, relative } from "path";
 import { PicoMpyCom, type VidPidPair } from "@paulober/pico-mpy-com";
 import { searchFile } from "./osHelper.mjs";
+import Logger from "./logger.mjs";
+
+const logger = new Logger("Settings");
 
 export enum SettingsKey {
   autoConnect = "autoConnect",
@@ -120,8 +123,7 @@ export default class Settings {
           return ports[0];
         }
       } catch (e) {
-        // TODO: use logger
-        console.error(e);
+        logger.error(e instanceof Error ? e.message : String(e));
         if (!silent) {
           const message =
             typeof e === "string" ? e : e instanceof Error ? e.message : "";

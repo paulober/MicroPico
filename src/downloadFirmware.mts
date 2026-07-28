@@ -2,6 +2,9 @@ import { tmpdir } from "os";
 import { basename, join } from "path";
 import { createWriteStream } from "fs";
 import { request } from "undici";
+import Logger from "./logger.mjs";
+
+const logger = new Logger("downloadFirmware");
 
 export enum SupportedFirmwareTypes {
   pico,
@@ -44,7 +47,7 @@ async function extractUf2Url(
       // Split the document at <h2>Firmware</h2>
       const splitHtml = html.split("<h2>Firmware</h2>");
       if (splitHtml.length < 2) {
-        console.log("No Firmware section found.");
+        logger.info("No Firmware section found.");
 
         return null;
       }
@@ -60,17 +63,21 @@ async function extractUf2Url(
       if (match?.[1]) {
         return match[1];
       } else {
-        console.log("No .uf2 link found inside <strong>.");
+        logger.info("No .uf2 link found inside <strong>.");
 
         return null;
       }
     } else {
-      console.log("The URL did not return HTML content.");
+      logger.info("The URL did not return HTML content.");
 
       return null;
     }
   } catch (error) {
-    console.error("Error fetching or processing the URL:", error);
+    logger.error(
+      `Error fetching or processing the URL: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
 
     return null;
   }
@@ -83,7 +90,7 @@ export async function downloadFirmware(
   const uf2Url = await extractUf2Url(url, false);
 
   if (!uf2Url) {
-    console.error("No UF2 URL found.");
+    logger.error("No UF2 URL found.");
 
     return;
   }
@@ -108,11 +115,15 @@ export async function downloadFirmware(
       fileStream.on("error", reject);
     });
 
-    console.log(`Firmware downloaded to: ${filePath}`);
+    logger.info(`Firmware downloaded to: ${filePath}`);
 
     return filePath;
   } catch (error) {
-    console.error("Error downloading the UF2 file:", error);
+    logger.error(
+      `Error downloading the UF2 file: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
 
     return;
   }

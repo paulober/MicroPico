@@ -1,6 +1,9 @@
 import { lstat, readdirSync, unlinkSync } from "fs";
 import { readFile, stat, writeFile } from "fs/promises";
 import { basename, join } from "path";
+import Logger from "./logger.mjs";
+
+const logger = new Logger("OSHelper");
 
 export async function pathExists(path: string): Promise<boolean> {
   try {
@@ -39,9 +42,7 @@ export async function writeJsonFile<T>(
   } catch (e) {
     const message =
       typeof e === "string" ? e : e instanceof Error ? e.message : "";
-    console.error(
-      `[MicroPico] [OSHelper] Error writing to ${path}: ${message}`
-    );
+    logger.error(`Error writing to ${path}: ${message}`);
   }
 }
 
