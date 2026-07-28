@@ -7,7 +7,6 @@ import {
   getFocusedFile,
   getSelectedCodeOrLine,
   openSettings,
-  writeIntoClipboard,
 } from "./api.mjs";
 import Stubs, {
   displayStringToStubPort,
@@ -45,11 +44,7 @@ import { appendFileSync, existsSync } from "fs";
 import { unknownErrorToString } from "./errorHelper.mjs";
 import { StringDecoder } from "string_decoder";
 import { isValidFolderName } from "./utils/folderName.mjs";
-import {
-  getPinMapHtml,
-  PICO_VARIANTS,
-  PICO_VARAINTS_PINOUTS,
-} from "./utils/pinMap.mjs";
+import { registerHelpCommands } from "./commands/helpCommands.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -380,30 +375,15 @@ export default class Activator {
       await focusTerminal(this.terminalOptions);
     }
 
-    // [Command] help
-    let disposable = vscode.commands.registerCommand(
-      commandPrefix + "help",
-      function () {
-        void vscode.env.openExternal(
-          vscode.Uri.parse(
-            "https://github.com/paulober/MicroPico/blob/main/README.md",
-          ),
-        );
-      },
-    );
-    context.subscriptions.push(disposable);
-
-    // [Command] List Commands
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "listCommands",
-      () => {
-        this.ui?.showQuickPick();
-      },
-    );
-    context.subscriptions.push(disposable);
+    // Informational/utility commands (help, list commands, pin map,
+    // list serial ports, firmware updates and flash Pico)
+    registerHelpCommands(context, {
+      ui: this.ui,
+      settings: this.settings,
+    });
 
     // [Command] Initialise
-    disposable = vscode.commands.registerCommand(
+    let disposable = vscode.commands.registerCommand(
       commandPrefix + "initialise",
       async (location?: string | vscode.Uri, pythonExecutable?: string) => {
         // set python executable
@@ -1281,75 +1261,6 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // [Command] Open pin map
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "extra.pins",
-      async () => {
-        const picoVariant = await vscode.window.showQuickPick(PICO_VARIANTS, {
-          canPickMany: false,
-          placeHolder: "Select your Pico variant",
-          ignoreFocusOut: false,
-        });
-
-        const variantIdx = PICO_VARIANTS.indexOf(picoVariant ?? "");
-        if (variantIdx < 0) {
-          return;
-        }
-
-        const panel = vscode.window.createWebviewPanel(
-          commandPrefix + "pinoout",
-          `${PICO_VARIANTS[variantIdx]} Pinout`,
-          vscode.ViewColumn.Active,
-          {
-            enableScripts: false,
-            // Only allow the webview to access resources in our extension's media directory
-            localResourceRoots: [
-              vscode.Uri.joinPath(context.extensionUri, "images"),
-            ],
-          },
-        );
-
-        panel.webview.html = getPinMapHtml(
-          PICO_VARIANTS[variantIdx],
-          panel.webview
-            .asWebviewUri(
-              vscode.Uri.file(
-                join(
-                  context.extensionPath,
-                  "images",
-                  PICO_VARAINTS_PINOUTS[variantIdx],
-                ),
-              ),
-            )
-            .toString(),
-        );
-      },
-    );
-    context.subscriptions.push(disposable);
-
-    // [Command] List all serial ports a Pico is connected to
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "extra.getSerial",
-      async () => {
-        const customVidPidPairs = this.settings?.getCustomVidPidPairs();
-        const ports = await PicoMpyCom.getSerialPorts(customVidPidPairs);
-        if (ports.length > 1) {
-          // TODO: maybe replace with quick pick in the future
-          void vscode.window.showInformationMessage(
-            "Found: " + ports.join(", "),
-          );
-        } else if (ports.length === 1) {
-          writeIntoClipboard(ports[0]);
-          void vscode.window.showInformationMessage(
-            `Found: ${ports[0]} (copied to clipboard).`,
-          );
-        } else {
-          void vscode.window.showWarningMessage("No connected Pico found.");
-        }
-      },
-    );
-    context.subscriptions.push(disposable);
-
     // [Command] Switch Pico
     disposable = vscode.commands.registerCommand(
       commandPrefix + "switchPico",
@@ -1610,18 +1521,7 @@ export default class Activator {
       },
     );
 
-    // [Command] Check for firmware updates
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "extra.firmwareUpdates",
-      () => {
-        void vscode.env.openExternal(
-          vscode.Uri.parse("https://micropython.org/download/"),
-        );
-      },
-    );
-    context.subscriptions.push(disposable);
-
-    // [Command] Check for firmware updates
+    // [Command] Switch stubs
     disposable = vscode.commands.registerCommand(
       commandPrefix + "extra.switchStubs",
       async () => {
@@ -1759,31 +1659,6 @@ export default class Activator {
             void vscode.window.showErrorMessage("Garbage collection failed");
           },
         );
-      },
-    );
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "flashPico",
-      async () => {
-        const result = await vscode.window.showInformationMessage(
-          "This will flash the latest MicroPython firmware to your Pico. " +
-            "Do you want to continue?",
-          {
-            modal: true,
-            detail:
-              "Note: Only Raspberry Pi Pico boards are supported. " +
-              "Make sure it is connected and in BOOTSEL mode. " +
-              "You can verify this by checking if a drive " +
-              "labeled RPI-RP2 or RP2350 is mounted.",
-          },
-        );
-
-        if (result === undefined) {
-          return;
-        }
-
-        await flashPicoInteractively(true);
       },
     );
     context.subscriptions.push(disposable);
