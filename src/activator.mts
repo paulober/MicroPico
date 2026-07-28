@@ -27,6 +27,10 @@ import { Terminal } from "./terminal.mjs";
 import { ContextKeys } from "./models/contextKeys.mjs";
 import DeviceWifiProvider from "./activitybar/deviceWifiTree.mjs";
 import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
+import PlotterViewProvider, {
+  PLOTTER_VIEW_ID,
+} from "./plotter/plotterView.mjs";
+import { PlotParser } from "./plotter/plotParser.mjs";
 import {
   OperationResultType,
   PicoMpyCom,
@@ -63,6 +67,8 @@ export default class Activator {
   // TODO: currently only used as file path - replace with proper type
   // to support different target if needed
   private outputRedirectionTarget?: string;
+  private plotterProvider?: PlotterViewProvider;
+  private readonly plotParser = new PlotParser();
   private commandExecuting = false;
 
   private disableExtWarning = false;
@@ -1964,6 +1970,18 @@ print("Finished.")\r\n`;
     );
     context.subscriptions.push(disposable);
 
+    this.plotterProvider = new PlotterViewProvider(context.extensionUri);
+    disposable = vscode.window.registerWebviewViewProvider(
+      PLOTTER_VIEW_ID,
+      this.plotterProvider,
+    );
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "openPlotter",
+      () => void vscode.commands.executeCommand(`${PLOTTER_VIEW_ID}.focus`),
+    );
+    context.subscriptions.push(disposable);
+
     disposable = vscode.window.registerTreeDataProvider(
       DeviceWifiProvider.viewType,
       deviceWifiProvider,
@@ -2370,6 +2388,8 @@ print("Finished.")\r\n`;
 
   // TODO: maybe use a stream instead of spaming syscalls
   private redirectOutput(data: Buffer): void {
+    this.feedPlotter(data);
+
     if (this.outputRedirectionTarget === undefined) {
       return;
     }
@@ -2382,6 +2402,28 @@ print("Finished.")\r\n`;
           error instanceof Error ? error.message : (error as string)
         }`,
       );
+    }
+  }
+
+  /**
+   * Feeds board output to the live plotter while its view is open. Non-numeric
+   * output is ignored by the parser, so normal prints are unaffected.
+   */
+  private feedPlotter(data: Buffer): void {
+    const plotter = this.plotterProvider;
+    if (plotter === undefined) {
+      return;
+    }
+    if (!plotter.isVisible()) {
+      return;
+    }
+
+    for (const event of this.plotParser.push(data.toString("utf-8"))) {
+      if (event.type === "labels") {
+        plotter.setLabels(event.labels);
+      } else {
+        plotter.addSample(event.values);
+      }
     }
   }
 

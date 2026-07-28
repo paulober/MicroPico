@@ -244,6 +244,11 @@
         "title": "MicroPython output redirection settings (experimental)",
         "category": "MicroPico",
         "enablement": "micropico.isConnected"
+      },
+      {
+        "command": "micropico.openPlotter",
+        "title": "Open Plotter",
+        "category": "MicroPico"
       }
     ],
     "menus": {
@@ -558,6 +563,13 @@
           "title": "MicroPico Device Controller (experimental)",
           "icon": "images/logo-black.png"
         }
+      ],
+      "panel": [
+        {
+          "id": "micropico-plotter-panel",
+          "title": "MicroPico Plotter",
+          "icon": "images/logo-black.png"
+        }
       ]
     },
     "views": {
@@ -570,6 +582,13 @@
         {
           "id": "micropico-device-packages",
           "name": "Packages (Pico-W only)",
+          "type": "webview"
+        }
+      ],
+      "micropico-plotter-panel": [
+        {
+          "id": "micropico-plotter",
+          "name": "Plotter",
           "type": "webview"
         }
       ]

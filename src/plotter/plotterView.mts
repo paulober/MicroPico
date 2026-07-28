@@ -64,6 +64,11 @@ export default class PlotterViewProvider implements WebviewViewProvider {
     });
   }
 
+  /** Whether the plotter view is currently open and visible. */
+  public isVisible(): boolean {
+    return this.view?.visible ?? false;
+  }
+
   /** Set the series labels (from a header line). */
   public setLabels(labels: string[]): void {
     this.labels = labels;
