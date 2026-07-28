@@ -1,0 +1,45 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: var(--vscode-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.toolbar button {
+  color: var(--vscode-button-secondaryForeground);
+  background: var(--vscode-button-secondaryBackground);
+  border: none;
+  padding: 2px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: var(--vscode-font-size);
+}
+
+.toolbar button:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+#chart {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 6px;
+}
+
+/* uPlot inherits the panel colors */
+.uplot,
+.uplot * {
+  font-family: var(--vscode-font-family);
+}
