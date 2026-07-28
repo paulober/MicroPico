@@ -60,9 +60,12 @@ export class PlotParser {
 
     if (fields.every(isNumeric)) {
       // Adopt a pending header if its column count matches this data row.
-      const header = this.candidateLabels;
+      const header =
+        this.candidateLabels?.length === fields.length
+          ? this.candidateLabels
+          : undefined;
       this.candidateLabels = undefined;
-      if (header !== undefined && header.length === fields.length) {
+      if (header) {
         this.labels = header;
         events.push({ type: "labels", labels: header });
       }
