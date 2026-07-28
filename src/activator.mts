@@ -44,11 +44,15 @@ import { flashPicoInteractively } from "./flash.mjs";
 import { appendFileSync, existsSync } from "fs";
 import { unknownErrorToString } from "./errorHelper.mjs";
 import { StringDecoder } from "string_decoder";
+import { isValidFolderName } from "./utils/folderName.mjs";
+import {
+  getPinMapHtml,
+  PICO_VARIANTS,
+  PICO_VARAINTS_PINOUTS,
+} from "./utils/pinMap.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
-const PICO_VARIANTS = ["Pico (H)", "Pico W(H)"];
-const PICO_VARAINTS_PINOUTS = ["pico-pinout.svg", "picow-pinout.svg"];
 
 export default class Activator {
   private logger: Logger;
@@ -1305,7 +1309,7 @@ export default class Activator {
           },
         );
 
-        panel.webview.html = this.getPinMapHtml(
+        panel.webview.html = getPinMapHtml(
           PICO_VARIANTS[variantIdx],
           panel.webview
             .asWebviewUri(
@@ -1860,7 +1864,7 @@ export default class Activator {
             }
             // check for invalid characters in folder names
             // or reserved names
-            if (!this.isValidFolderName(value)) {
+            if (!isValidFolderName(value)) {
               return (
                 "Project name contains invalid" +
                 " characters or is a reserved name."
@@ -2331,31 +2335,6 @@ print("Finished.")\r\n`;
     this.ui?.refreshState(true);
   }
 
-  private getPinMapHtml(variantName: string, imageUrl: string): string {
-    return (
-      `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>${variantName} Pinout</title>
-        <style type="text/css">
-            body {
-                background-color: transparent;
-            }
-        </style>
-    </head>
-    <body>
-        <img src="${imageUrl}" alt="${variantName} pinout graphic" />
-        <p style="color: #fff; font-size: 12px; margin-top: 10px;">Image from` +
-      ' <a href="https://www.raspberrypi.com/documentation/microcontrollers' +
-      '/raspberry-pi-pico.html" style="color: #fff; text-decoration: none;">' +
-      `© ${new Date().getFullYear()} Copyright Raspberry Pi Foundation</a></p>
-    </body>
-    </html>`
-    );
-  }
-
   private async bootPyWarning(): Promise<boolean> {
     const bootPyResult = await PicoMpyCom.getInstance().getItemStat("/boot.py");
 
@@ -2468,32 +2447,5 @@ print("Finished.")\r\n`;
     }
 
     return false;
-  }
-
-  private isValidFolderName(name: string): boolean {
-    // Check for invalid characters and reserved names
-    const invalidChars = /[<>:"/\\|?*]/g;
-    const reservedNames = ["CON", "PRN", "AUX", "NUL", "LPT", "COM"];
-
-    if (invalidChars.test(name)) {
-      return false;
-    }
-
-    // test for controll characters (ASCII 0–31)
-    for (let i = 0; i < name.length; i++) {
-      if (name.charCodeAt(i) < 32) {
-        return false;
-      }
-    }
-
-    const upperName = name.toUpperCase();
-    if (
-      reservedNames.includes(upperName) ||
-      /^(COM[1-9]|LPT[1-9])$/.test(upperName)
-    ) {
-      return false;
-    }
-
-    return true;
   }
 }
