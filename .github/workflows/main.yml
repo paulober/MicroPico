@@ -60,6 +60,39 @@ jobs:
       - name: Unit tests
         run: npm test
 
+  e2e:
+    name: E2E (VS Code)
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.17.0"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@paulober"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          cache: "npm"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          echo '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' >> .npmrc
+          npm ci --no-audit
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: E2E tests (real VS Code, headless)
+        run: xvfb-run -a npm run test:e2e
+
   build:
     name: Build VSIX
     needs: test

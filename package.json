@@ -703,6 +703,7 @@
     "lint": "eslint src",
     "pretest": "node -e \"require('fs').rmSync('test-out',{recursive:true,force:true})\"",
     "test": "npm run compile-tests && node --import ./test/register.mjs --test \"test-out/**/*.test.mjs\"",
+    "test:e2e": "npm run package-local && node ./test/e2e/runE2E.mjs",
     "verify:vsix": "node ./scripts/check-vsix.mjs"
   },
   "devDependencies": {
@@ -715,7 +716,7 @@
     "@types/node": "^22.19",
     "@types/vscode": "^1.105.0",
     "@types/which": "^3.0.4",
-    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-electron": "^3.1.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "patch-package": "^8.0.1",
