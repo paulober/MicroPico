@@ -29,7 +29,7 @@ import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
 import PlotterViewProvider, {
   PLOTTER_VIEW_ID,
 } from "./plotter/plotterView.mjs";
-import { PlotParser } from "./plotter/plotParser.mjs";
+import { OutputRouter } from "./output/outputRouter.mjs";
 import { resolveIgnoredSyncItems } from "./utils/syncIgnore.mjs";
 import {
   buildStubVersionOptions,
@@ -45,7 +45,6 @@ import {
   PythonExtension,
 } from "@vscode/python-extension";
 import { flashPicoInteractively } from "./flash.mjs";
-import { appendFileSync } from "fs";
 import { StringDecoder } from "string_decoder";
 import { registerHelpCommands } from "./commands/helpCommands.mjs";
 import { registerProjectCommands } from "./commands/projectCommands.mjs";
@@ -67,11 +66,7 @@ export default class Activator {
   private autoConnectTimer?: NodeJS.Timeout;
   private comDevice?: string;
   private noCheckForUSBMSDs = false;
-  // TODO: currently only used as file path - replace with proper type
-  // to support different target if needed
-  private outputRedirectionTarget?: string;
-  private plotterProvider?: PlotterViewProvider;
-  private readonly plotParser = new PlotParser();
+  private output?: OutputRouter;
   private commandExecuting = false;
 
   private disableExtWarning = false;
@@ -226,7 +221,7 @@ export default class Activator {
         },
         (data: Buffer) => {
           if (data.length > 0) {
-            this.redirectOutput(data);
+            this.output?.route(data);
             const text = decoder.write(data); // streaming decode
             if (text.length > 0) {
               this.terminal?.write(text);
@@ -574,7 +569,7 @@ export default class Activator {
           },
           (data: Buffer) => {
             if (data.length > 0) {
-              this.redirectOutput(data);
+              this.output?.route(data);
               const text = decoder.write(data); // streaming decode
               if (text.length > 0) {
                 this.terminal?.write(text);
@@ -652,7 +647,7 @@ export default class Activator {
           },
           (data: Buffer) => {
             if (data.length > 0) {
-              this.redirectOutput(data);
+              this.output?.route(data);
               const text = decoder.write(data); // streaming decode
               if (text.length > 0) {
                 this.terminal?.write(text);
@@ -711,7 +706,7 @@ export default class Activator {
             },
             (data: Buffer) => {
               if (data.length > 0) {
-                this.redirectOutput(data);
+                this.output?.route(data);
                 const text = decoder.write(data); // streaming decode
                 if (text.length > 0) {
                   this.terminal?.write(text);
@@ -1365,7 +1360,7 @@ export default class Activator {
             this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
           },
           (data: Buffer) => {
-            this.redirectOutput(data);
+            this.output?.route(data);
             const text = decoder.write(data); // streaming decode
             if (text.length > 0) {
               this.terminal?.write(text);
@@ -1410,7 +1405,7 @@ export default class Activator {
             }
           },
           (data: Buffer) => {
-            this.redirectOutput(data);
+            this.output?.route(data);
             const text = decoder.write(data); // streaming decode
             if (text.length > 0) {
               this.terminal?.write(text);
@@ -1607,55 +1602,6 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // TODO: add context key to show command in context menu only if vREPL is focused
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "redirectOutput",
-      async () => {
-        const location = await vscode.window.showQuickPick(
-          ["$(x) Disable", "$(info) Status", "$(arrow-right) File"],
-          {
-            canPickMany: false,
-            placeHolder: "Select the output location or manage settings",
-            title: "Output redirection for this session",
-            ignoreFocusOut: false,
-          },
-        );
-
-        switch (location) {
-          case "$(x) Disable":
-            this.outputRedirectionTarget = undefined;
-            break;
-          case "$(info) Status":
-            // show status if disabled to redirected into a file with path
-            void vscode.window.showInformationMessage(
-              this.outputRedirectionTarget
-                ? `Output is redirected to: ${this.outputRedirectionTarget}`
-                : "Output redirection is disabled",
-            );
-            break;
-          case "$(arrow-right) File": {
-            const file = await vscode.window.showSaveDialog({
-              filters: {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                "Text files": ["txt"],
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                "Log files": ["log"],
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                "All files": ["*"],
-              },
-              saveLabel: "Save output to file",
-            });
-
-            if (file) {
-              this.outputRedirectionTarget = file.fsPath;
-            }
-            break;
-          }
-        }
-      },
-    );
-    context.subscriptions.push(disposable);
-
     const packagesWebviewProvider = new PackagesWebviewProvider(
       context.extensionUri,
     );
@@ -1683,10 +1629,12 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    this.plotterProvider = new PlotterViewProvider(context.extensionUri);
+    const plotterProvider = new PlotterViewProvider(context.extensionUri);
+    this.output = new OutputRouter(plotterProvider);
+    this.output.registerRedirectCommand(context);
     disposable = vscode.window.registerWebviewViewProvider(
       PLOTTER_VIEW_ID,
-      this.plotterProvider,
+      plotterProvider,
     );
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand(
@@ -2075,46 +2023,6 @@ export default class Activator {
   }
 
   // TODO: maybe use a stream instead of spaming syscalls
-  private redirectOutput(data: Buffer): void {
-    this.feedPlotter(data);
-
-    if (this.outputRedirectionTarget === undefined) {
-      return;
-    }
-
-    try {
-      appendFileSync(this.outputRedirectionTarget, data);
-    } catch (error) {
-      this.logger.error(
-        `Failed to redirect output to file: ${
-          error instanceof Error ? error.message : (error as string)
-        }`,
-      );
-    }
-  }
-
-  /**
-   * Feeds board output to the live plotter while its view is open. Non-numeric
-   * output is ignored by the parser, so normal prints are unaffected.
-   */
-  private feedPlotter(data: Buffer): void {
-    const plotter = this.plotterProvider;
-    if (plotter === undefined) {
-      return;
-    }
-    if (!plotter.isVisible()) {
-      return;
-    }
-
-    for (const event of this.plotParser.push(data.toString("utf-8"))) {
-      if (event.type === "labels") {
-        plotter.setLabels(event.labels);
-      } else {
-        plotter.addSample(event.values);
-      }
-    }
-  }
-
   /**
    * Checks if there is a running operation and asks the user if it should be canceled.
    *
