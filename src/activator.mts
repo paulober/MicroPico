@@ -9,13 +9,7 @@ import {
   openSettings,
 } from "./api.mjs";
 import Stubs, {
-  displayStringToStubPort,
-  fetchAvailableStubsVersions,
-  installIncludedStubs,
   installStubsByPipVersion,
-  installStubsByVersion,
-  STUB_PORTS,
-  stubPortToDisplayString,
   stubsInstalled,
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
@@ -31,10 +25,6 @@ import PlotterViewProvider, {
 } from "./plotter/plotterView.mjs";
 import { OutputRouter } from "./output/outputRouter.mjs";
 import { resolveIgnoredSyncItems } from "./utils/syncIgnore.mjs";
-import {
-  buildStubVersionOptions,
-  parseStubVersionSelection,
-} from "./utils/stubVersionOptions.mjs";
 import {
   OperationResultType,
   PicoMpyCom,
@@ -56,6 +46,7 @@ import { DeleteAllFilesCommand } from "./commands/deleteAllFilesCommand.mjs";
 import { UniversalStopCommand } from "./commands/universalStopCommand.mjs";
 import { HardResetCommand } from "./commands/hardResetCommand.mjs";
 import { ToggleFileSystemCommand } from "./commands/toggleFileSystemCommand.mjs";
+import { SwitchStubsCommand } from "./commands/switchStubsCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -67,7 +58,6 @@ export default class Activator {
   private picoFs?: PicoRemoteFileSystem;
   private terminal?: Terminal;
   private terminalOptions?: vscode.ExtensionTerminalOptions;
-  private pythonPath?: string;
   private activationFilePresentAtLaunch = false;
   private settings?: Settings;
 
@@ -97,13 +87,13 @@ export default class Activator {
     context.subscriptions.push(
       pythonApi.environments.onDidChangeActiveEnvironmentPath(
         (e: ActiveEnvironmentPathChangeEvent) => {
-          this.pythonPath = e.path;
+          ctx.pythonPath = e.path;
         },
       ),
     );
     setImmediate(() => {
       // get currently selected environment
-      this.pythonPath = pythonApi.environments.getActiveEnvironmentPath()?.path;
+      ctx.pythonPath = pythonApi.environments.getActiveEnvironmentPath()?.path;
     });
 
     // execute async not await
@@ -210,7 +200,7 @@ export default class Activator {
         return;
       }
 
-      if (!this.pythonPath) {
+      if (!ctx.pythonPath) {
         this.showNoActivePythonError();
 
         return;
@@ -238,7 +228,7 @@ export default class Activator {
             }
           }
         },
-        this.pythonPath,
+        ctx.pythonPath,
         true,
       );
       if (result.type !== OperationResultType.commandResult || !result.result) {
@@ -611,7 +601,7 @@ export default class Activator {
           return;
         }
 
-        if (!this.pythonPath) {
+        if (!ctx.pythonPath) {
           this.showNoActivePythonError();
 
           return;
@@ -687,7 +677,7 @@ export default class Activator {
           return;
         }
 
-        if (!this.pythonPath) {
+        if (!ctx.pythonPath) {
           this.showNoActivePythonError();
 
           return;
@@ -723,7 +713,7 @@ export default class Activator {
                 }
               }
             },
-            this.pythonPath,
+            ctx.pythonPath,
             true,
           );
           this.commandExecuting = false;
@@ -1301,96 +1291,7 @@ export default class Activator {
     new RtcSyncCommand(ctx).register(context);
     new UniversalStopCommand(ctx).register(context);
 
-    // [Command] Switch stubs
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "extra.switchStubs",
-      async () => {
-        if (!this.settings) {
-          void vscode.window.showErrorMessage(
-            "Failed to switch stubs. Settings not available.",
-          );
-
-          return;
-        }
-
-        // let use chose between stub port
-        const stubPort = await vscode.window.showQuickPick(
-          ["Included", ...STUB_PORTS.map(stubPortToDisplayString)],
-          {
-            canPickMany: false,
-            placeHolder: "Select the stubs port you want to use",
-            ignoreFocusOut: false,
-          },
-        );
-
-        if (stubPort === undefined) {
-          return;
-        }
-
-        if (stubPort.toLowerCase() === "included" && this.settings) {
-          await installIncludedStubs(this.settings);
-
-          void vscode.window.showInformationMessage("Included stubs selected.");
-        } else {
-          const availableStubVersions =
-            await fetchAvailableStubsVersions(stubPort);
-          const versions = buildStubVersionOptions(
-            availableStubVersions,
-            stubPortToDisplayString,
-          );
-
-          // show quick pick
-          const version = await vscode.window.showQuickPick(versions, {
-            canPickMany: false,
-            placeHolder: "Select the stubs version you want to use",
-            ignoreFocusOut: false,
-          });
-
-          if (version === undefined) {
-            return;
-          }
-
-          await vscode.window.withProgress(
-            {
-              location: vscode.ProgressLocation.Notification,
-              title: "Downloading stubs, this may take a while...",
-              cancellable: false,
-            },
-            async (progress, token) => {
-              // cancellation is not possible
-              token.onCancellationRequested(() => undefined);
-              const { port, version: selectedVersion } =
-                parseStubVersionSelection(
-                  version,
-                  availableStubVersions,
-                  displayStringToStubPort,
-                );
-
-              // TODO: implement cancellation
-              const result = await installStubsByVersion(
-                selectedVersion,
-                port,
-                this.settings!,
-                this.pythonPath,
-              );
-
-              if (result) {
-                progress.report({
-                  increment: 100,
-                  message: "Stubs installed.",
-                });
-                void vscode.window.showInformationMessage("Stubs installed.");
-              } else {
-                void vscode.window.showErrorMessage(
-                  "Stubs installation failed.",
-                );
-              }
-            },
-          );
-        }
-      },
-    );
-    context.subscriptions.push(disposable);
+    new SwitchStubsCommand(ctx).register(context);
 
     new GarbageCollectCommand(ctx).register(context);
 

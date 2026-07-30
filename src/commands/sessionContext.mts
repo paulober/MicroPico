@@ -25,6 +25,9 @@ export class SessionContext {
   public terminal?: Terminal;
   public output?: OutputRouter;
 
+  /** The active Python interpreter path; updated when the user switches env. */
+  public pythonPath?: string;
+
   public constructor(public readonly settings: Settings) {}
 
   /**
