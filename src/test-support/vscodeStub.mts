@@ -23,6 +23,7 @@ export function __resetConfig(): void {
 // awaits a quick pick or save dialog can be driven deterministically.
 const quickPickQueue: unknown[] = [];
 const saveDialogQueue: unknown[] = [];
+const warningMessageQueue: unknown[] = [];
 
 /** Queue values the next `showQuickPick` calls will resolve to, in order. */
 export function __queueQuickPick(...values: unknown[]): void {
@@ -34,10 +35,16 @@ export function __queueSaveDialog(...values: unknown[]): void {
   saveDialogQueue.push(...values);
 }
 
+/** Queue values the next `showWarningMessage` calls will resolve to, in order. */
+export function __queueWarningMessage(...values: unknown[]): void {
+  warningMessageQueue.push(...values);
+}
+
 /** Clear any queued prompt results between tests. */
 export function __resetPrompts(): void {
   quickPickQueue.length = 0;
   saveDialogQueue.length = 0;
+  warningMessageQueue.length = 0;
 }
 
 export const workspace = {
@@ -59,7 +66,12 @@ export const window = {
     return Promise.resolve(undefined);
   },
   showWarningMessage() {
-    return Promise.resolve(undefined);
+    return Promise.resolve(
+      warningMessageQueue.length > 0 ? warningMessageQueue.shift() : undefined,
+    );
+  },
+  setStatusBarMessage() {
+    return { dispose() {} };
   },
   showInformationMessage() {
     return Promise.resolve(undefined);

@@ -65,10 +65,9 @@ export default class Activator {
   private comDevice?: string;
   private noCheckForUSBMSDs = false;
   private output?: OutputRouter;
-  private commandExecuting = false;
+  private ctx!: SessionContext;
 
   private disableExtWarning = false;
-  private statusbarMsgDisposable?: vscode.Disposable;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -80,6 +79,7 @@ export default class Activator {
     // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
     this.settings = new Settings(context.workspaceState);
     const ctx = new SessionContext(this.settings);
+    this.ctx = ctx;
 
     // get the python env to be used
     const pythonApi = await PythonExtension.api();
@@ -191,7 +191,7 @@ export default class Activator {
     });
 
     this.terminal.onDidSubmit(async (cmd: string) => {
-      if (this.commandExecuting) {
+      if (ctx.commandExecuting) {
         PicoMpyCom.getInstance().emit(
           PicoSerialEvents.relayInput,
           Buffer.from(cmd.trim(), "utf-8"),
@@ -201,7 +201,7 @@ export default class Activator {
       }
 
       if (!ctx.pythonPath) {
-        this.showNoActivePythonError();
+        ctx.showNoActivePythonError();
 
         return;
       }
@@ -209,7 +209,7 @@ export default class Activator {
       const decoder = new StringDecoder("utf-8");
       // TODO: maybe this.ui?.userOperationStarted();
       // this will make waiting for prompt falsethis.terminal.freeze();
-      this.commandExecuting = true;
+      ctx.commandExecuting = true;
       const result = await PicoMpyCom.getInstance().runFriendlyCommand(
         cmd,
         (open: boolean) => {
@@ -241,7 +241,7 @@ export default class Activator {
         this.terminal?.clean(true);
       }
       this.ui?.userOperationStopped();
-      this.commandExecuting = false;
+      ctx.commandExecuting = false;
       this.terminal?.prompt();
     });
     this.terminal.onDidRequestTabComp(async (buf: string) => {
@@ -543,7 +543,7 @@ export default class Activator {
           }
         }
 
-        if (await this.checkForRunningOperation()) {
+        if (await ctx.checkForRunningOperation()) {
           return;
         }
 
@@ -563,7 +563,7 @@ export default class Activator {
             }
 
             void focusTerminal(this.terminalOptions);
-            this.commandExecuting = true;
+            ctx.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
@@ -584,7 +584,7 @@ export default class Activator {
         if (data.type !== OperationResultType.commandResult || !data.result) {
           this.logger.warn("Failed to execute script on Pico.");
         }
-        this.commandExecuting = false;
+        ctx.commandExecuting = false;
         this.terminal?.restore();
       },
     );
@@ -602,7 +602,7 @@ export default class Activator {
         }
 
         if (!ctx.pythonPath) {
-          this.showNoActivePythonError();
+          ctx.showNoActivePythonError();
 
           return;
         }
@@ -620,7 +620,7 @@ export default class Activator {
           return;
         }
 
-        if (await this.checkForRunningOperation()) {
+        if (await ctx.checkForRunningOperation()) {
           return;
         }
 
@@ -641,7 +641,7 @@ export default class Activator {
 
             // tells the terminal that it should
             // emit input events to relay user input
-            this.commandExecuting = true;
+            ctx.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
           },
@@ -659,7 +659,7 @@ export default class Activator {
           await PicoMpyCom.getInstance().softReset();
         }
         this.ui?.userOperationStopped();
-        this.commandExecuting = false;
+        ctx.commandExecuting = false;
         this.terminal?.restore();
       },
     );
@@ -678,7 +678,7 @@ export default class Activator {
         }
 
         if (!ctx.pythonPath) {
-          this.showNoActivePythonError();
+          ctx.showNoActivePythonError();
 
           return;
         }
@@ -700,7 +700,7 @@ export default class Activator {
                 return;
               }
 
-              this.commandExecuting = true;
+              ctx.commandExecuting = true;
               this.terminal?.cleanAndStore();
               this.ui?.userOperationStarted();
             },
@@ -716,7 +716,7 @@ export default class Activator {
             ctx.pythonPath,
             true,
           );
-          this.commandExecuting = false;
+          ctx.commandExecuting = false;
           this.ui?.userOperationStopped();
           if (data.type === OperationResultType.commandResult) {
             // const result = data as PyOutCommandResult;
@@ -1212,7 +1212,7 @@ export default class Activator {
               return;
             }
 
-            this.commandExecuting = true;
+            ctx.commandExecuting = true;
             this.terminal?.cleanAndStore();
             this.ui?.userOperationStarted();
 
@@ -1228,7 +1228,7 @@ export default class Activator {
           },
         );
         this.terminal?.restore();
-        this.commandExecuting = false;
+        ctx.commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
@@ -1257,7 +1257,7 @@ export default class Activator {
         const result = await PicoMpyCom.getInstance().sendCtrlD(
           (open: boolean) => {
             if (open) {
-              this.commandExecuting = true;
+              ctx.commandExecuting = true;
               //terminal?.freeze();
               this.terminal?.clean(true);
               //terminal?.write("\r\n");
@@ -1272,7 +1272,7 @@ export default class Activator {
             }
           },
         );
-        this.commandExecuting = false;
+        ctx.commandExecuting = false;
         this.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
@@ -1551,26 +1551,6 @@ export default class Activator {
     this.noCheckForUSBMSDs = result;
   }
 
-  private showNoActivePythonError(): void {
-    vscode.window
-      .showWarningMessage(
-        "Python path not found. Please check your Python environment.\n" +
-          "See the Python extension for instructions on how to select " +
-          "a Python interpreter.",
-        "Open Documentation",
-      )
-      .then(selection => {
-        if (selection?.toLocaleLowerCase().startsWith("open")) {
-          vscode.env.openExternal(
-            vscode.Uri.parse(
-              // eslint-disable-next-line max-len
-              "https://code.visualstudio.com/docs/languages/python#_environments",
-            ),
-          );
-        }
-      });
-  }
-
   private boardOnError(error?: Error): void {
     if (error) {
       void vscode.window.showErrorMessage(
@@ -1601,7 +1581,7 @@ export default class Activator {
             "Connection to board was closed. Stopping ongoing operation.",
           );
           this.ui?.userOperationStopped();
-          this.commandExecuting = false;
+          this.ctx.commandExecuting = false;
           // has no benefit as the terminal will be reloaded on reconnect anyway
           //this.terminal?.restore();
         }
@@ -1686,47 +1666,4 @@ export default class Activator {
   }
 
 
-  // TODO: maybe use a stream instead of spaming syscalls
-  /**
-   * Checks if there is a running operation and asks the user if it should be canceled.
-   *
-   * @returns `true` if the user does not want to cancel the already running
-   * operation, `false` otherwise.
-   */
-  private async checkForRunningOperation(): Promise<boolean> {
-    if (this.commandExecuting) {
-      // ask user if it want to cancel running operation or cancel the new one
-      const choice = await vscode.window.showWarningMessage(
-        "An operation is already running. Do you want to cancel it?",
-        {
-          modal: true,
-        },
-        "Yes",
-        "No",
-      );
-
-      if (choice === "Yes") {
-        if (this.commandExecuting) {
-          PicoMpyCom.getInstance().interruptExecution();
-
-          // wait for 500ms for operation to stop and clean up local state
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      } else {
-        if (this.statusbarMsgDisposable) {
-          this.statusbarMsgDisposable.dispose();
-        }
-
-        // void vscode.window.showWarningMessage("Operation canceled.");
-        this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
-          "Operation canceled.",
-          5000,
-        );
-
-        return true;
-      }
-    }
-
-    return false;
-  }
 }

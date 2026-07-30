@@ -17,9 +17,6 @@ import type { OutputRouter } from "../output/outputRouter.mjs";
  * duplicate between the activator and this context.
  */
 export class SessionContext {
-  /** The shared MicroPython communication singleton. */
-  public readonly com = PicoMpyCom.getInstance();
-
   /** Set once during activation, before any command can run. */
   public ui?: UI;
   public terminal?: Terminal;
@@ -28,7 +25,77 @@ export class SessionContext {
   /** The active Python interpreter path; updated when the user switches env. */
   public pythonPath?: string;
 
-  public constructor(public readonly settings: Settings) {}
+  /**
+   * Whether a board operation is currently running. Shared by reference across
+   * the run/reset commands (which set it) and the connection handler (which
+   * clears it when the port closes mid-operation).
+   */
+  public commandExecuting = false;
+
+  private statusbarMsgDisposable?: vscode.Disposable;
+
+  public constructor(
+    public readonly settings: Settings,
+    /** The shared MicroPython communication singleton (injectable for tests). */
+    public readonly com: PicoMpyCom = PicoMpyCom.getInstance(),
+  ) {}
+
+  /**
+   * If an operation is already running, ask the user whether to cancel it.
+   *
+   * @returns `true` if the caller should abort (the user kept the running
+   * operation), `false` to proceed.
+   */
+  public async checkForRunningOperation(): Promise<boolean> {
+    if (this.commandExecuting) {
+      const choice = await vscode.window.showWarningMessage(
+        "An operation is already running. Do you want to cancel it?",
+        { modal: true },
+        "Yes",
+        "No",
+      );
+
+      if (choice === "Yes") {
+        if (this.commandExecuting) {
+          this.com.interruptExecution();
+
+          // wait for 500ms for the operation to stop and clean up local state
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } else {
+        this.statusbarMsgDisposable?.dispose();
+        this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
+          "Operation canceled.",
+          5000,
+        );
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /** Warn the user that no Python interpreter is selected. */
+  public showNoActivePythonError(): void {
+    void vscode.window
+      .showWarningMessage(
+        "Python path not found. Please check your Python environment.\n" +
+          "See the Python extension for instructions on how to select " +
+          "a Python interpreter.",
+        "Open Documentation",
+      )
+      .then(selection => {
+        if (selection?.toLocaleLowerCase().startsWith("open")) {
+          void vscode.env.openExternal(
+            vscode.Uri.parse(
+              // eslint-disable-next-line max-len
+              "https://code.visualstudio.com/docs/languages/python#_environments",
+            ),
+          );
+        }
+      });
+  }
 
   /**
    * Warn the user before a hard reset if a boot.py is present (it may block or
