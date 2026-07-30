@@ -51,6 +51,9 @@ import { registerProjectCommands } from "./commands/projectCommands.mjs";
 import { SessionContext } from "./commands/sessionContext.mjs";
 import { SoftResetCommand } from "./commands/softResetCommand.mjs";
 import { GarbageCollectCommand } from "./commands/garbageCollectCommand.mjs";
+import { RtcSyncCommand } from "./commands/rtcSyncCommand.mjs";
+import { DeleteAllFilesCommand } from "./commands/deleteAllFilesCommand.mjs";
+import { UniversalStopCommand } from "./commands/universalStopCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -153,6 +156,7 @@ export default class Activator {
 
     this.ui = new UI(this.settings);
     this.ui.init();
+    ctx.ui = this.ui;
 
     if (this.activationFilePresentAtLaunch) {
       this.ui.show();
@@ -1133,33 +1137,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // [Command] Delete all files on Pico
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "deleteAllFiles",
-      async () => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        const data = await PicoMpyCom.getInstance().deleteFolderRecursive("/");
-        if (data.type === OperationResultType.commandResult) {
-          if (data.result) {
-            void vscode.window.showInformationMessage(
-              "All files on Pico were deleted.",
-            );
-          } else {
-            void vscode.window.showErrorMessage(
-              "File deletion on Pico failed.",
-            );
-          }
-        }
-      },
-    );
-    context.subscriptions.push(disposable);
+    new DeleteAllFilesCommand(ctx).register(context);
 
     // [Command] Toggle connection
     disposable = vscode.commands.registerCommand(
@@ -1409,48 +1387,8 @@ export default class Activator {
       },
     );
 
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "rtc.sync",
-      async () => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        const result = await PicoMpyCom.getInstance().syncRtcTime();
-
-        if (result.type === OperationResultType.commandResult) {
-          if (result.result) {
-            void vscode.window.showInformationMessage("RTC synchronized");
-          } else {
-            void vscode.window.showErrorMessage("RTC synchronization failed");
-          }
-        }
-      },
-    );
-
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "universalStop",
-      async () => {
-        if (
-          PicoMpyCom.getInstance().isPortDisconnected() ||
-          !this.ui?.isUserOperationOngoing()
-        ) {
-          void vscode.window.showInformationMessage("Nothing to stop.");
-
-          return;
-        }
-
-        // interrupt most running programs
-        PicoMpyCom.getInstance().interruptExecution();
-
-        // wait for the program to stop
-        await new Promise(resolve => setTimeout(resolve, 100));
-      },
-    );
+    new RtcSyncCommand(ctx).register(context);
+    new UniversalStopCommand(ctx).register(context);
 
     // [Command] Switch stubs
     disposable = vscode.commands.registerCommand(
