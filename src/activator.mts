@@ -5,7 +5,6 @@ import {
   commandPrefix,
   focusTerminal,
   getFocusedFile,
-  getSelectedCodeOrLine,
   openSettings,
 } from "./api.mjs";
 import Stubs, {
@@ -47,6 +46,7 @@ import { UniversalStopCommand } from "./commands/universalStopCommand.mjs";
 import { HardResetCommand } from "./commands/hardResetCommand.mjs";
 import { ToggleFileSystemCommand } from "./commands/toggleFileSystemCommand.mjs";
 import { SwitchStubsCommand } from "./commands/switchStubsCommand.mjs";
+import { RunSelectionCommand } from "./commands/runSelectionCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -292,6 +292,9 @@ export default class Activator {
       //hideFromUser: false,
       location: vscode.TerminalLocation.Panel,
     };
+    // mirror the set-once services into the shared context for the commands
+    ctx.terminal = this.terminal;
+    ctx.terminalOptions = this.terminalOptions;
 
     // register terminal profile provider
     context.subscriptions.push(
@@ -665,68 +668,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // [Command] Run Selection
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "runselection",
-      async () => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        if (!ctx.pythonPath) {
-          ctx.showNoActivePythonError();
-
-          return;
-        }
-
-        const code = getSelectedCodeOrLine();
-
-        if (code === undefined) {
-          void vscode.window.showWarningMessage("No code selected.");
-
-          return;
-        } else {
-          await focusTerminal(this.terminalOptions);
-          const decoder = new StringDecoder("utf-8");
-          const data = await PicoMpyCom.getInstance().runFriendlyCommand(
-            code,
-            (open: boolean) => {
-              // TODO: maybe make sure these kind of functions are only run once
-              if (!open) {
-                return;
-              }
-
-              ctx.commandExecuting = true;
-              this.terminal?.cleanAndStore();
-              this.ui?.userOperationStarted();
-            },
-            (data: Buffer) => {
-              if (data.length > 0) {
-                this.output?.route(data);
-                const text = decoder.write(data); // streaming decode
-                if (text.length > 0) {
-                  this.terminal?.write(text);
-                }
-              }
-            },
-            ctx.pythonPath,
-            true,
-          );
-          ctx.commandExecuting = false;
-          this.ui?.userOperationStopped();
-          if (data.type === OperationResultType.commandResult) {
-            // const result = data as PyOutCommandResult;
-            // TODO: reflect result.result in status bar
-          }
-          this.terminal?.restore();
-        }
-      },
-    );
-    context.subscriptions.push(disposable);
+    new RunSelectionCommand(ctx).register(context);
 
     // [Command] Upload project
     disposable = vscode.commands.registerCommand(
@@ -1324,6 +1266,7 @@ export default class Activator {
 
     const plotterProvider = new PlotterViewProvider(context.extensionUri);
     this.output = new OutputRouter(plotterProvider);
+    ctx.output = this.output;
     this.output.registerRedirectCommand(context);
     disposable = vscode.window.registerWebviewViewProvider(
       PLOTTER_VIEW_ID,

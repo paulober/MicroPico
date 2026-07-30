@@ -20,6 +20,7 @@ export class SessionContext {
   /** Set once during activation, before any command can run. */
   public ui?: UI;
   public terminal?: Terminal;
+  public terminalOptions?: vscode.ExtensionTerminalOptions;
   public output?: OutputRouter;
 
   /** The active Python interpreter path; updated when the user switches env. */
