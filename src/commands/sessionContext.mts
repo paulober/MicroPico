@@ -4,6 +4,7 @@ import type Settings from "../settings.mjs";
 import type UI from "../ui.mjs";
 import type { Terminal } from "../terminal.mjs";
 import type { OutputRouter } from "../output/outputRouter.mjs";
+import type { PicoRemoteFileSystem } from "../filesystem.mjs";
 
 /**
  * The single home for state shared across commands and the connection manager.
@@ -22,6 +23,7 @@ export class SessionContext {
   public terminal?: Terminal;
   public terminalOptions?: vscode.ExtensionTerminalOptions;
   public output?: OutputRouter;
+  public picoFs?: PicoRemoteFileSystem;
 
   /** The active Python interpreter path; updated when the user switches env. */
   public pythonPath?: string;
