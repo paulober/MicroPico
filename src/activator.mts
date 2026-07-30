@@ -23,7 +23,6 @@ import PlotterViewProvider, {
   PLOTTER_VIEW_ID,
 } from "./plotter/plotterView.mjs";
 import { OutputRouter } from "./output/outputRouter.mjs";
-import { resolveIgnoredSyncItems } from "./utils/syncIgnore.mjs";
 import {
   OperationResultType,
   PicoMpyCom,
@@ -49,6 +48,7 @@ import { SwitchStubsCommand } from "./commands/switchStubsCommand.mjs";
 import { RunSelectionCommand } from "./commands/runSelectionCommand.mjs";
 import { RemoteRunCommand } from "./commands/remoteRunCommand.mjs";
 import { RunCommand } from "./commands/runCommand.mjs";
+import { UploadCommand } from "./commands/uploadCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -503,119 +503,7 @@ export default class Activator {
 
     new RunSelectionCommand(ctx).register(context);
 
-    // [Command] Upload project
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "upload",
-      async () => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-        if (!this.settings) {
-          void vscode.window.showErrorMessage(
-            "Failed to upload project. Settings not available.",
-          );
-
-          return;
-        }
-        this.settings.reload();
-
-        const syncDir = await this.settings.requestSyncFolder("Upload");
-
-        if (syncDir === undefined) {
-          void vscode.window.showWarningMessage(
-            "Upload canceled. No sync folder selected.",
-          );
-
-          return;
-        }
-
-        const ignoredSyncItems = resolveIgnoredSyncItems(
-          this.settings.getIngoredSyncItems(),
-          syncDir[0],
-        );
-
-        if (this.settings.getBoolean(SettingsKey.gcBeforeUpload)) {
-          // TODO: maybe do soft reboot instead of gc for bigger impact
-          await PicoMpyCom.getInstance().runCommand(
-            "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc",
-          );
-        }
-
-        void vscode.window.withProgress(
-          {
-            location: vscode.ProgressLocation.Notification,
-            title: "Uploading project",
-            cancellable: true,
-          },
-          async (progress, token) => {
-            // cancellation is possible
-            token.onCancellationRequested(
-              PicoMpyCom.getInstance().interruptExecution.bind(
-                PicoMpyCom.getInstance(),
-              ),
-            );
-
-            const data = await PicoMpyCom.getInstance().uploadProject(
-              syncDir[1],
-              this.settings!.getSyncFileTypes(),
-              ignoredSyncItems,
-              (
-                totalChunksCount: number,
-                currentChunk: number,
-                relativePath: string,
-              ) => {
-                if (currentChunk === 1) {
-                  this.ui?.userOperationStarted();
-                }
-                this.logger.debug(
-                  "upload progress: " +
-                    `${currentChunk}/${totalChunksCount} - ${relativePath}`,
-                );
-
-                // increment progress bar
-                // can be done like this as this function is only called once per chunk
-                progress.report({
-                  increment: 100 / totalChunksCount,
-                  message: relativePath,
-                });
-                // message: sep + relative(syncDir[1], status.filePath),
-              },
-            );
-            this.ui?.userOperationStopped();
-
-            // check if data is PyOut
-            if (data === undefined) {
-              return;
-            }
-
-            if (data.type === OperationResultType.commandResult) {
-              if (data.result) {
-                void vscode.window.showInformationMessage("Project uploaded.");
-              } else {
-                void vscode.window.showErrorMessage("Project upload failed.");
-
-                return;
-              }
-            }
-            // TODO: maybe make sure it's 100% if needed to make notification dissapear
-            //progress.report({ increment: 100, message: "Project uploaded." });
-
-            // moved outside so if not uploaded because file already exists it still resets
-            if (this.settings!.getBoolean(SettingsKey.softResetAfterUpload)) {
-              //await this.pyb?.softReset();
-              await vscode.commands.executeCommand(
-                commandPrefix + "reset.soft.listen",
-              );
-            }
-          },
-        );
-      },
-    );
-    context.subscriptions.push(disposable);
+    new UploadCommand(ctx).register(context);
 
     // [Command] Upload file
     disposable = vscode.commands.registerCommand(
