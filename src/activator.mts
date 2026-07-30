@@ -32,6 +32,10 @@ import PlotterViewProvider, {
 import { PlotParser } from "./plotter/plotParser.mjs";
 import { resolveIgnoredSyncItems } from "./utils/syncIgnore.mjs";
 import {
+  buildStubVersionOptions,
+  parseStubVersionSelection,
+} from "./utils/stubVersionOptions.mjs";
+import {
   OperationResultType,
   PicoMpyCom,
   PicoSerialEvents,
@@ -1505,22 +1509,10 @@ export default class Activator {
         } else {
           const availableStubVersions =
             await fetchAvailableStubsVersions(stubPort);
-          const versions: string[] = [];
-
-          Object.entries(availableStubVersions).forEach(([key, values]) => {
-            // Map each value to "key - value" and push to resultArray
-            versions.push(
-              ...values.map(value =>
-                // differentiate between multiple stub ports and single
-                // to reduce UI clutter for version selection
-                // after a user selected a certain port already
-                // but still support multiple ports per selection
-                Object.keys(availableStubVersions).length > 1
-                  ? `${stubPortToDisplayString(key)} - ${value}`
-                  : value,
-              ),
-            );
-          });
+          const versions = buildStubVersionOptions(
+            availableStubVersions,
+            stubPortToDisplayString,
+          );
 
           // show quick pick
           const version = await vscode.window.showQuickPick(versions, {
@@ -1542,16 +1534,17 @@ export default class Activator {
             async (progress, token) => {
               // cancellation is not possible
               token.onCancellationRequested(() => undefined);
-              const versionParts = version.includes(" - ")
-                ? version.split(" - ")
-                : [Object.keys(availableStubVersions)[0], version];
+              const { port, version: selectedVersion } =
+                parseStubVersionSelection(
+                  version,
+                  availableStubVersions,
+                  displayStringToStubPort,
+                );
 
               // TODO: implement cancellation
               const result = await installStubsByVersion(
-                versionParts[1],
-                version.includes(" - ")
-                  ? displayStringToStubPort(versionParts[0])
-                  : versionParts[0],
+                selectedVersion,
+                port,
                 this.settings!,
                 this.pythonPath,
               );
