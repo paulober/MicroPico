@@ -89,9 +89,27 @@ export const window = {
   },
 };
 
+const registeredCommands = new Map<string, (...args: unknown[]) => unknown>();
+
+/** Clear commands registered via the stub between tests. */
+export function __resetCommands(): void {
+  registeredCommands.clear();
+}
+
 export const commands = {
-  executeCommand() {
-    return Promise.resolve(undefined);
+  registerCommand(id: string, callback: (...args: unknown[]) => unknown) {
+    registeredCommands.set(id, callback);
+
+    return {
+      dispose() {
+        registeredCommands.delete(id);
+      },
+    };
+  },
+  executeCommand(id: string, ...args: unknown[]) {
+    const callback = registeredCommands.get(id);
+
+    return Promise.resolve(callback ? callback(...args) : undefined);
   },
 };
 

@@ -48,6 +48,9 @@ import { flashPicoInteractively } from "./flash.mjs";
 import { StringDecoder } from "string_decoder";
 import { registerHelpCommands } from "./commands/helpCommands.mjs";
 import { registerProjectCommands } from "./commands/projectCommands.mjs";
+import { SessionContext } from "./commands/sessionContext.mjs";
+import { SoftResetCommand } from "./commands/softResetCommand.mjs";
+import { GarbageCollectCommand } from "./commands/garbageCollectCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -81,6 +84,7 @@ export default class Activator {
   ): Promise<UI | undefined> {
     // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
     this.settings = new Settings(context.workspaceState);
+    const ctx = new SessionContext(this.settings);
 
     // get the python env to be used
     const pythonApi = await PythonExtension.api();
@@ -1236,30 +1240,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // [Command] Soft reset pico
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "reset.soft",
-      async () => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        const result = await PicoMpyCom.getInstance().softReset();
-        if (result.type === OperationResultType.commandResult) {
-          if (result.result) {
-            void vscode.window.showInformationMessage("Soft reset done");
-
-            return;
-          }
-        }
-        void vscode.window.showErrorMessage("Soft reset failed");
-      },
-    );
-    context.subscriptions.push(disposable);
+    new SoftResetCommand(ctx).register(context);
 
     // [Command] Hard reset pico
     disposable = vscode.commands.registerCommand(
@@ -1562,45 +1543,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "garbageCollect",
-      () => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        vscode.window.withProgress(
-          {
-            location: vscode.ProgressLocation.Notification,
-            title: "Running garbage collector...",
-            cancellable: false,
-          },
-          async progress => {
-            // gc currently not cancelable
-
-            const result = await PicoMpyCom.getInstance().garbageCollect();
-            progress.report({ increment: 100 });
-            if (
-              result.type === OperationResultType.commandResult &&
-              result.result
-            ) {
-              void vscode.window.showInformationMessage(
-                "Garbage collection done",
-              );
-
-              return;
-            }
-
-            void vscode.window.showErrorMessage("Garbage collection failed");
-          },
-        );
-      },
-    );
-    context.subscriptions.push(disposable);
+    new GarbageCollectCommand(ctx).register(context);
 
     const packagesWebviewProvider = new PackagesWebviewProvider(
       context.extensionUri,
