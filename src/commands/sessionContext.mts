@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 import { PicoMpyCom } from "@paulober/pico-mpy-com";
 import type Settings from "../settings.mjs";
 import type UI from "../ui.mjs";
@@ -25,4 +26,38 @@ export class SessionContext {
   public output?: OutputRouter;
 
   public constructor(public readonly settings: Settings) {}
+
+  /**
+   * Warn the user before a hard reset if a boot.py is present (it may block or
+   * delay the REPL). Shared by the hard-reset commands.
+   *
+   * @returns `true` if the operation should be aborted, `false` to continue.
+   */
+  public async warnAboutBootPy(): Promise<boolean> {
+    const bootPyResult = await this.com.getItemStat("/boot.py");
+
+    // getItemStat is the only result variant carrying `stat`; a present, non-null
+    // stat means boot.py exists. Checked structurally to avoid importing the
+    // OperationResultType enum, which the CJS lib does not expose to node:test.
+    if ("stat" in bootPyResult && bootPyResult.stat !== null) {
+      const result = await vscode.window.showWarningMessage(
+        "A boot.py script is present on the Pico. " +
+          "If it contains an infinite loop or long running code, " +
+          "the Pico may not enter the REPL or take longer to do so. " +
+          "Do you want to continue?",
+        { modal: true },
+        "Yes",
+      );
+
+      return result !== "Yes";
+    } else {
+      void vscode.window.showErrorMessage(
+        "Failed to retrieve details about the boot.py file.",
+      );
+    }
+
+    // continue as we don't know if there is a boot.py file
+    // or the user wants to continue even if there is one
+    return false;
+  }
 }

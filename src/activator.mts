@@ -54,6 +54,7 @@ import { GarbageCollectCommand } from "./commands/garbageCollectCommand.mjs";
 import { RtcSyncCommand } from "./commands/rtcSyncCommand.mjs";
 import { DeleteAllFilesCommand } from "./commands/deleteAllFilesCommand.mjs";
 import { UniversalStopCommand } from "./commands/universalStopCommand.mjs";
+import { HardResetCommand } from "./commands/hardResetCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -1220,64 +1221,7 @@ export default class Activator {
 
     new SoftResetCommand(ctx).register(context);
 
-    // [Command] Hard reset pico
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "reset.hard",
-      async () => {
-        // TODO: maybe instead just run the command and if it retuns a type none
-        // response show warning message as otherwise a second warning for this
-        // case would be required to be implemented
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        if (await this.bootPyWarning()) {
-          return;
-        }
-
-        // performing hard reset in orange
-        void vscode.window.withProgress(
-          {
-            location: vscode.ProgressLocation.Notification,
-            title: "Performing hard reset...",
-            cancellable: true,
-          },
-          async (progress, token) => {
-            token.onCancellationRequested(
-              PicoMpyCom.getInstance().interruptExecution.bind(
-                PicoMpyCom.getInstance(),
-              ),
-            );
-
-            const result = await PicoMpyCom.getInstance().hardReset(
-              (open: boolean) => {
-                if (!open) {
-                  return;
-                }
-
-                this.ui?.userOperationStarted();
-              },
-            );
-            progress.report({ increment: 100 });
-            this.ui?.userOperationStopped();
-            if (result.type === OperationResultType.commandResult) {
-              if (result.result) {
-                void vscode.window.showInformationMessage(
-                  "Hard reset is done.",
-                );
-              } else {
-                void vscode.window.showErrorMessage("Hard reset has failed.");
-              }
-            }
-          },
-        );
-      },
-    );
-    context.subscriptions.push(disposable);
+    new HardResetCommand(ctx).register(context);
 
     // [Command] Hard reset pico (interactive)
     disposable = vscode.commands.registerCommand(
@@ -1294,7 +1238,7 @@ export default class Activator {
           return;
         }
 
-        if (await this.bootPyWarning()) {
+        if (await ctx.warnAboutBootPy()) {
           if (terminalTriggered) {
             this.terminal?.clean(true);
             this.terminal?.prompt();
@@ -1873,35 +1817,6 @@ export default class Activator {
     this.ui?.refreshState(true);
   }
 
-  private async bootPyWarning(): Promise<boolean> {
-    const bootPyResult = await PicoMpyCom.getInstance().getItemStat("/boot.py");
-
-    if (
-      bootPyResult.type === OperationResultType.getItemStat &&
-      bootPyResult.stat !== null
-    ) {
-      // warn that boot.py could prevent device from entering REPL or
-      // delay the amount we have to wait before we can reconnect
-      const result = await vscode.window.showWarningMessage(
-        "A boot.py script is present on the Pico. " +
-          "If it contains an infinite loop or long running code, " +
-          "the Pico may not enter the REPL or take longer to do so. " +
-          "Do you want to continue?",
-        { modal: true },
-        "Yes",
-      );
-
-      return result !== "Yes";
-    } else {
-      void vscode.window.showErrorMessage(
-        "Failed to retrieve details about the boot.py file.",
-      );
-    }
-
-    // continue as we don't know if there is a boot.py file
-    // or the user wants to continue even if there is one
-    return false;
-  }
 
   // TODO: maybe use a stream instead of spaming syscalls
   /**
