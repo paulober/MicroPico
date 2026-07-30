@@ -15,3 +15,14 @@ export class PicoMpyCom {
     return Promise.resolve([]);
   }
 }
+
+// Mirrors the real enum's string values so listener registration in modules
+// under test (e.g. ConnectionManager) resolves to the same keys a fake
+// EventEmitter emits on. Kept in sync with the lib's picoSerialEvents.ts.
+export const PicoSerialEvents = {
+  portOpened: "portOpened",
+  portClosed: "portClosed",
+  portError: "portError",
+  relayInput: "relayInput",
+  relayInputError: "relayInputError",
+} as const;

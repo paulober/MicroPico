@@ -25,6 +25,15 @@ const quickPickQueue: unknown[] = [];
 const saveDialogQueue: unknown[] = [];
 const warningMessageQueue: unknown[] = [];
 
+// Number of times showQuickPick was invoked, so tests can assert a picker was
+// (or, for the switchPico 0-ports guard, was NOT) shown.
+let quickPickCalls = 0;
+
+/** How many times `showQuickPick` has been called since the last reset. */
+export function __getQuickPickCalls(): number {
+  return quickPickCalls;
+}
+
 /** Queue values the next `showQuickPick` calls will resolve to, in order. */
 export function __queueQuickPick(...values: unknown[]): void {
   quickPickQueue.push(...values);
@@ -45,6 +54,7 @@ export function __resetPrompts(): void {
   quickPickQueue.length = 0;
   saveDialogQueue.length = 0;
   warningMessageQueue.length = 0;
+  quickPickCalls = 0;
 }
 
 export const workspace = {
@@ -77,6 +87,8 @@ export const window = {
     return Promise.resolve(undefined);
   },
   showQuickPick() {
+    quickPickCalls++;
+
     return Promise.resolve(
       quickPickQueue.length > 0 ? quickPickQueue.shift() : undefined,
     );
