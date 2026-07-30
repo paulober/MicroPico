@@ -13,7 +13,7 @@ import Stubs, {
 } from "./stubs.mjs";
 import Settings, { SettingsKey } from "./settings.mjs";
 import Logger from "./logger.mjs";
-import { basename, extname, join } from "path";
+import { basename, join } from "path";
 import { PicoRemoteFileSystem } from "./filesystem.mjs";
 import { Terminal } from "./terminal.mjs";
 import { ContextKeys } from "./models/contextKeys.mjs";
@@ -48,6 +48,7 @@ import { ToggleFileSystemCommand } from "./commands/toggleFileSystemCommand.mjs"
 import { SwitchStubsCommand } from "./commands/switchStubsCommand.mjs";
 import { RunSelectionCommand } from "./commands/runSelectionCommand.mjs";
 import { RemoteRunCommand } from "./commands/remoteRunCommand.mjs";
+import { RunCommand } from "./commands/runCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -67,8 +68,6 @@ export default class Activator {
   private noCheckForUSBMSDs = false;
   private output?: OutputRouter;
   private ctx!: SessionContext;
-
-  private disableExtWarning = false;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -498,101 +497,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // [Command] Run File
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "run",
-      async (resourceURI?: vscode.Uri, noSoftReset = false) => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        let file = resourceURI?.fsPath ?? (await getFocusedFile());
-
-        if (
-          file === undefined ||
-          (resourceURI?.scheme === "pico")
-        ) {
-          file = await getFocusedFile(true);
-          if (file === undefined) {
-            void vscode.window.showWarningMessage("No file open and focused.");
-
-            return;
-          } else {
-            void vscode.commands.executeCommand(commandPrefix + "remote.run");
-
-            return;
-          }
-        }
-
-        // check file extension
-        if (
-          !this.disableExtWarning &&
-          ![".py", ".mpy"].includes(extname(file))
-        ) {
-          // warn it's not a python file do you still want to run it
-          const choice = await vscode.window.showWarningMessage(
-            "The selected file is not a Python file. " +
-              "Do you still want to run it?",
-            "Yes",
-            "No",
-            "Yes, don't show this again",
-          );
-
-          if (choice !== "Yes") {
-            return;
-          }
-        }
-
-        if (await ctx.checkForRunningOperation()) {
-          return;
-        }
-
-        const forceDisableSoftReset =
-          this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
-
-        if (!noSoftReset && !forceDisableSoftReset) {
-          await PicoMpyCom.getInstance().softReset();
-        }
-        const decoder = new StringDecoder("utf-8");
-        // TODO: maybe freeze terminal until this operation runs to prevent user input
-        const data = await PicoMpyCom.getInstance().runFile(
-          file,
-          (open: boolean): void => {
-            if (!open) {
-              return;
-            }
-
-            void focusTerminal(this.terminalOptions);
-            ctx.commandExecuting = true;
-            this.terminal?.cleanAndStore();
-            this.ui?.userOperationStarted();
-          },
-          (data: Buffer) => {
-            if (data.length > 0) {
-              this.output?.route(data);
-              const text = decoder.write(data); // streaming decode
-              if (text.length > 0) {
-                this.terminal?.write(text);
-              }
-            }
-          },
-        );
-        if (!noSoftReset && !forceDisableSoftReset) {
-          await PicoMpyCom.getInstance().softReset();
-        }
-        this.ui?.userOperationStopped();
-        if (data.type !== OperationResultType.commandResult || !data.result) {
-          this.logger.warn("Failed to execute script on Pico.");
-        }
-        ctx.commandExecuting = false;
-        this.terminal?.restore();
-      },
-    );
-    context.subscriptions.push(disposable);
+    new RunCommand(ctx).register(context);
 
     new RemoteRunCommand(ctx).register(context);
 
