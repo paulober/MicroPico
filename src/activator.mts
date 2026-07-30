@@ -52,6 +52,10 @@ import { DownloadFileCommand } from "./commands/downloadFileCommand.mjs";
 import { DownloadCommand } from "./commands/downloadCommand.mjs";
 import { SoftResetListenCommand } from "./commands/softResetListenCommand.mjs";
 import { HardResetListenCommand } from "./commands/hardResetListenCommand.mjs";
+import {
+  ConnectionManager,
+  type ConnectionDeps,
+} from "./connection/connectionManager.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -66,11 +70,8 @@ export default class Activator {
   private activationFilePresentAtLaunch = false;
   private settings?: Settings;
 
-  private autoConnectTimer?: NodeJS.Timeout;
-  private comDevice?: string;
-  private noCheckForUSBMSDs = false;
+  private connection?: ConnectionManager;
   private output?: OutputRouter;
-  private ctx!: SessionContext;
 
   constructor() {
     this.logger = new Logger("Activator");
@@ -82,7 +83,19 @@ export default class Activator {
     // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
     this.settings = new Settings(context.workspaceState);
     const ctx = new SessionContext(this.settings);
-    this.ctx = ctx;
+
+    // The connection lifecycle (auto-connect polling, reconnect, board events)
+    // lives in its own manager; the activator only injects the side effects it
+    // needs and the view-side work to run once a board opens.
+    const connectionDeps: ConnectionDeps = {
+      listSupportedPorts: vidPidPairs =>
+        PicoMpyCom.getSerialPorts(vidPidPairs),
+      listAllPorts: () => PicoMpyCom.getAllSerialPorts(),
+      checkForUsbMsd: () => flashPicoInteractively(),
+      onConnected: () => this.onBoardConnected(),
+    };
+    const connection = new ConnectionManager(ctx, connectionDeps);
+    this.connection = connection;
 
     // get the python env to be used
     const pythonApi = await PythonExtension.api();
@@ -123,15 +136,15 @@ export default class Activator {
     }
 
     // TODO: maybe not call getComDevice if no activationFile is present
-    this.comDevice = await this.settings.getComDevice(
+    connection.comDevice = await this.settings.getComDevice(
       !this.activationFilePresentAtLaunch,
     );
 
     if (
       this.activationFilePresentAtLaunch &&
-      (this.comDevice === undefined || this.comDevice === "")
+      (connection.comDevice === undefined || connection.comDevice === "")
     ) {
-      this.comDevice = undefined;
+      connection.comDevice = undefined;
 
       void vscode.window
         .showErrorMessage(
@@ -155,11 +168,12 @@ export default class Activator {
 
     if (this.activationFilePresentAtLaunch) {
       this.ui.show();
-      this.setupAutoConnect();
+      connection.setupAutoConnect();
     }
 
     context.subscriptions.push({
       dispose: async () => {
+        connection.dispose();
         await PicoMpyCom.getInstance().closeSerialPort();
       },
     });
@@ -375,7 +389,7 @@ export default class Activator {
 
     if (
       this.settings.getBoolean(SettingsKey.openOnStart) &&
-      this.comDevice !== undefined &&
+      connection.comDevice !== undefined &&
       this.activationFilePresentAtLaunch
     ) {
       await focusTerminal(this.terminalOptions);
@@ -400,104 +414,14 @@ export default class Activator {
     // [Command] Connect
     let disposable = vscode.commands.registerCommand(
       commandPrefix + "connect",
-      async () => {
-        /*
-        this.comDevice = await this.settings?.getComDevice();
-          if (this.comDevice === undefined) {
-            if (this.settings?.getBoolean(SettingsKey.autoConnect)) {
-              void vscode.window.showErrorMessage(
-                "No COM device found! Starting auto connect..."
-              );
-            }
-          } else {
-            this.ui?.init();
-            // TODO: check if this is a smooth transition between serialport devices
-            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-          }
-          this.setupAutoConnect();
-          */
-        if (!this.setupAutoConnect()) {
-          // auto connect is probably disable and no manual com device is set
-          const customVidPidPairs = this.settings?.getCustomVidPidPairs();
-          const manualComDevice =
-            this.settings?.getString(SettingsKey.manualComDevice) ?? "";
-
-          // If manual COM device is set, try to connect directly
-          if (manualComDevice.length > 0) {
-            try {
-              const allPorts = await PicoMpyCom.getAllSerialPorts();
-
-              if (allPorts.includes(manualComDevice)) {
-                this.comDevice = manualComDevice;
-                await PicoMpyCom.getInstance().openSerialPort(manualComDevice);
-
-                return;
-              } else {
-                const availablePorts =
-                  allPorts.length > 0 ? allPorts.join(", ") : "none";
-                void vscode.window.showErrorMessage(
-                  `Manual COM device '${manualComDevice}' not found. ` +
-                    `Available ports: ${availablePorts}`,
-                );
-
-                return;
-              }
-            } catch (error) {
-              const errorMsg =
-                error instanceof Error ? error.message : String(error);
-              void vscode.window.showErrorMessage(
-                "Failed to connect to manual COM device: " + errorMsg,
-              );
-
-              return;
-            }
-          }
-
-          const boards = await PicoMpyCom.getSerialPorts(customVidPidPairs);
-          if (boards.length > 1) {
-            const comDevice = await vscode.window.showQuickPick(boards, {
-              placeHolder: "Select the board to connect to",
-              canPickMany: false,
-              ignoreFocusOut: false,
-              title: "Connect to Micropython board",
-            });
-
-            if (comDevice !== undefined) {
-              this.comDevice = comDevice;
-              await PicoMpyCom.getInstance().openSerialPort(comDevice);
-            }
-
-            return;
-          } else {
-            if (boards.length === 1) {
-              this.comDevice = boards[0];
-              await PicoMpyCom.getInstance().openSerialPort(boards[0]);
-            } else {
-              void vscode.window.showWarningMessage(
-                "No board running MicroPython has been found. " +
-                  "Check your connection and VID/PID settings.",
-              );
-              await this.checkForUSBMSDs();
-            }
-          }
-        }
-      },
+      () => connection.connect(),
     );
     context.subscriptions.push(disposable);
 
     // [Command] Disconnect
     disposable = vscode.commands.registerCommand(
       commandPrefix + "disconnect",
-      async () => {
-        if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-          clearInterval(this.autoConnectTimer);
-          this.intentionalDisconnect = true;
-          this.ui?.setDisconnecting();
-          // wait 1500ms
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          await PicoMpyCom.getInstance().closeSerialPort();
-        }
-      },
+      () => connection.disconnect(),
     );
     context.subscriptions.push(disposable);
 
@@ -520,18 +444,7 @@ export default class Activator {
     // [Command] Toggle connection
     disposable = vscode.commands.registerCommand(
       commandPrefix + "toggleConnect",
-      () => {
-        // don't allow reconnect before port has been closed properly
-        if (this.intentionalDisconnect) {
-          return;
-        }
-
-        if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.commands.executeCommand(commandPrefix + "disconnect");
-        } else {
-          void vscode.commands.executeCommand(commandPrefix + "connect");
-        }
-      },
+      () => connection.toggleConnect(),
     );
     context.subscriptions.push(disposable);
 
@@ -540,25 +453,7 @@ export default class Activator {
     // [Command] Switch Pico
     disposable = vscode.commands.registerCommand(
       commandPrefix + "switchPico",
-      async () => {
-        const customVidPidPairs = this.settings?.getCustomVidPidPairs();
-        const ports = await PicoMpyCom.getSerialPorts(customVidPidPairs);
-        if (ports.length === 0) {
-          void vscode.window.showErrorMessage("No connected Pico found!");
-        }
-
-        const port = await vscode.window.showQuickPick(ports, {
-          canPickMany: false,
-          placeHolder:
-            "Select your the COM port of the Pico you want to connect to",
-          ignoreFocusOut: false,
-        });
-
-        if (port !== undefined) {
-          this.comDevice = port;
-          await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-        }
-      },
+      () => connection.switchPico(),
     );
     context.subscriptions.push(disposable);
 
@@ -669,246 +564,17 @@ export default class Activator {
     return this.ui;
   }
 
-  private boundOnError = this.boardOnError.bind(this);
-  private boundOnExit = this.boardOnExit.bind(this);
-  private boundOnOpen = this.boardOnOpen.bind(this);
   /**
-   * Used to indicate that the disconnect is intentional
-   * stop the setupAutoConnect to be armed again.
+   * Terminal focus and first-connect openOnStart handling, invoked by the
+   * {@link ConnectionManager} once a board opens. Stays on the activator
+   * because it depends on activator-owned view state (terminal, activation
+   * file); the rest of the open handler lives in the manager.
    */
-  private intentionalDisconnect = false;
-
-  private setupAutoConnect(): boolean {
-    if (this.intentionalDisconnect) {
-      this.intentionalDisconnect = false;
-      // TODO: maybe also remove listeners here
-
-      return false;
-    }
-    if (this.settings === undefined) {
-      this.logger.error("Settings not provided for setupAutoConnect");
-
-      return false;
-    }
-    // if disconnected: check in a reasonable interval if a port is available and then connect
-    // else: just subscribe to the closed event once and if it is triggered start the disconnected
-    // routine and reflect the disconnected status in the UI
-    const instance = PicoMpyCom.getInstance();
-
-    // First, remove any existing listeners for the event
-    instance.off(PicoSerialEvents.portError, this.boundOnError);
-    instance.off(PicoSerialEvents.portClosed, this.boundOnExit);
-    instance.off(PicoSerialEvents.portOpened, this.boundOnOpen);
-
-    instance.on(PicoSerialEvents.portError, this.boundOnError);
-    instance.on(PicoSerialEvents.portClosed, this.boundOnExit);
-    instance.on(PicoSerialEvents.portOpened, this.boundOnOpen);
-
-    // TODO: check this condition, maybe this causes setupAutoConnect to be retriggered
-    // if the settings ever change, maybe listen to settings change event
-    if (
-      (this.settings.getString(SettingsKey.manualComDevice)?.length ?? 0) <=
-        0 &&
-      !this.settings.getBoolean(SettingsKey.autoConnect)
-    ) {
-      return false;
-    }
-
-    const onAutoConnect = async (): Promise<void> => {
-      if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-        clearInterval(this.autoConnectTimer);
-
-        return;
-      }
-
-      // make sure the user is informed about the connection state
-      // TODO: maybe called to often, reduce by only running at change of con state
-      this.ui?.refreshState(false);
-      this.settings?.reload();
-      const autoPort = this.settings?.getBoolean(SettingsKey.autoConnect);
-      const manualComDevice =
-        this.settings?.getString(SettingsKey.manualComDevice) ?? "";
-      const customVidPidPairs = this.settings?.getCustomVidPidPairs();
-
-      // TODO: maybe not reconnect to this.comDevice if autoConnect is disabled
-      if (
-        !autoPort &&
-        this.comDevice === undefined &&
-        manualComDevice.length <= 0
-      ) {
-        return;
-      }
-
-      // If manual COM device is set, try to connect directly without VID/PID filtering
-      if (manualComDevice.length > 0 && !autoPort) {
-        try {
-          // Verify the port exists by checking all available ports
-          const allPorts = await PicoMpyCom.getAllSerialPorts();
-
-          if (allPorts.includes(manualComDevice)) {
-            clearInterval(this.autoConnectTimer);
-            this.comDevice = manualComDevice;
-            await PicoMpyCom.getInstance().openSerialPort(manualComDevice);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-              return;
-            }
-
-            // If connection failed, restart the interval
-            this.autoConnectTimer = setInterval(
-              () => void onAutoConnect(),
-              1500,
-            );
-          } else {
-            // Port doesn't exist, log warning
-            this.logger.warn(
-              `Manual COM device '${manualComDevice}' not found in ` +
-                `available ports: ${allPorts.join(", ")}`,
-            );
-          }
-        } catch (error) {
-          const errorMsg =
-            error instanceof Error ? error.message : String(error);
-          this.logger.error(
-            "Failed to connect to manual COM device: " + errorMsg,
-          );
-        }
-
-        return;
-      }
-
-      PicoMpyCom.getSerialPorts(customVidPidPairs)
-        .then(async ports => {
-          if (ports.length === 0) {
-            if (!this.noCheckForUSBMSDs) {
-              // must be reset after checkForUSBMSDs if it want to continue
-              this.noCheckForUSBMSDs = true;
-              await this.checkForUSBMSDs();
-            }
-
-            return;
-          }
-
-          // so this doesn't get triggered again while trying to connect
-          clearInterval(this.autoConnectTimer);
-
-          // try to connect to previously connected device first
-          if (this.comDevice && ports.includes(this.comDevice)) {
-            // try to reconnect
-            await PicoMpyCom.getInstance().openSerialPort(this.comDevice);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-              return;
-            }
-          }
-
-          // no elseif as if the previous connection attemp failed try the next device
-          // TODO: maybe the delay above is not needed
-          if (autoPort) {
-            const port = ports[0];
-            this.comDevice = port;
-            await PicoMpyCom.getInstance().openSerialPort(port);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-
-          // restart this interval
-          this.autoConnectTimer = setInterval(() => void onAutoConnect(), 1500);
-        })
-        .catch(error => {
-          this.logger.error("Failed to get serial ports: " + error);
-        });
-    };
-
-    // required because setInterval would call it first after 1500ms
-    void onAutoConnect();
-    // setup interval
-    this.autoConnectTimer = setInterval(() => void onAutoConnect(), 1500);
-
-    return true;
-  }
-
-  private async checkForUSBMSDs(): Promise<void> {
-    const result = await flashPicoInteractively();
-    this.noCheckForUSBMSDs = result;
-  }
-
-  private boardOnError(error?: Error): void {
-    if (error) {
-      void vscode.window.showErrorMessage(
-        error instanceof Error
-          ? error.message
-          : typeof error === "string"
-            ? error
-            : "Unknown error",
-      );
-    }
-  }
-
-  /**
-   * Handles the exit event of the board connection.
-   *
-   * @param error The error that caused the exit event.
-   */
-  private boardOnExit(error?: Error | string): void {
-    // TODO: needs some adjustment (maybe) because it will be triggered multiple times
-    // if an error with the connection occurs
-    this.ui?.refreshState(false);
-    if (error === undefined) {
-      this.logger.info(`Connection to board was closed.`);
-      if (this.comDevice !== undefined) {
-        // check for running operation and cancel it
-        if (this.ui?.isUserOperationOngoing()) {
-          void vscode.window.showWarningMessage(
-            "Connection to board was closed. Stopping ongoing operation.",
-          );
-          this.ui?.userOperationStopped();
-          this.ctx.commandExecuting = false;
-          // has no benefit as the terminal will be reloaded on reconnect anyway
-          //this.terminal?.restore();
-        }
-        // END
-        void vscode.window.showInformationMessage("Disconnected from board.");
-        this.terminal?.freeze();
-        this.terminal?.write(
-          "\r\n\x1b[31mConnection has been closed.\x1b[0m\r\n",
-        );
-        this.terminal?.clean();
-      }
-    } else if (!PicoMpyCom.getInstance().isPortDisconnected()) {
-      // TODO: check the reason of this case or if it should be handled differently
-      // true if the connection was lost after a board has been connected successfully
-      this.logger.error(
-        `Connection to board lost: ${
-          error instanceof Error ? error.message : error
-        }`,
-      );
-      void vscode.window.showErrorMessage("Connection to board has been lost.");
-    }
-    this.setupAutoConnect();
-  }
-
-  private boardOnOpen(): void {
-    if (this.ui?.getState()) {
-      return;
-    }
-    if (!this.settings) {
-      void vscode.window.showErrorMessage(
-        "Failed to connect to board. Settings not available.",
-      );
-
-      return;
-    }
-
-    this.logger.debug(
-      "Connected to a board. Now executing *OnConnect stuff...",
-    );
-    this.logger.info("Connection to board successfully established");
-
+  private onBoardConnected(): void {
     if (
       !this.activationFilePresentAtLaunch &&
-      this.settings.getBoolean(SettingsKey.openOnStart) &&
-      this.comDevice !== undefined
+      this.settings?.getBoolean(SettingsKey.openOnStart) &&
+      this.connection?.comDevice !== undefined
     ) {
       void focusTerminal(this.terminalOptions);
       // only keep for first connection on a launch without activation file
@@ -916,35 +582,12 @@ export default class Activator {
     }
 
     if (this.terminal?.getIsOpen()) {
-      this.terminal?.cls();
-      //this.terminal?.open(undefined);
+      this.terminal.cls();
       void focusTerminal(this.terminalOptions);
-      this.terminal?.callOpeningCb();
+      this.terminal.callOpeningCb();
     } else {
       void focusTerminal(this.terminalOptions);
     }
-
-    void vscode.window.showInformationMessage(
-      "Connection to MicoPython board established.",
-    );
-
-    const scriptToExecute = this.settings.getString(
-      SettingsKey.executeOnConnect,
-    );
-    if (scriptToExecute !== undefined && scriptToExecute.trim() !== "") {
-      void vscode.commands.executeCommand(
-        commandPrefix + "remote.run",
-        scriptToExecute,
-        true,
-      );
-    }
-
-    const moduleToImport = this.settings.getString(SettingsKey.importOnConnect);
-    if (moduleToImport !== undefined && moduleToImport.trim() !== "") {
-      // TODO: check that voiding this is correct
-      void PicoMpyCom.getInstance().runCommand(`import ${moduleToImport}`);
-    }
-    this.ui?.refreshState(true);
   }
 
 
