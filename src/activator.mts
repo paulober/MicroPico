@@ -55,6 +55,7 @@ import { RtcSyncCommand } from "./commands/rtcSyncCommand.mjs";
 import { DeleteAllFilesCommand } from "./commands/deleteAllFilesCommand.mjs";
 import { UniversalStopCommand } from "./commands/universalStopCommand.mjs";
 import { HardResetCommand } from "./commands/hardResetCommand.mjs";
+import { ToggleFileSystemCommand } from "./commands/toggleFileSystemCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -1158,41 +1159,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    // [Command] Toggle virutal file-system
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "toggleFileSystem",
-      () => {
-        const findWorkspace = vscode.workspace.workspaceFolders?.find(
-          folder => folder.uri.scheme === "pico",
-        );
-        if (findWorkspace !== undefined) {
-          // remove findWorkspace
-          vscode.workspace.updateWorkspaceFolders(findWorkspace.index, 1);
-
-          return;
-        }
-
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        vscode.workspace.updateWorkspaceFolders(
-          vscode.workspace.workspaceFolders
-            ? vscode.workspace.workspaceFolders.length
-            : 0,
-          null,
-          {
-            uri: vscode.Uri.parse("pico://"),
-            name: "Mpy Remote Workspace",
-          },
-        );
-      },
-    );
-    context.subscriptions.push(disposable);
+    new ToggleFileSystemCommand(ctx).register(context);
 
     // [Command] Switch Pico
     disposable = vscode.commands.registerCommand(
