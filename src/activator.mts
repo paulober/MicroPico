@@ -47,6 +47,7 @@ import { HardResetCommand } from "./commands/hardResetCommand.mjs";
 import { ToggleFileSystemCommand } from "./commands/toggleFileSystemCommand.mjs";
 import { SwitchStubsCommand } from "./commands/switchStubsCommand.mjs";
 import { RunSelectionCommand } from "./commands/runSelectionCommand.mjs";
+import { RemoteRunCommand } from "./commands/remoteRunCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -593,80 +594,7 @@ export default class Activator {
     );
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "remote.run",
-      async (fileOverride?: string | vscode.Uri, noSoftReset = false) => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        if (!ctx.pythonPath) {
-          ctx.showNoActivePythonError();
-
-          return;
-        }
-
-        const file =
-          (fileOverride !== undefined && typeof fileOverride === "string"
-            ? fileOverride
-            : undefined) ?? (await getFocusedFile(true));
-
-        if (file === undefined) {
-          void vscode.window.showWarningMessage(
-            "No remote file open and focused.",
-          );
-
-          return;
-        }
-
-        if (await ctx.checkForRunningOperation()) {
-          return;
-        }
-
-        const forceDisableSoftReset =
-          this.settings?.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
-
-        if (!noSoftReset && !forceDisableSoftReset) {
-          await PicoMpyCom.getInstance().softReset();
-        }
-        await focusTerminal(this.terminalOptions);
-        const decoder = new StringDecoder("utf-8");
-        await PicoMpyCom.getInstance().runRemoteFile(
-          file,
-          (open: boolean) => {
-            if (!open) {
-              return;
-            }
-
-            // tells the terminal that it should
-            // emit input events to relay user input
-            ctx.commandExecuting = true;
-            this.terminal?.cleanAndStore();
-            this.ui?.userOperationStarted();
-          },
-          (data: Buffer) => {
-            if (data.length > 0) {
-              this.output?.route(data);
-              const text = decoder.write(data); // streaming decode
-              if (text.length > 0) {
-                this.terminal?.write(text);
-              }
-            }
-          },
-        );
-        if (!noSoftReset && !forceDisableSoftReset) {
-          await PicoMpyCom.getInstance().softReset();
-        }
-        this.ui?.userOperationStopped();
-        ctx.commandExecuting = false;
-        this.terminal?.restore();
-      },
-    );
-    context.subscriptions.push(disposable);
+    new RemoteRunCommand(ctx).register(context);
 
     new RunSelectionCommand(ctx).register(context);
 
