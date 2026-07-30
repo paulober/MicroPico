@@ -50,6 +50,8 @@ import { UploadCommand } from "./commands/uploadCommand.mjs";
 import { UploadFileCommand } from "./commands/uploadFileCommand.mjs";
 import { DownloadFileCommand } from "./commands/downloadFileCommand.mjs";
 import { DownloadCommand } from "./commands/downloadCommand.mjs";
+import { SoftResetListenCommand } from "./commands/softResetListenCommand.mjs";
+import { HardResetListenCommand } from "./commands/hardResetListenCommand.mjs";
 
 /*const pkg: {} | undefined = vscode.extensions.getExtension("paulober.pico-w-go")
   ?.packageJSON as object;*/
@@ -564,113 +566,8 @@ export default class Activator {
 
     new HardResetCommand(ctx).register(context);
 
-    // [Command] Hard reset pico (interactive)
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "reset.hard.listen",
-      async (terminalTriggered = false) => {
-        // TODO: maybe instead just run the command and if it retuns a type none
-        // response show warning message as otherwise a second warning for this
-        // case would be required to be implemented
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        if (await ctx.warnAboutBootPy()) {
-          if (terminalTriggered) {
-            this.terminal?.clean(true);
-            this.terminal?.prompt();
-          }
-
-          return;
-        }
-
-        await focusTerminal(this.terminalOptions);
-        const decoder = new StringDecoder("utf-8");
-        const result = await PicoMpyCom.getInstance().hardReset(
-          (open: boolean) => {
-            if (!open) {
-              return;
-            }
-
-            ctx.commandExecuting = true;
-            this.terminal?.cleanAndStore();
-            this.ui?.userOperationStarted();
-
-            // inform user about ongoing operation
-            this.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
-          },
-          (data: Buffer) => {
-            this.output?.route(data);
-            const text = decoder.write(data); // streaming decode
-            if (text.length > 0) {
-              this.terminal?.write(text);
-            }
-          },
-        );
-        this.terminal?.restore();
-        ctx.commandExecuting = false;
-        this.ui?.userOperationStopped();
-        if (result.type === OperationResultType.commandResult) {
-          if (result.result) {
-            void vscode.window.showInformationMessage("Hard reset done");
-          } else {
-            void vscode.window.showErrorMessage("Hard reset failed");
-          }
-        }
-      },
-    );
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand(
-      commandPrefix + "reset.soft.listen",
-      async () => {
-        if (PicoMpyCom.getInstance().isPortDisconnected()) {
-          void vscode.window.showWarningMessage(
-            "Please connect to the Pico first.",
-          );
-
-          return;
-        }
-
-        await focusTerminal(this.terminalOptions);
-        const decoder = new StringDecoder("utf-8");
-        const result = await PicoMpyCom.getInstance().sendCtrlD(
-          (open: boolean) => {
-            if (open) {
-              ctx.commandExecuting = true;
-              //terminal?.freeze();
-              this.terminal?.clean(true);
-              //terminal?.write("\r\n");
-              this.ui?.userOperationStarted();
-            }
-          },
-          (data: Buffer) => {
-            this.output?.route(data);
-            const text = decoder.write(data); // streaming decode
-            if (text.length > 0) {
-              this.terminal?.write(text);
-            }
-          },
-        );
-        ctx.commandExecuting = false;
-        this.ui?.userOperationStopped();
-        if (result.type === OperationResultType.commandResult) {
-          if (result.result) {
-            void vscode.window.showInformationMessage(
-              "Interactive Soft Reset finished",
-            );
-          } else {
-            void vscode.window.showErrorMessage("Soft reset failed");
-          }
-        }
-        this.terminal?.melt();
-        this.terminal?.prompt(true);
-      },
-    );
+    new HardResetListenCommand(ctx).register(context);
+    new SoftResetListenCommand(ctx).register(context);
 
     new RtcSyncCommand(ctx).register(context);
     new UniversalStopCommand(ctx).register(context);
