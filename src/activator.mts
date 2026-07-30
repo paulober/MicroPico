@@ -30,6 +30,7 @@ import PlotterViewProvider, {
   PLOTTER_VIEW_ID,
 } from "./plotter/plotterView.mjs";
 import { PlotParser } from "./plotter/plotParser.mjs";
+import { resolveIgnoredSyncItems } from "./utils/syncIgnore.mjs";
 import {
   OperationResultType,
   PicoMpyCom,
@@ -758,18 +759,9 @@ export default class Activator {
           return;
         }
 
-        // reducde replaces filter, map and concat
-        const ignoredSyncItems = this.settings.getIngoredSyncItems().reduce(
-          (acc: string[], item: string) => {
-            // item must either be global or for the current sync folder otherwise it is ignored
-            if (!item.includes(":") || item.split(":")[0] === syncDir[0]) {
-              const finalItem = item.includes(":") ? item.split(":")[1] : item;
-              acc.push(finalItem);
-            }
-
-            return acc;
-          },
-          ["**/.picowgo", "**/.micropico", "**/.DS_Store"],
+        const ignoredSyncItems = resolveIgnoredSyncItems(
+          this.settings.getIngoredSyncItems(),
+          syncDir[0],
         );
 
         if (this.settings.getBoolean(SettingsKey.gcBeforeUpload)) {
