@@ -20,6 +20,10 @@ export class UploadFileCommand extends Command {
       return;
     }
 
+    if (this.ctx.ui?.isUserOperationOngoing()) {
+      await vscode.commands.executeCommand(commandPrefix + "universalStop");
+    }
+
     const file = resourceURI?.fsPath ?? (await getFocusedFile());
     if (file === undefined) {
       void vscode.window.showWarningMessage("No file open.");

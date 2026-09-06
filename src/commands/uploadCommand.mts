@@ -21,6 +21,10 @@ export class UploadCommand extends Command {
       return;
     }
 
+    if (this.ctx.ui?.isUserOperationOngoing()) {
+      await vscode.commands.executeCommand(commandPrefix + "universalStop");
+    }
+
     this.ctx.settings.reload();
 
     const syncDir = await this.ctx.settings.requestSyncFolder("Upload");
