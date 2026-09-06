@@ -93,7 +93,7 @@ export class UploadCommand extends Command {
         }
 
         if (this.ctx.settings.getBoolean(SettingsKey.softResetAfterUpload)) {
-          await vscode.commands.executeCommand(
+          void vscode.commands.executeCommand(
             commandPrefix + "reset.soft.listen",
           );
         }
