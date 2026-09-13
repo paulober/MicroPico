@@ -483,3 +483,6 @@ prebuilds/
 pico-mpy-com/
 
 test-out/
+
+# JetBrains IDEs
+.idea/
