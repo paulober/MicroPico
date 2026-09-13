@@ -6,16 +6,22 @@ on:
     branches-ignore:
       - "dependabot/**"
     paths-ignore:
-      - ".idea/**"
       - ".vscode/**"
       - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
       - ".prettierrc.json"
-      - "LICENSE"
       - ".editorconfig"
+      - "LICENSE.txt"
+      - "NOTICE"
+      - "CITATION.cff"
 
 permissions:
   contents: read
   packages: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -27,10 +33,12 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: "24.18.1"
           registry-url: "https://npm.pkg.github.com"
@@ -39,7 +47,7 @@ jobs:
           cache: "npm"
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.14"
 
@@ -66,10 +74,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: "24.18.1"
           registry-url: "https://npm.pkg.github.com"
@@ -78,7 +88,7 @@ jobs:
           cache: "npm"
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.14"
 
@@ -99,10 +109,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: "24.18.1"
           registry-url: "https://npm.pkg.github.com"
@@ -111,7 +123,7 @@ jobs:
           cache: "npm"
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.14"
 
@@ -130,14 +142,17 @@ jobs:
         run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
 
       - name: Package
-        run: |
-          chmod +x ./scripts/package.sh
-          ./scripts/package.sh
+        run: ./scripts/package.sh
         env:
           RELEASE_TAG_NAME: ${{ env.SHORT_SHA }}
 
+      - name: Generate SBOM
+        run: node scripts/sbom.mjs > "micropico-${SHORT_SHA}.cdx.json"
+
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: micropico-${{ env.SHORT_SHA }}
-          path: micropico-*.vsix
+          path: |
+            micropico-*.vsix
+            micropico-*.cdx.json

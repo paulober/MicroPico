@@ -1,36 +1,37 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Packages one VSIX per target platform, each with only its own serialport
+# prebuild, plus a universal VSIX with all prebuilds for manual installs.
+set -euo pipefail
 
-# Define an array of platforms
-platforms=("win32-x64" "win32-arm64" "darwin-x64+arm64" "linux-arm64" "linux-arm" "linux-x64" "universal")
+: "${RELEASE_TAG_NAME:?RELEASE_TAG_NAME must be set}"
+
+PREBUILDS="node_modules/@serialport/bindings-cpp/prebuilds"
+
+# vsce target:prebuild folder
+targets=(
+  "win32-x64:win32-x64"
+  "win32-arm64:win32-arm64"
+  "linux-x64:linux-x64"
+  "linux-arm64:linux-arm64"
+  "linux-armhf:linux-arm"
+  "darwin-x64:darwin-x64+arm64"
+  "darwin-arm64:darwin-x64+arm64"
+)
+
 rm -rf dist
 
-# Loop through the platforms
-for platform in "${platforms[@]}"; do
+for entry in "${targets[@]}"; do
+  target="${entry%%:*}"
+  prebuild="${entry#*:}"
+
   rm -rf prebuilds
   mkdir prebuilds
+  cp -r "$PREBUILDS/$prebuild" prebuilds/
 
-  if [ "$platform" != "universal" ]; then
-    # Copy the bindings binary for each platform
-    cp -r "node_modules/@serialport/bindings-cpp/prebuilds/$platform" "./prebuilds"
-  else
-    # Copy the bindings binaries for all platforms
-    cp -r "node_modules/@serialport/bindings-cpp/prebuilds" "./"
-  fi
-
-  # Package the VSCode extension for the platform
-  if [ "$platform" == "win32-x64" ]; then
-    npx @vscode/vsce package --no-yarn --target "win32-x64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
-  elif [ "$platform" == "win32-arm64" ]; then
-    npx @vscode/vsce package --no-yarn --target "win32-arm64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
-  elif [ "$platform" == "darwin-x64+arm64" ]; then
-    npx @vscode/vsce package --no-yarn -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
-  elif [ "$platform" == "linux-arm64" ]; then
-    npx @vscode/vsce package --no-yarn --target "linux-arm64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
-  elif [ "$platform" == "linux-arm" ]; then
-    npx @vscode/vsce package --no-yarn --target "linux-armhf" -o "micropico-$RELEASE_TAG_NAME-linux-armhf.vsix"
-  elif [ "$platform" == "linux-x64" ]; then
-    npx @vscode/vsce package --no-yarn --target "linux-x64" -o "micropico-$RELEASE_TAG_NAME-$platform.vsix"
-  else
-    npx @vscode/vsce package --no-yarn -o "micropico-$RELEASE_TAG_NAME.vsix"
-  fi
+  npx @vscode/vsce package --no-yarn --target "$target" \
+    -o "micropico-$RELEASE_TAG_NAME-$target.vsix"
 done
+
+rm -rf prebuilds
+cp -r "$PREBUILDS" prebuilds
+npx @vscode/vsce package --no-yarn -o "micropico-$RELEASE_TAG_NAME.vsix"

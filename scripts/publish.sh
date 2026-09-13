@@ -1,39 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Publishes the platform VSIX files created by package.sh to the VS Code
+# Marketplace and Open VSX. The universal VSIX only goes to the GitHub release.
+set -euo pipefail
 
-# This script's purpose is to publish the VSCode extension to the VSCode Marketplace 
-# and OpenVSX Registry also it packages binaries for each 
-# platform to reduced vsix size
+: "${RELEASE_TAG_NAME:?RELEASE_TAG_NAME must be set}"
+: "${VSCE_PAT:?VSCE_PAT must be set}"
+: "${OVSX_PAT:?OVSX_PAT must be set}"
 
-# Get the directory where publish.sh is located
-SCRIPT_DIR=$(dirname "$(realpath "$BASH_SOURCE")")
+shopt -s nullglob
+packages=("micropico-$RELEASE_TAG_NAME"-*.vsix)
 
-# Ensure package.sh is executable
-chmod +x "$SCRIPT_DIR/package.sh"
+if [ ${#packages[@]} -eq 0 ]; then
+  echo "No platform packages found. Run scripts/package.sh first." >&2
+  exit 1
+fi
 
-# Call the package.sh script using the absolute path
-"$SCRIPT_DIR/package.sh"
-
-# Find all .vsix files except the one without a platform prefix and publish them one by one
-find . -type f -name "micropico-$RELEASE_TAG_NAME-*.vsix" ! -name "micropico-$RELEASE_TAG_NAME.vsix" | while read -r package_path; do
-  # If the filename contains "darwin", skip as macOS universal publishing issn't possible at the moment
-  if [[ "$package_path" == *"darwin"* ]]; then
-    # delete this vsix file
-    rm -rf "$package_path"
-    continue
-  fi
-
-  # Publish the VSCode extension to the VSCode Marketplace
-  npx @vscode/vsce publish --packagePath "$package_path"
-  # Publish the VSCode extension to the Open VSX Registry
-  npx ovsx publish "$package_path" -p "$OVSX_PAT"
-  # delete this vsix file
-  rm -rf "$package_path"
+for package in "${packages[@]}"; do
+  echo "Publishing $package"
+  # --skip-duplicate makes a failed run safe to re-run
+  npx @vscode/vsce publish --skip-duplicate --packagePath "$package"
+  npx ovsx publish --skip-duplicate -p "$OVSX_PAT" "$package"
 done
-
-# macOS universal publish not possible workaround
-
-rm -rf prebuilds
-mkdir prebuilds
-cp -r "node_modules/@serialport/bindings-cpp/prebuilds/darwin-x64+arm64" "./prebuilds"
-npx @vscode/vsce publish --no-yarn --target darwin-x64 darwin-arm64
-npx ovsx publish --target darwin-x64 darwin-arm64 -p "$OVSX_PAT"

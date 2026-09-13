@@ -1,36 +1,45 @@
-name: Publish to Marketplace
+name: Publish
 
 on:
   release:
     types: [published]
 
 permissions:
-  # read is not enought for editing releases
-  contents: write
-  deployments: write
-  packages: write
+  contents: read
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write # upload release assets
+      packages: read # @paulober/pico-mpy-com from GitHub Packages
+      id-token: write # build provenance
+      attestations: write
+
+    env:
+      RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
 
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup Node v22.20.0
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
-          node-version: '24.18.1'
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "24.18.1"
           registry-url: "https://npm.pkg.github.com"
           scope: "@paulober"
           token: ${{ secrets.GITHUB_TOKEN }}
+          # never restore a cache into a release build
+          package-manager-cache: false
 
-      - name: Setup Python v3.14
-        uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: '3.14'
+          python-version: "3.14"
 
-      - name: Install NPM dependencies And Download Stubs
+      - name: Install dependencies and download stubs
         shell: bash
         run: |
           echo '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' >> .npmrc
@@ -38,25 +47,26 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Publish Script
-        run: |
-          chmod +x ./scripts/publish.sh
-          ./scripts/publish.sh
+      - name: Package
+        run: ./scripts/package.sh
+
+      - name: Generate SBOM
+        run: node scripts/sbom.mjs > "micropico-${RELEASE_TAG_NAME}.cdx.json"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            micropico-*.vsix
+            micropico-*.cdx.json
+
+      - name: Upload to the release
+        run: gh release upload "$RELEASE_TAG_NAME" micropico-*.vsix micropico-*.cdx.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to the Marketplace and Open VSX
+        run: ./scripts/publish.sh
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
           OVSX_PAT: ${{ secrets.OPEN_VSX_TOKEN }}
-          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: MicroPico ${{ github.event.release.tag_name }}
-          path: micropico-*.vsix
-
-      - name: Upload Artifact To Release
-        #gh api --method POST -H "Accept: application/vnd.github+json" /repos/paulober/MicroPico/releases/$RELEASE_ID/assets
-        run: gh release upload $RELEASE_TAG_NAME micropico-*.vsix
-        env:
-          #RELEASE_ID: $ {{ github.event.release.id }}
-          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
