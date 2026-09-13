@@ -29,7 +29,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 - vREPL expressions are evaluated on the board only, so the result no longer depends on the local Python installation
 - Log levels of the MicroPico output channel are now set with VS Code's "Set Log Level"
 - Better placeholder text for the package input field (#333 by @adamvotocek)
-- Updated dependencies, including `@paulober/pico-mpy-com` `1.0.27`
+- Updated dependencies, including `@paulober/pico-mpy-com` `1.0.28`
 
 ### Fixed
 
