@@ -72,6 +72,8 @@ print("Finished.")
 
 - To stop the execution of the currently running program or other operation, run `> MicroPico > Stop execution`. The "Stop" button at the status bar does the same.
 
+- To plot values, run `> MicroPico > Open Plotter` and print comma-separated numbers, e.g. `print("%.2f, %.2f" % (temp, humidity))`. An optional first line like `print("temp, humidity")` names the series.
+
 ---
 
 ## Extension Settings
@@ -92,6 +94,8 @@ This extension contributes the following settings:
 * `micropico.executeOnConnect`: Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable. (must be relative to the root of the Pico's filesystem; doesn't need to begin with a slash; overrides `micropico.openOnStart` setting)
 * `micropico.importOnConnect`: A MicroPython module to import in vREPL on connect. Leave empty to disable.
 * `micropico.noSoftResetOnRun`: Disables the soft-resets before and after running a file on the Pico.
+* `micropico.disableRunFileTypeWarning`: Don't ask for confirmation when running a file that is not a `.py` or `.mpy` file.
+* `micropico.customVidPidPairs`: Additional USB vendor/product ID pairs (in decimal) to detect as MicroPython boards, e.g. `[{ "vid": 1027, "pid": 24592 }]` for an FTDI FT2232H (0x0403/0x6010).
 
 ## Extension Context Keys
 
