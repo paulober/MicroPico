@@ -92,7 +92,7 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
           void this._view.webview.postMessage({
             command: "packageInstalled",
             data: pkg,
-          } as WebviewMessage);
+          } satisfies WebviewMessage);
         }
       } else {
         await window.showErrorMessage(
