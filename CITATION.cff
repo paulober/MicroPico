@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: If you use MicroPico in teaching material or research, please cite it as below.
+type: software
+title: MicroPico
+abstract: >-
+  MicroPico is a Visual Studio Code extension for MicroPython development
+  on the Raspberry Pi Pico and other microcontroller boards.
+authors:
+  - given-names: Paul Emilio
+    family-names: Oberosler
+    alias: paulober
+repository-code: https://github.com/paulober/MicroPico
+url: https://micropico.paulober.dev
+license: Apache-2.0
+version: 4.4.0
+keywords:
+  - MicroPython
+  - Raspberry Pi Pico
+  - Visual Studio Code
+  - education
+  - embedded systems
