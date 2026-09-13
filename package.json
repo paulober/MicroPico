@@ -589,7 +589,8 @@
         {
           "id": "micropico-plotter",
           "name": "Plotter",
-          "type": "webview"
+          "type": "webview",
+          "when": "micropico.isActivated"
         }
       ]
     },

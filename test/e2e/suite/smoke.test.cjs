@@ -29,6 +29,7 @@ const REQUIRED_COMMANDS = [
   "micropico.reset.hard",
   "micropico.universalStop",
   "micropico.listCommands",
+  "micropico.openPlotter",
 ];
 
 test("the extension is present and activates", async () => {
