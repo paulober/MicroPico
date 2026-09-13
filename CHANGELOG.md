@@ -10,6 +10,38 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.4.0] - 2026-09-14
+
+### Added
+
+- Live plotter panel for numeric program output (`MicroPico: Open Plotter`) with pause, clear and CSV/PNG export (#258)
+- `micropico.customVidPidPairs` setting to connect to boards with other USB vendor/product IDs
+- Uploads and downloads now offer to stop a running program instead of silently waiting for it to finish (#339, idea by @kai-morich in #340)
+- `micropico.disableRunFileTypeWarning` setting
+
+### Changed
+
+- Changed minimum Visual Studio Code version to `1.137.0` (Node.js 24)
+- Run and Remote Run now always soft reset the board before and after running, also when started from the editor title button or a context menu. Set `micropico.noSoftResetOnRun` to turn this off
+- Remote Run from the Pico file explorer runs the clicked file instead of the focused editor
+- vREPL expressions are evaluated on the board only, so the result no longer depends on the local Python installation
+- Log levels of the MicroPico output channel are now set with VS Code's "Set Log Level"
+- Better placeholder text for the package input field (#333 by @adamvotocek)
+- Updated dependencies, including `@paulober/pico-mpy-com` `1.0.27`
+
+### Fixed
+
+- Upload with `micropico.softResetAfterUpload` kept the progress notification open while the program ran (#337, #338 by @kai-morich)
+- Backslashes in vREPL expressions were corrupted, e.g. `b'\xAA'` printed `b'\xc2\xaa'` (#282)
+- `.ls` and lines like `import os; os.listdir()` printed nothing in the vREPL (#315)
+- Downloaded binary files could be corrupted (#319)
+- Long-running programs started with a soft reset were cut off after about 50 seconds (#336)
+- Stop had no effect a second time when a program ignored the first interrupt
+- Connecting to a board whose program ignores Ctrl+C could lock the connection until MicroPico was restarted
+- Auto-connect could start overlapping reconnect attempts
+- "Switch Pico" opened an empty picker when no board was found
+- The "Yes, don't show this again" option of the non-Python file warning cancelled the run
+
 ## [4.3.4] - 2025-11-28
 
 ### Changed
