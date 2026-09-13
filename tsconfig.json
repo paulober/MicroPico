@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "node16",
-    "target": "ES2022",
+    "target": "ES2024",
     "lib": [
-      "ES2022"
+      "ES2024"
     ],
     "sourceMap": true,
     "inlineSourceMap": false,

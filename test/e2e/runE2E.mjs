@@ -15,7 +15,7 @@ const extensionTestsPath = path.resolve(here, "suite", "index.cjs");
 const workspace = path.resolve(here, "fixtures", "project");
 
 async function main() {
-  const vscodeExecutablePath = await downloadAndUnzipVSCode("stable");
+  const vscodeExecutablePath = await downloadAndUnzipVSCode("1.137.0");
 
   // MicroPico declares ms-python.python as an extensionDependency, so VS Code
   // will not activate it unless the Python extension is installed first.
