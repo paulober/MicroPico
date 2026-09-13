@@ -22,6 +22,7 @@ export class SoftResetListenCommand extends Command {
     const result = await this.ctx.com.sendCtrlD(
       (open: boolean) => {
         if (open) {
+          this.ctx.setBackgroundProgram(false);
           this.ctx.commandExecuting = true;
           this.ctx.terminal?.clean(true);
           this.ctx.ui?.userOperationStarted();

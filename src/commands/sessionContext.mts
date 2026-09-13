@@ -35,6 +35,12 @@ export class SessionContext {
    */
   public commandExecuting = false;
 
+  /**
+   * Whether a program keeps running on the board after its command finished,
+   * e.g. a timer that prints. Set by background output, cleared by resets.
+   */
+  public backgroundProgram = false;
+
   private statusbarMsgDisposable?: vscode.Disposable;
 
   public constructor(
@@ -54,6 +60,31 @@ export class SessionContext {
    * operation), `false` to proceed.
    */
   public async checkForRunningOperation(action?: string): Promise<boolean> {
+    // Output of a program printing in the background can interleave with file
+    // transfers, so offer to stop it first. Run resets the board anyway.
+    if (!this.commandExecuting && this.backgroundProgram && action) {
+      const proceed = `Stop and ${action}`;
+      const choice = await vscode.window.showWarningMessage(
+        "A program is still running in the background on the board. " +
+          `Stop it to ${action.toLowerCase()}?`,
+        { modal: true },
+        proceed,
+      );
+      if (choice !== proceed) {
+        this.statusbarMsgDisposable?.dispose();
+        this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
+          "Operation canceled.",
+          5000,
+        );
+
+        return true;
+      }
+
+      await this.stopBackgroundProgram();
+
+      return false;
+    }
+
     if (this.commandExecuting) {
       const proceed = action === undefined ? "Yes" : `Stop and ${action}`;
       const choice =
@@ -90,6 +121,28 @@ export class SessionContext {
     }
 
     return false;
+  }
+
+  public setBackgroundProgram(running: boolean): void {
+    this.backgroundProgram = running;
+    this.ui?.setBackgroundProgram(running);
+  }
+
+  /**
+   * Ends a program running in the background. Ctrl-C doesn't stop timers or
+   * interrupts, a soft reset does.
+   *
+   * @returns Whether the soft reset succeeded.
+   */
+  public async stopBackgroundProgram(): Promise<boolean> {
+    const result = await this.com.softReset();
+    // checked structurally, see warnAboutBootPy
+    const stopped = "result" in result && result.result;
+    if (stopped) {
+      this.setBackgroundProgram(false);
+    }
+
+    return stopped;
   }
 
   /** Warn the user that no Python interpreter is selected. */

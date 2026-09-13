@@ -73,8 +73,11 @@ export class RunCommand extends Command {
     const forceDisableSoftReset =
       this.ctx.settings.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
+    // Only reset before running: a reset afterwards would end timers,
+    // interrupts and threads the program leaves running (#278).
     if (!noSoftReset && !forceDisableSoftReset) {
       await this.ctx.com.softReset();
+      this.ctx.setBackgroundProgram(false);
     }
     const decoder = new StringDecoder("utf-8");
     const data = await this.ctx.com.runFile(
@@ -99,9 +102,6 @@ export class RunCommand extends Command {
         }
       },
     );
-    if (!noSoftReset && !forceDisableSoftReset) {
-      await this.ctx.com.softReset();
-    }
     this.ctx.ui?.userOperationStopped();
     if (data.type !== OperationResultType.commandResult || !data.result) {
       this.logger.warn("Failed to execute script on Pico.");

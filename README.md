@@ -93,7 +93,7 @@ This extension contributes the following settings:
 * `micropico.softResetAfterUpload`: Soft-resets your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
 * `micropico.executeOnConnect`: Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable. (must be relative to the root of the Pico's filesystem; doesn't need to begin with a slash; overrides `micropico.openOnStart` setting)
 * `micropico.importOnConnect`: A MicroPython module to import in vREPL on connect. Leave empty to disable.
-* `micropico.noSoftResetOnRun`: Disables the soft-resets before and after running a file on the Pico.
+* `micropico.noSoftResetOnRun`: Disables the soft reset before running a file on the Pico.
 * `micropico.disableRunFileTypeWarning`: Don't ask for confirmation when running a file that is not a `.py` or `.mpy` file.
 * `micropico.customVidPidPairs`: Additional USB vendor/product ID pairs (in decimal) to detect as MicroPython boards, e.g. `[{ "vid": 1027, "pid": 24592 }]` for an FTDI FT2232H (0x0403/0x6010).
 

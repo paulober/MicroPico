@@ -25,6 +25,7 @@ export const PicoSerialEvents = {
   portError: "portError",
   relayInput: "relayInput",
   relayInputError: "relayInputError",
+  backgroundOutput: "backgroundOutput",
 } as const;
 
 // Mirrors the real enum's numeric values (the lib's operationResult.ts), so

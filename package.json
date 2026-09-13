@@ -549,8 +549,8 @@
           "type": "boolean",
           "scope": "machine-overridable",
           "default": false,
-          "title": "Disable the soft-resets before and after executing a file.",
-          "description": "Soft-resets are used to clean REPL state so changes in classes and other structs are reflected correctly.",
+          "title": "Disable the soft reset before running a file.",
+          "description": "The soft reset clears the REPL state so changes to classes and other structures take effect. Programs keep running after the file finished, e.g. timers.",
           "order": 16
         },
         "micropico.disableRunFileTypeWarning": {

@@ -171,6 +171,31 @@ export const extensions = {
 
 export const env = {};
 
+/** `event` subscribes a listener, `fire` notifies all of them. */
+export class EventEmitter<T> {
+  private listeners: Array<(value: T) => void> = [];
+
+  public event = (listener: (value: T) => void): { dispose(): void } => {
+    this.listeners.push(listener);
+
+    return {
+      dispose: () => {
+        this.listeners = this.listeners.filter(l => l !== listener);
+      },
+    };
+  };
+
+  public fire(value: T): void {
+    for (const listener of this.listeners) {
+      listener(value);
+    }
+  }
+
+  public dispose(): void {
+    this.listeners = [];
+  }
+}
+
 export class Uri {
   static from(components: { scheme: string; path: string }) {
     return components;

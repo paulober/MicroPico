@@ -27,6 +27,7 @@ export default class UI {
   private visible = false;
   private initialized = false;
   private userOperationOngoing = 0;
+  private backgroundProgram = false;
   private lastState = false;
 
   private items: Record<string, StatusBarItem> = {};
@@ -170,8 +171,26 @@ export default class UI {
     this.logger.debug("User operation stopped");
 
     // TODO: only if they are not both in settings enabled
-    this.items.stop.hide();
-    this.items.run.show();
+    if (!this.backgroundProgram) {
+      this.items.stop.hide();
+      this.items.run.show();
+    }
+  }
+
+  /** Keeps Stop visible while a program runs in the background. */
+  public setBackgroundProgram(running: boolean): void {
+    this.backgroundProgram = running;
+    if (this.userOperationOngoing > 0) {
+      return;
+    }
+
+    if (running) {
+      this.items.run.hide();
+      this.items.stop.show();
+    } else {
+      this.items.stop.hide();
+      this.items.run.show();
+    }
   }
 
   public isUserOperationOngoing(): boolean {

@@ -20,6 +20,7 @@ import PackagesWebviewProvider from "./activitybar/packagesWebview.mjs";
 import PlotterViewProvider, {
   PLOTTER_VIEW_ID,
 } from "./plotter/plotterView.mjs";
+import { BackgroundOutput } from "./output/backgroundOutput.mjs";
 import { OutputRouter } from "./output/outputRouter.mjs";
 import {
   OperationResultType,
@@ -502,6 +503,17 @@ export default class Activator {
     this.output = new OutputRouter(plotterProvider);
     ctx.output = this.output;
     this.output.registerRedirectCommand(context);
+
+    const backgroundOutput = new BackgroundOutput(ctx);
+    const onBackgroundOutput = (data: Buffer): void => {
+      backgroundOutput.handle(data);
+    };
+    ctx.com.on(PicoSerialEvents.backgroundOutput, onBackgroundOutput);
+    context.subscriptions.push({
+      dispose: () => {
+        ctx.com.off(PicoSerialEvents.backgroundOutput, onBackgroundOutput);
+      },
+    });
     disposable = vscode.window.registerWebviewViewProvider(
       PLOTTER_VIEW_ID,
       plotterProvider,

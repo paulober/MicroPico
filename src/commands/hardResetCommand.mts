@@ -39,6 +39,7 @@ export class HardResetCommand extends Command {
         this.ctx.ui?.userOperationStopped();
         if (result.type === OperationResultType.commandResult) {
           if (result.result) {
+            this.ctx.setBackgroundProgram(false);
             void vscode.window.showInformationMessage("Hard reset is done.");
           } else {
             void vscode.window.showErrorMessage("Hard reset has failed.");

@@ -81,6 +81,30 @@ describe("RunCommand non-Python file warning", () => {
     assert.deepEqual(updates, [[SettingsKey.disableRunFileTypeWarning, true]]);
   });
 
+  test("soft-resets only before running, so timers keep running", async () => {
+    let resets = 0;
+    const ctx = new SessionContext(
+      { getBoolean: () => false } as never,
+      {
+        isPortDisconnected: () => false,
+        softReset: () => {
+          resets++;
+
+          return Promise.resolve({ type: OperationResultType.commandResult });
+        },
+        runFile: () =>
+          Promise.resolve({
+            type: OperationResultType.commandResult,
+            result: true,
+          }),
+      } as never,
+    );
+
+    await new RunCommand(ctx).execute({ fsPath: "/tmp/main.py" });
+
+    assert.equal(resets, 1);
+  });
+
   test("no warning once the setting is enabled", async () => {
     const { ran, command } = setup(true);
     // nothing queued: a shown warning would resolve undefined and abort

@@ -65,8 +65,10 @@ export class RemoteRunCommand extends Command {
     const forceDisableSoftReset =
       this.ctx.settings.getBoolean(SettingsKey.noSoftResetOnRun) ?? false;
 
+    // only before running, see RunCommand
     if (!noSoftReset && !forceDisableSoftReset) {
       await this.ctx.com.softReset();
+      this.ctx.setBackgroundProgram(false);
     }
     await focusTerminal(this.ctx.terminalOptions);
     const decoder = new StringDecoder("utf-8");
@@ -92,9 +94,6 @@ export class RemoteRunCommand extends Command {
         }
       },
     );
-    if (!noSoftReset && !forceDisableSoftReset) {
-      await this.ctx.com.softReset();
-    }
     this.ctx.ui?.userOperationStopped();
     this.ctx.commandExecuting = false;
     this.ctx.terminal?.restore();

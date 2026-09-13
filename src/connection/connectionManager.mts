@@ -359,6 +359,7 @@ export class ConnectionManager {
    */
   private boardOnExit(error?: Error | string): void {
     this.ctx.ui?.refreshState(false);
+    this.ctx.setBackgroundProgram(false);
     if (error === undefined) {
       this.logger.info("Connection to board was closed.");
       if (this.comDevice !== undefined) {

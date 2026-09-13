@@ -453,6 +453,33 @@ export class Terminal implements Pseudoterminal {
     this.writeEmitter.fire(data);
   }
 
+  /**
+   * Print output that arrives while no command runs (e.g. from a program still
+   * running on the board) above the prompt, keeping any unsent input.
+   */
+  public writeAbovePrompt(text: string): void {
+    if (!this.isOpen) {
+      return;
+    }
+    if (this.isFrozen || this.state.waitingForPrompt) {
+      this.writeEmitter.fire(text);
+
+      return;
+    }
+
+    // remove the prompt line and anything typed below it, print the output
+    this.writeEmitter.fire("\x1b[u\x1b[0J\r\x1b[2K" + text);
+
+    // then draw prompt and input again underneath
+    this.prompt();
+    const lines = this.state.buffer.split("\n");
+    this.writeEmitter.fire(lines.join("\r\n"));
+    const cursorOffset = (lines.at(-1)?.length ?? 0) - this.state.xCursor;
+    if (cursorOffset > 0) {
+      this.writeEmitter.fire(`\x1b[${cursorOffset}D`);
+    }
+  }
+
   public prompt(withoutPrint = false): void {
     this.state.waitingForPrompt = false;
     if (!withoutPrint) {

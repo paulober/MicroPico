@@ -108,6 +108,8 @@ class FakeUi {
   public setDisconnecting(): void {
     this.disconnectingCount++;
   }
+
+  public setBackgroundProgram(): void {}
 }
 
 class FakeTerminal {

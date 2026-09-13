@@ -15,6 +15,7 @@ export class SoftResetCommand extends Command {
 
     const result = await this.ctx.com.softReset();
     if (result.type === OperationResultType.commandResult && result.result) {
+      this.ctx.setBackgroundProgram(false);
       void vscode.window.showInformationMessage("Soft reset done");
 
       return;

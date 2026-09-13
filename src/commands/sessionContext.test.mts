@@ -74,3 +74,48 @@ describe("SessionContext.checkForRunningOperation with an action", () => {
     assert.equal(interrupted, 0);
   });
 });
+
+describe("SessionContext with a program running in the background", () => {
+  beforeEach(() => {
+    __resetPrompts();
+  });
+
+  function backgroundCtx(): { ctx: SessionContext; resets: () => number } {
+    let resets = 0;
+    const ctx = makeCtx({
+      softReset: () => {
+        resets++;
+
+        return Promise.resolve({ type: 2, result: true });
+      },
+    } as never);
+    ctx.backgroundProgram = true;
+
+    return { ctx, resets: () => resets };
+  }
+
+  test("offers to stop it before a file operation", async () => {
+    const { ctx, resets } = backgroundCtx();
+    __queueWarningMessage("Stop and Upload");
+
+    assert.equal(await ctx.checkForRunningOperation("Upload"), false);
+    assert.equal(resets(), 1);
+    assert.equal(ctx.backgroundProgram, false);
+  });
+
+  test("leaves it running when the dialog is dismissed", async () => {
+    const { ctx, resets } = backgroundCtx();
+    __queueWarningMessage(undefined);
+
+    assert.equal(await ctx.checkForRunningOperation("Upload"), true);
+    assert.equal(resets(), 0);
+    assert.equal(ctx.backgroundProgram, true);
+  });
+
+  test("doesn't ask without an action, Run resets the board anyway", async () => {
+    const { ctx, resets } = backgroundCtx();
+
+    assert.equal(await ctx.checkForRunningOperation(), false);
+    assert.equal(resets(), 0);
+  });
+});
