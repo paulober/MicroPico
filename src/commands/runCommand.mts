@@ -12,9 +12,6 @@ export class RunCommand extends Command {
   public readonly id = "run";
 
   private readonly logger = new Logger("RunCommand");
-  // NOTE: preserved from the original; nothing ever sets this to true, so the
-  // "don't show again" choice is currently ineffective (tracked separately).
-  private readonly disableExtWarning = false;
 
   public async execute(...args: unknown[]): Promise<void> {
     const resourceURI = args[0] as vscode.Uri | undefined;
@@ -43,20 +40,29 @@ export class RunCommand extends Command {
       }
     }
 
-    if (
-      !this.disableExtWarning &&
-      ![".py", ".mpy"].includes(extname(file))
-    ) {
+    const disableWarning =
+      this.ctx.settings.getBoolean(SettingsKey.disableRunFileTypeWarning) ??
+      false;
+
+    if (!disableWarning && ![".py", ".mpy"].includes(extname(file))) {
+      const dontShowAgain = "Yes, don't show this again";
       const choice = await vscode.window.showWarningMessage(
         "The selected file is not a Python file. " +
           "Do you still want to run it?",
         "Yes",
         "No",
-        "Yes, don't show this again",
+        dontShowAgain,
       );
 
-      if (choice !== "Yes") {
+      if (choice !== "Yes" && choice !== dontShowAgain) {
         return;
+      }
+
+      if (choice === dontShowAgain) {
+        await this.ctx.settings.update(
+          SettingsKey.disableRunFileTypeWarning,
+          true,
+        );
       }
     }
 

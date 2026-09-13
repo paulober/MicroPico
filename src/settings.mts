@@ -24,6 +24,7 @@ export enum SettingsKey {
   executeOnConnect = "executeOnConnect",
   importOnConnect = "importOnConnect",
   noSoftResetOnRun = "noSoftResetOnRun",
+  disableRunFileTypeWarning = "disableRunFileTypeWarning",
 }
 
 export type Setting = string | boolean | string[] | null | undefined;

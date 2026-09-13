@@ -545,6 +545,14 @@
           "title": "Disable the soft-resets before and after executing a file.",
           "description": "Soft-resets are used to clean REPL state so changes in classes and other structs are reflected correctly.",
           "order": 16
+        },
+        "micropico.disableRunFileTypeWarning": {
+          "type": "boolean",
+          "scope": "machine-overridable",
+          "default": false,
+          "title": "Disable the warning when running a non-Python file.",
+          "description": "When enabled, running a file that is not a `.py` or `.mpy` file no longer prompts for confirmation.",
+          "order": 17
         }
       }
     },
