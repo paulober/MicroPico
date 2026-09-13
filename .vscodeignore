@@ -3,6 +3,7 @@
 .vscode/**
 .vscode-test/**
 .idea/**
+.claude/**
 .github/**
 scripts/**
 
