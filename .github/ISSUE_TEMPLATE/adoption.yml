@@ -1,0 +1,60 @@
+name: We use MicroPico
+description: Tell us where MicroPico is used, in teaching, research or at work
+title: "[Adoption]: "
+labels: ["adoption"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        It helps a lot to know where MicroPico is used. With your permission, we'd like to mention your organization on [micropico.paulober.dev](https://micropico.paulober.dev).
+
+        **This issue is public.** Only share what everyone may see, and don't include personal data such as email addresses.
+
+  - type: input
+    id: organization
+    attributes:
+      label: Organization
+      description: University, school, company or community
+    validations:
+      required: true
+
+  - type: dropdown
+    id: organization-type
+    attributes:
+      label: Type
+      options:
+        - University or college
+        - School
+        - Company
+        - Makerspace or community
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: country
+    attributes:
+      label: Country
+
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      placeholder: https://
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: How do you use MicroPico?
+      description: For example the course or project, number of students or developers, and which boards you use.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: permission
+    attributes:
+      label: Mention on the website
+      description: Leave both unchecked if you'd just like to let us know.
+      options:
+        - label: MicroPico may list our organization's name and website on micropico.paulober.dev.
+        - label: I'm allowed to give this permission on behalf of the organization.

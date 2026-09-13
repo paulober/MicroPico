@@ -1,20 +1,15 @@
-(Hi! 👋 Thanks for sending a pull request! Please make sure you click the link above to view the contribution guidelines, then fill out the blanks below.)
+## Summary
 
-## What does this implement/fix? Explain your changes.
+<!-- What does this change and why? -->
 
+Fixes #
 
-## Does this close any currently open issues?
+## How was this tested?
 
+- [ ] `npm run lint` and `npm run typecheck`
+- [ ] `npm test`
+- [ ] Tried it in VS Code (board and firmware: )
 
-## Any relevant logs, error output, etc?
-*(If it’s long, please paste to https://gist.github.com and insert the link here)*
+## Notes
 
-
-## Any other comments?
-
-
-## Where has this been tested?
-
-**Operating system:**
-
-**VSCode version:**
+<!-- Screenshots for UI changes, open questions or follow-ups. -->

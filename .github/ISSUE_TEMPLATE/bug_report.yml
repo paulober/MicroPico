@@ -1,0 +1,107 @@
+name: Bug report
+description: Something in MicroPico doesn't work as expected
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please check the [changelog](https://github.com/paulober/MicroPico/blob/main/CHANGELOG.md) and [existing issues](https://github.com/paulober/MicroPico/issues?q=is%3Aissue) first.
+        For setup questions, [Discussions](https://github.com/paulober/MicroPico/discussions/categories/q-a) is the better place.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Connect a Pico 2 W
+        2. Open `main.py` and click Run
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: input
+    id: micropico-version
+    attributes:
+      label: MicroPico version
+      description: Shown in the Extensions view.
+      placeholder: "4.4.0"
+    validations:
+      required: true
+
+  - type: input
+    id: vscode-version
+    attributes:
+      label: VS Code version
+      description: "Help > About (or Code > About Visual Studio Code on macOS)"
+      placeholder: "1.137.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Raspberry Pi OS
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: board
+    attributes:
+      label: Board
+      options:
+        - Raspberry Pi Pico
+        - Raspberry Pi Pico W
+        - Raspberry Pi Pico 2
+        - Raspberry Pi Pico 2 W
+        - ESP32 (any variant)
+        - Teensy 4.0
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: firmware-version
+    attributes:
+      label: MicroPython firmware version
+      description: "Run `import os; os.uname()` in the vREPL."
+      placeholder: "v1.26.0"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Open **View > Output**, select **MicroPico** and paste the relevant lines.
+        For more detail, run **Developer: Set Log Level...** and pick **Trace** for MicroPico first.
+      render: text
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched the existing issues and this hasn't been reported yet.
+          required: true
+        - label: I'm using the latest version of MicroPico.

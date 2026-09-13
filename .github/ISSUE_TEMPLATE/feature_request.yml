@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest an idea or improvement for MicroPico
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: "For example: when teaching a class, I always have to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What should MicroPico do? Screenshots or mockups are welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Who would benefit most?
+      multiple: true
+      options:
+        - Beginners and students
+        - Educators
+        - Experienced makers
+        - Companies and teams
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
