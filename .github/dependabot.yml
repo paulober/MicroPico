@@ -20,6 +20,10 @@ updates:
       - dependency-name: "@types/vscode"
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # breaks the bundled undici at runtime, fixed upstream but unreleased
+      # (webpack/webpack#22022); drop once a fixed version is out
+      - dependency-name: "webpack"
+        versions: ["5.110.0", "5.110.1", "5.110.2", "5.110.3"]
 
   - package-ecosystem: github-actions
     directory: /
