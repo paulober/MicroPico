@@ -18,12 +18,13 @@ All notable changes to the "MicroPico" extension will be documented in this file
 - `micropico.customVidPidPairs` setting to connect to boards with other USB vendor/product IDs
 - Uploads and downloads now offer to stop a running program instead of silently waiting for it to finish (#339, idea by @kai-morich in #340)
 - `micropico.disableRunFileTypeWarning` setting
+- Output of programs that keep running after Run (timers, interrupts, threads) now shows up in the vREPL and the plotter; Stop ends such programs
 
 ### Changed
 
 - License changed from MPL-2.0 to Apache-2.0
 - Changed minimum Visual Studio Code version to `1.137.0` (Node.js 24)
-- Run and Remote Run now always soft reset the board before and after running, also when started from the editor title button or a context menu. Set `micropico.noSoftResetOnRun` to turn this off
+- Run and Remote Run soft reset the board before running, wherever they are started from, and no longer afterwards, so timers, interrupts and threads keep running. Set `micropico.noSoftResetOnRun` to skip the reset
 - Remote Run from the Pico file explorer runs the clicked file instead of the focused editor
 - vREPL expressions are evaluated on the board only, so the result no longer depends on the local Python installation
 - Log levels of the MicroPico output channel are now set with VS Code's "Set Log Level"
@@ -32,6 +33,8 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ### Fixed
 
+- Timer and interrupt callbacks never ran after Run (#278, #210)
+- Commands hung while a program printed in the background
 - Upload with `micropico.softResetAfterUpload` kept the progress notification open while the program ran (#337, #338 by @kai-morich)
 - Backslashes in vREPL expressions were corrupted, e.g. `b'\xAA'` printed `b'\xc2\xaa'` (#282)
 - `.ls` and lines like `import os; os.listdir()` printed nothing in the vREPL (#315)
