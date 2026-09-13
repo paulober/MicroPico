@@ -4,8 +4,8 @@
   "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico boards running MicroPython firmware.",
   "version": "4.4.0",
   "publisher": "paulober",
-  "license": "MPL-2.0",
-  "homepage": "https://github.com/paulober/MicroPico#readme",
+  "license": "Apache-2.0",
+  "homepage": "https://micropico.paulober.dev",
   "bugs": {
     "url": "https://github.com/paulober/MicroPico/issues"
   },
@@ -24,17 +24,24 @@
     "node": ">=24.18"
   },
   "keywords": [
-    "raspberry",
-    "pi",
-    "pico",
-    "pico w",
+    "micropython",
     "raspberry pi pico",
     "raspberry pi pico w",
-    "micropython",
+    "raspberry pi pico 2",
+    "raspberry pi pico 2 w",
+    "rp2040",
+    "rp2350",
+    "esp32",
+    "microcontroller",
+    "embedded",
+    "education",
+    "plotter",
+    "repl",
     "pico-w-go"
   ],
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Education"
   ],
   "capabilities": {
     "virtualWorkspaces": {
@@ -750,5 +757,6 @@
   "packageManager": "npm@11.11.0+sha512.f36811c4aae1fde639527368ae44c571d050006a608d67a191f195a801a52637a312d259186254aa3a3799b05335b7390539cf28656d18f0591a1125ba35f973",
   "allowScripts": {
     "@serialport/bindings-cpp": false
-  }
+  },
+  "qna": "https://github.com/paulober/MicroPico/discussions/categories/q-a"
 }

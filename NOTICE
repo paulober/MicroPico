@@ -1,0 +1,20 @@
+MicroPico
+Copyright 2022-2026 paulober and MicroPico contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE.txt).
+Versions before 4.4.0 were released under the Mozilla Public License 2.0.
+
+Before version 3.0.0, MicroPico was a fork of Pico-Go by Chris Wood
+(https://github.com/cpwood/Pico-Go), itself derived from Pymakr by
+Pycom Limited. The extension has since been rewritten from scratch.
+
+This product includes third-party software:
+
+- uPlot, Copyright (c) 2022 Leon Sorokin, MIT License
+  https://github.com/leeoniya/uPlot (see web/plotter/uPlot.LICENSE)
+
+- micropython-stubs, Copyright (c) 2022 Jos Verlinde, MIT License
+  https://github.com/Josverl/micropython-stubs
+
+- npm packages bundled into the extension; they are listed with their
+  licenses in the SBOM attached to each GitHub release.

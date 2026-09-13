@@ -21,6 +21,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ### Changed
 
+- License changed from MPL-2.0 to Apache-2.0
 - Changed minimum Visual Studio Code version to `1.137.0` (Node.js 24)
 - Run and Remote Run now always soft reset the board before and after running, also when started from the editor title button or a context menu. Set `micropico.noSoftResetOnRun` to turn this off
 - Remote Run from the Pico file explorer runs the clicked file instead of the focused editor

@@ -23,6 +23,8 @@ src/**
 # ── Project/config files not needed in the VSIX ───────────────────────────────
 .gitignore
 .yarnrc
+CITATION.cff
+SECURITY.md
 *rollup.config.mjs
 *webpack.config.js
 **/tsconfig*.json

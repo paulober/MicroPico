@@ -4,6 +4,8 @@
 
 **MicroPico** is a Visual Studio Code extension designed to simplify and accelerate the development of MicroPython projects for the Raspberry Pi Pico and Pico W boards. This tool streamlines the coding process, providing code highlighting, auto-completion, code snippets, and project management features, all tailored for the seamless development experience with MicroPython on Raspberry Pi Pico and Pico W microcontrollers.
 
+Website: [micropico.paulober.dev](https://micropico.paulober.dev)
+
 > __Included auto-completion based on Raspberry Pi Pico W MicroPython firmware: [RPI_PICO2_W-20250809-v1.26.0.uf2](https://micropython.org/resources/firmware/RPI_PICO2_W-20250809-v1.26.0.uf2) from the [micropython-stubs project](https://github.com/Josverl/micropython-stubs)__
 
 Works with:
@@ -29,7 +31,7 @@ Works with:
 
 ## Requirements
 
-* [Visual Studio Code v1.103.2 or newer](https://code.visualstudio.com/Download)
+* [Visual Studio Code v1.137.0 or newer](https://code.visualstudio.com/Download)
 * [Python 3.10 or newer](https://www.python.org/downloads/)
 
 * [MicroPython firmware](https://micropython.org/download) flashed onto the Raspberry Pi Pico:
@@ -49,26 +51,24 @@ On most Linux installations the device file of the Pico serial port is owned by 
 
 - First of all open a folder and run `> MicroPico > Initialize MicroPico project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the autocompletion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in [\#Requirements](#requirements).
 
-- Have the onboard LED flashing in under 5 minutes:
+- Blink the onboard LED in under 5 minutes:
 
 ```python
 from machine import Pin
-from utime import sleep
+from time import sleep
 
-pin = Pin("LED", Pin.OUT)
+led = Pin("LED", Pin.OUT)
 
-print("LED starts flashing...")
-while True:
-    try:
-        pin.value(not pin.value())
-        sleep(1) # sleep 1sec
-    except KeyboardInterrupt:
-        break
-pin.off()
-print("Finished.")
+print("Blinking the LED 10 times...")
+for i in range(20):
+    led.value(i % 2 == 0)
+    sleep(0.5)
+
+led.off()
+print("Done.")
 ```
 
-- To run your program, run `> MicroPico > Run current file on Pico` in your Python file's tab. You can also use the status bar button "Run " at the bottom of VS Code window.
+- To run the open file, use `> MicroPico > Run current file on Pico` or the "Run" button in the status bar.
 
 - To stop the execution of the currently running program or other operation, run `> MicroPico > Stop execution`. The "Stop" button at the status bar does the same.
 
@@ -104,6 +104,12 @@ This extension contributes the following settings:
 
 ---
 
-### Note
+## Contributing
 
-+ For licensing purposes: Prior to version v3.0.0 of this extension the codebase was a fork of github.com/cpwood/Pico-Go which is a derivative product of Pymakr by Pycom Limited.
+Bug reports, ideas and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) to get started, and let us know with the ["We use MicroPico" form](https://github.com/paulober/MicroPico/issues/new?template=adoption.yml) if you use MicroPico in a course or at work.
+
+## License
+
+MicroPico is licensed under the [Apache License 2.0](LICENSE.txt). See [NOTICE](NOTICE) for third-party attributions. Versions before 4.4.0 were released under the Mozilla Public License 2.0.
+
+Before version 3.0.0, MicroPico was a fork of [Pico-Go](https://github.com/cpwood/Pico-Go) by Chris Wood, a derivative of Pymakr by Pycom Limited. It has since been rewritten from scratch.
