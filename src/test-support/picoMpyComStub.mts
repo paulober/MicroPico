@@ -26,3 +26,15 @@ export const PicoSerialEvents = {
   relayInput: "relayInput",
   relayInputError: "relayInputError",
 } as const;
+
+// Mirrors the real enum's numeric values (the lib's operationResult.ts), so
+// command modules that compare result types can be loaded under test.
+export const OperationResultType = {
+  none: 0,
+  commandResponse: 1,
+  commandResult: 2,
+  listContents: 3,
+  getItemStat: 4,
+  getRtcTime: 5,
+  tabComplete: 6,
+} as const;

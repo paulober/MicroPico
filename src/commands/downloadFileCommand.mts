@@ -38,6 +38,10 @@ export class DownloadFileCommand extends Command {
       return;
     }
 
+    if (await this.ctx.checkForRunningOperation("Download")) {
+      return;
+    }
+
     void vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -47,6 +51,8 @@ export class DownloadFileCommand extends Command {
       async (progress, token) => {
         token.onCancellationRequested(() => this.ctx.com.interruptExecution());
 
+        // only balance the user-operation counter if the transfer started
+        let started = false;
         const data = await this.ctx.com.downloadFiles(
           [file],
           join(syncDir[1], basename(file)),
@@ -56,6 +62,7 @@ export class DownloadFileCommand extends Command {
             relativePath: string,
           ) => {
             if (currentChunk === 1) {
+              started = true;
               this.ctx.ui?.userOperationStarted();
             }
             progress.report({
@@ -65,7 +72,9 @@ export class DownloadFileCommand extends Command {
             });
           },
         );
-        this.ctx.ui?.userOperationStopped();
+        if (started) {
+          this.ctx.ui?.userOperationStopped();
+        }
         if (data?.type === OperationResultType.commandResult) {
           if (data.result) {
             void vscode.window.showInformationMessage(

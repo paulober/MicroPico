@@ -27,6 +27,10 @@ export class UploadFileCommand extends Command {
       return;
     }
 
+    if (await this.ctx.checkForRunningOperation("Upload")) {
+      return;
+    }
+
     if (this.ctx.settings.getBoolean(SettingsKey.gcBeforeUpload)) {
       await this.ctx.com.runCommand(
         "import gc as __pe_gc; __pe_gc.collect(); del __pe_gc",
@@ -42,6 +46,8 @@ export class UploadFileCommand extends Command {
       async (progress, token) => {
         token.onCancellationRequested(() => this.ctx.com.interruptExecution());
 
+        // only balance the user-operation counter if the transfer started
+        let started = false;
         const data = await this.ctx.com.uploadFiles(
           [file],
           "/",
@@ -52,6 +58,7 @@ export class UploadFileCommand extends Command {
             relativePath: string,
           ) => {
             if (currentChunk === 1) {
+              started = true;
               this.ctx.ui?.userOperationStarted();
             }
 
@@ -62,7 +69,9 @@ export class UploadFileCommand extends Command {
             });
           },
         );
-        this.ctx.ui?.userOperationStopped();
+        if (started) {
+          this.ctx.ui?.userOperationStopped();
+        }
         if (data?.type === OperationResultType.commandResult) {
           if (data.result) {
             this.ctx.picoFs?.fileChanged(

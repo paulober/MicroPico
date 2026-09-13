@@ -32,6 +32,10 @@ export class UploadCommand extends Command {
       return;
     }
 
+    if (await this.ctx.checkForRunningOperation("Upload")) {
+      return;
+    }
+
     const ignoredSyncItems = resolveIgnoredSyncItems(
       this.ctx.settings.getIngoredSyncItems(),
       syncDir[0],
@@ -53,6 +57,9 @@ export class UploadCommand extends Command {
       async (progress, token) => {
         token.onCancellationRequested(() => this.ctx.com.interruptExecution());
 
+        // no progress is reported when nothing changed, so only balance the
+        // user-operation counter if the transfer actually started
+        let started = false;
         const data = await this.ctx.com.uploadProject(
           syncDir[1],
           this.ctx.settings.getSyncFileTypes(),
@@ -63,6 +70,7 @@ export class UploadCommand extends Command {
             relativePath: string,
           ) => {
             if (currentChunk === 1) {
+              started = true;
               this.ctx.ui?.userOperationStarted();
             }
             this.logger.debug(
@@ -76,7 +84,9 @@ export class UploadCommand extends Command {
             });
           },
         );
-        this.ctx.ui?.userOperationStopped();
+        if (started) {
+          this.ctx.ui?.userOperationStopped();
+        }
 
         if (data === undefined) {
           return;

@@ -49,6 +49,21 @@ export function __queueWarningMessage(...values: unknown[]): void {
   warningMessageQueue.push(...values);
 }
 
+// Commands fire `withProgress` without awaiting it; tests await this instead.
+let lastProgressTask: Promise<unknown> = Promise.resolve();
+
+/** The task promise of the most recent `withProgress` call. */
+export function __lastProgressTask(): Promise<unknown> {
+  return lastProgressTask;
+}
+
+export const ProgressLocation = {
+  SourceControl: 1,
+  Window: 10,
+  Notification: 15,
+};
+export const FileChangeType = { Changed: 1, Created: 2, Deleted: 3 };
+
 /** Clear any queued prompt results between tests. */
 export function __resetPrompts(): void {
   quickPickQueue.length = 0;
@@ -98,6 +113,17 @@ export const window = {
       saveDialogQueue.length > 0 ? saveDialogQueue.shift() : undefined,
     );
   },
+  withProgress(
+    _options: unknown,
+    task: (
+      progress: { report(value: unknown): void },
+      token: { onCancellationRequested(listener: () => void): void },
+    ) => Promise<unknown>,
+  ) {
+    lastProgressTask = task({ report() {} }, { onCancellationRequested() {} });
+
+    return lastProgressTask;
+  },
   createOutputChannel() {
     // A LogOutputChannel whose level methods are no-ops.
     return {
@@ -145,4 +171,8 @@ export const extensions = {
 
 export const env = {};
 
-export class Uri {}
+export class Uri {
+  static from(components: { scheme: string; path: string }) {
+    return components;
+  }
+}

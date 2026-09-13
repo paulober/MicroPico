@@ -45,20 +45,33 @@ export class SessionContext {
 
   /**
    * If an operation is already running, ask the user whether to cancel it.
+   * Board operations run one at a time, so anything started now would
+   * otherwise wait silently until the running program ends.
    *
+   * @param action The action about to start (e.g. "Upload"). When given, the
+   * prompt offers a single "Stop and <action>" button next to Cancel.
    * @returns `true` if the caller should abort (the user kept the running
    * operation), `false` to proceed.
    */
-  public async checkForRunningOperation(): Promise<boolean> {
+  public async checkForRunningOperation(action?: string): Promise<boolean> {
     if (this.commandExecuting) {
-      const choice = await vscode.window.showWarningMessage(
-        "An operation is already running. Do you want to cancel it?",
-        { modal: true },
-        "Yes",
-        "No",
-      );
+      const proceed = action === undefined ? "Yes" : `Stop and ${action}`;
+      const choice =
+        action === undefined
+          ? await vscode.window.showWarningMessage(
+              "An operation is already running. Do you want to cancel it?",
+              { modal: true },
+              proceed,
+              "No",
+            )
+          : await vscode.window.showWarningMessage(
+              "A program is still running on the board. " +
+                `Stop it to ${action.toLowerCase()}?`,
+              { modal: true },
+              proceed,
+            );
 
-      if (choice === "Yes") {
+      if (choice === proceed) {
         if (this.commandExecuting) {
           this.com.interruptExecution();
 

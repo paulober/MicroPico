@@ -48,3 +48,29 @@ describe("SessionContext.showNoActivePythonError", () => {
     assert.doesNotThrow(() => makeCtx().showNoActivePythonError());
   });
 });
+
+describe("SessionContext.checkForRunningOperation with an action", () => {
+  beforeEach(() => {
+    __resetPrompts();
+  });
+
+  test("proceeds only on the 'Stop and <action>' button", async () => {
+    let interrupted = 0;
+    const ctx = makeCtx({ interruptExecution: () => interrupted++ });
+    ctx.commandExecuting = true;
+    __queueWarningMessage("Stop and Upload");
+
+    assert.equal(await ctx.checkForRunningOperation("Upload"), false);
+    assert.equal(interrupted, 1);
+  });
+
+  test("aborts when the dialog is dismissed", async () => {
+    let interrupted = 0;
+    const ctx = makeCtx({ interruptExecution: () => interrupted++ });
+    ctx.commandExecuting = true;
+    __queueWarningMessage(undefined);
+
+    assert.equal(await ctx.checkForRunningOperation("Upload"), true);
+    assert.equal(interrupted, 0);
+  });
+});
