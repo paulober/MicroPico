@@ -39,6 +39,21 @@ describe("OutputRouter", () => {
     assert.deepEqual(plotter.labels, []);
   });
 
+  test("does not merge a partial line across a hidden period", () => {
+    const plotter = new FakePlotter();
+    const router = new OutputRouter(plotter, () => {});
+
+    plotter.visible = true;
+    router.route(Buffer.from("12"));
+    plotter.visible = false;
+    router.route(Buffer.from("output nobody saw\n"));
+    plotter.visible = true;
+    router.route(Buffer.from("3, 45\n"));
+
+    // without the reset this would be [123, 45]
+    assert.deepEqual(plotter.samples, [[3, 45]]);
+  });
+
   test("does not append when no redirect target is set", () => {
     const plotter = new FakePlotter();
     let appended = 0;

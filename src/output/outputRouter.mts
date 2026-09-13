@@ -25,6 +25,7 @@ export type AppendFn = (path: string, data: Buffer) => void;
 export class OutputRouter {
   private target?: string;
   private readonly parser = new PlotParser();
+  private skippedOutput = false;
   private readonly logger = new Logger("OutputRouter");
 
   constructor(
@@ -65,7 +66,15 @@ export class OutputRouter {
    */
   private feedPlotter(data: Buffer): void {
     if (!this.plotter.isVisible()) {
+      this.skippedOutput = true;
+
       return;
+    }
+
+    if (this.skippedOutput) {
+      // a partial line from before the gap would merge with unrelated output
+      this.parser.reset();
+      this.skippedOutput = false;
     }
 
     for (const event of this.parser.push(data.toString("utf-8"))) {

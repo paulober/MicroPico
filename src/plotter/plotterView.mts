@@ -6,9 +6,15 @@ import {
   type WebviewView,
   type WebviewViewProvider,
 } from "vscode";
+import { SampleStore } from "./sampleStore.mjs";
 
 /** View id contributed in package.json. */
 export const PLOTTER_VIEW_ID = "micropico-plotter";
+
+// Same as the chart window (MAX_POINTS) in web/plotter/plotter.js.
+const REPLAY_POINTS = 1000;
+// Programs can print thousands of lines per second; send them in batches.
+const FLUSH_INTERVAL_MS = 50;
 
 interface WebviewMessage {
   command: "ready" | "clear" | "exportCsv" | "exportPng";
@@ -25,7 +31,9 @@ interface WebviewMessage {
 export default class PlotterViewProvider implements WebviewViewProvider {
   private view?: WebviewView;
   private labels: string[] = [];
-  private readonly samples: number[][] = [];
+  private readonly store = new SampleStore();
+  private pending: number[][] = [];
+  private flushTimer?: NodeJS.Timeout;
 
   constructor(private readonly extensionUri: Uri) {}
 
@@ -60,6 +68,7 @@ export default class PlotterViewProvider implements WebviewViewProvider {
     webviewView.onDidDispose(() => {
       if (this.view === webviewView) {
         this.view = undefined;
+        this.dropPending();
       }
     });
   }
@@ -71,24 +80,50 @@ export default class PlotterViewProvider implements WebviewViewProvider {
 
   /** Set the series labels (from a header line). */
   public setLabels(labels: string[]): void {
+    // samples queued before the header belong to the previous series
+    this.flush();
     this.labels = labels;
     void this.view?.webview.postMessage({ command: "labels", labels });
   }
 
   /** Append one data sample (one value per series). */
   public addSample(values: number[]): void {
-    this.samples.push(values);
-    void this.view?.webview.postMessage({ command: "sample", values });
+    this.store.add(values);
+    this.pending.push(values);
+    this.flushTimer ??= setTimeout(() => this.flush(), FLUSH_INTERVAL_MS);
   }
 
   /** Clear all collected data and the chart. */
   public clear(): void {
-    this.samples.length = 0;
+    this.store.clear();
+    this.dropPending();
     void this.view?.webview.postMessage({ command: "clear" });
+  }
+
+  private flush(): void {
+    clearTimeout(this.flushTimer);
+    this.flushTimer = undefined;
+    if (this.pending.length === 0) {
+      return;
+    }
+
+    void this.view?.webview.postMessage({
+      command: "samples",
+      samples: this.pending,
+    });
+    this.pending = [];
+  }
+
+  private dropPending(): void {
+    clearTimeout(this.flushTimer);
+    this.flushTimer = undefined;
+    this.pending = [];
   }
 
   /** Re-send the current state to a (re)loaded webview. */
   private replay(): void {
+    // the replayed tail already contains anything still pending
+    this.dropPending();
     if (this.labels.length > 0) {
       void this.view?.webview.postMessage({
         command: "labels",
@@ -96,25 +131,18 @@ export default class PlotterViewProvider implements WebviewViewProvider {
       });
     }
     void this.view?.webview.postMessage({
-      command: "bulk",
-      samples: this.samples,
+      command: "samples",
+      samples: this.store.tail(REPLAY_POINTS),
     });
   }
 
   private async exportCsv(): Promise<void> {
-    if (this.samples.length === 0) {
+    const csv = this.store.toCsv(this.labels);
+    if (csv === undefined) {
       void window.showInformationMessage("No plot data to export yet.");
 
       return;
     }
-
-    const columns = this.samples[0].length;
-    const header =
-      this.labels.length === columns
-        ? this.labels
-        : Array.from({ length: columns }, (_v, i) => `series_${i + 1}`);
-    const rows = this.samples.map(sample => sample.join(","));
-    const csv = [header.join(","), ...rows].join("\n") + "\n";
 
     const target = await window.showSaveDialog({
       saveLabel: "Export plot data",

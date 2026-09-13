@@ -10,10 +10,26 @@ export type PlotEvent =
   | { type: "labels"; labels: string[] }
   | { type: "sample"; values: number[] };
 
-const NUMBER_RE = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/;
+// MicroPython prints non-finite floats as nan / inf.
+const NUMBER_RE =
+  /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$|^[+-]?(?:nan|inf)$/i;
+
+// Output without newlines (e.g. print(x, end="")) would otherwise grow the
+// line buffer forever.
+const MAX_LINE_LENGTH = 4096;
 
 function isNumeric(field: string): boolean {
   return NUMBER_RE.test(field);
+}
+
+function toNumber(field: string): number {
+  const lower = field.toLowerCase();
+  if (lower.endsWith("inf")) {
+    return lower.startsWith("-") ? -Infinity : Infinity;
+  }
+
+  // Number() already maps "nan" to NaN
+  return Number(field);
 }
 
 function splitFields(line: string): string[] {
@@ -49,7 +65,17 @@ export class PlotParser {
       newlineIndex = this.buffer.indexOf("\n");
     }
 
+    if (this.buffer.length > MAX_LINE_LENGTH) {
+      this.buffer = "";
+    }
+
     return events;
+  }
+
+  /** Drop any partial line, e.g. after output was skipped. Keeps the labels. */
+  public reset(): void {
+    this.buffer = "";
+    this.candidateLabels = undefined;
   }
 
   private handleLine(line: string, events: PlotEvent[]): void {
@@ -69,7 +95,7 @@ export class PlotParser {
         this.labels = header;
         events.push({ type: "labels", labels: header });
       }
-      events.push({ type: "sample", values: fields.map(Number) });
+      events.push({ type: "sample", values: fields.map(toNumber) });
 
       return;
     }

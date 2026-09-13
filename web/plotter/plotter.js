@@ -14,6 +14,7 @@
   let seriesCount = 0;
   let paused = false;
   let plot = null;
+  let frame = 0;
 
   function readVars(names, fallback) {
     const style = getComputedStyle(document.body);
@@ -96,6 +97,16 @@
     }
   }
 
+  // at most one redraw per frame, however many batches arrive
+  function scheduleRedraw() {
+    if (!frame) {
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        redraw();
+      });
+    }
+  }
+
   function addSample(values) {
     if (values.length !== seriesCount) {
       build(values.length);
@@ -103,15 +114,24 @@
     const x = xs.length ? xs[xs.length - 1] + 1 : 0;
     xs.push(x);
     for (let i = 0; i < seriesCount; i++) {
-      ys[i].push(Number(values[i]));
+      // nan/inf arrive as null (JSON); uPlot draws null as a gap
+      const v = values[i];
+      ys[i].push(typeof v === "number" && isFinite(v) ? v : null);
     }
-    if (xs.length > MAX_POINTS) {
-      xs.shift();
+  }
+
+  function addSamples(samples) {
+    for (const values of samples) {
+      addSample(values);
+    }
+    const extra = xs.length - MAX_POINTS;
+    if (extra > 0) {
+      xs.splice(0, extra);
       for (const arr of ys) {
-        arr.shift();
+        arr.splice(0, extra);
       }
     }
-    redraw();
+    scheduleRedraw();
   }
 
   function reset() {
@@ -133,11 +153,8 @@
           build(seriesCount);
         }
         break;
-      case "sample":
-        addSample(msg.values);
-        break;
-      case "bulk":
-        (msg.samples || []).forEach(addSample);
+      case "samples":
+        addSamples(msg.samples || []);
         break;
       case "clear":
         reset();

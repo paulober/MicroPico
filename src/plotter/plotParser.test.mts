@@ -63,4 +63,33 @@ describe("PlotParser", () => {
       { type: "sample", values: [7, 8] },
     ]);
   });
+
+  test("keeps rows with nan and inf instead of dropping them", () => {
+    assert.deepEqual(events("1, nan, -inf, INF\n"), [
+      { type: "sample", values: [1, NaN, -Infinity, Infinity] },
+    ]);
+  });
+
+  test("does not take a row of nan values for a header", () => {
+    assert.deepEqual(events("nan, nan\n", "1, 2\n"), [
+      { type: "sample", values: [NaN, NaN] },
+      { type: "sample", values: [1, 2] },
+    ]);
+  });
+
+  test("drops an overlong line that never ends", () => {
+    assert.deepEqual(events("9".repeat(5000), ", 1\n2, 3\n"), [
+      { type: "sample", values: [2, 3] },
+    ]);
+  });
+
+  test("reset drops a partial line", () => {
+    const parser = new PlotParser();
+    parser.push("12");
+    parser.reset();
+
+    assert.deepEqual(parser.push("3, 45\n"), [
+      { type: "sample", values: [3, 45] },
+    ]);
+  });
 });
