@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { StringDecoder } from "string_decoder";
-import { focusTerminal, getSelectedCodeOrLine } from "../api.mjs";
+import { getSelectedCodeOrLine } from "../api.mjs";
 import { Command } from "./command.mjs";
 
 /** Runs the current editor selection (or line) on the board in the vREPL. */
@@ -29,7 +29,7 @@ export class RunSelectionCommand extends Command {
       return;
     }
 
-    await focusTerminal(this.ctx.terminalOptions);
+    await this.ctx.revealTerminal();
     const decoder = new StringDecoder("utf-8");
     await this.ctx.com.runFriendlyCommand(
       code,

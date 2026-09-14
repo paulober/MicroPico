@@ -73,12 +73,18 @@ export function __resetPrompts(): void {
 }
 
 export const workspace = {
+  // Like VS Code, a configuration object is a snapshot: updates only show up
+  // in configurations fetched afterwards.
   getConfiguration(section: string) {
+    const snapshot = { ...store[section] };
+
     return {
       get(key: string) {
-        return store[section]?.[key];
+        return snapshot[key];
       },
-      update() {
+      update(key: string, value: unknown) {
+        store[section] = { ...store[section], [key]: value };
+
         return Promise.resolve();
       },
     };
@@ -86,7 +92,19 @@ export const workspace = {
   workspaceFolders: undefined,
 };
 
+// How often code looked up the open terminals (focusTerminal does).
+let terminalLookups = 0;
+
+export function __getTerminalLookups(): number {
+  return terminalLookups;
+}
+
 export const window = {
+  get terminals() {
+    terminalLookups++;
+
+    return [];
+  },
   showErrorMessage() {
     return Promise.resolve(undefined);
   },

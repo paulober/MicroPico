@@ -8,6 +8,22 @@ function makeSettings(): Settings {
   return new Settings({} as never);
 }
 
+describe("Settings.update", () => {
+  beforeEach(() => {
+    __resetConfig();
+  });
+
+  test("a saved value is read back right away", async () => {
+    __setConfig("micropico", { disableRunFileTypeWarning: false });
+    const settings = makeSettings();
+
+    await settings.update("disableRunFileTypeWarning", true);
+
+    // the configuration is a cached snapshot; without a reload this stayed false
+    assert.equal(settings.get("disableRunFileTypeWarning"), true);
+  });
+});
+
 describe("Settings.getCustomVidPidPairs", () => {
   beforeEach(() => {
     __resetConfig();

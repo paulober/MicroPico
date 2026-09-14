@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { extname } from "path";
 import { StringDecoder } from "string_decoder";
 import { OperationResultType } from "@paulober/pico-mpy-com";
-import { commandPrefix, focusTerminal, getFocusedFile } from "../api.mjs";
+import { commandPrefix, getFocusedFile } from "../api.mjs";
 import { SettingsKey } from "../settings.mjs";
 import Logger from "../logger.mjs";
 import { Command } from "./command.mjs";
@@ -87,7 +87,7 @@ export class RunCommand extends Command {
           return;
         }
 
-        void focusTerminal(this.ctx.terminalOptions);
+        void this.ctx.revealTerminal();
         this.ctx.commandExecuting = true;
         this.ctx.terminal?.cleanAndStore();
         this.ctx.ui?.userOperationStarted();

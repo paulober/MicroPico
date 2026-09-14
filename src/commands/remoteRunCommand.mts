@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { StringDecoder } from "string_decoder";
-import { focusTerminal, getFocusedFile } from "../api.mjs";
+import { getFocusedFile } from "../api.mjs";
 import { SettingsKey } from "../settings.mjs";
 import { Command } from "./command.mjs";
 
@@ -70,7 +70,7 @@ export class RemoteRunCommand extends Command {
       await this.ctx.com.softReset();
       this.ctx.setBackgroundProgram(false);
     }
-    await focusTerminal(this.ctx.terminalOptions);
+    await this.ctx.revealTerminal();
     const decoder = new StringDecoder("utf-8");
     await this.ctx.com.runRemoteFile(
       file,

@@ -93,8 +93,10 @@ export default class Settings {
     );
   }
 
-  public update<T>(key: SettingsKey | string, value: T): Thenable<void> {
-    return this.config.update(key, value, true);
+  public async update<T>(key: SettingsKey | string, value: T): Promise<void> {
+    await this.config.update(key, value, true);
+    // the cached configuration is a snapshot and would still return the old value
+    this.reload();
   }
 
   public updateWorkspaceFolder<T>(key: string, value: T): Thenable<void> {

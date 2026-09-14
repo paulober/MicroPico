@@ -55,6 +55,11 @@ export class OutputRouter {
     }
   }
 
+  /** Whether the plotter view is open and visible. */
+  public isPlotterVisible(): boolean {
+    return this.plotter.isVisible();
+  }
+
   /** The current redirect target, or undefined when redirection is disabled. */
   public getTarget(): string | undefined {
     return this.target;

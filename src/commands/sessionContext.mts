@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { PicoMpyCom } from "@paulober/pico-mpy-com";
+import { focusTerminal } from "../api.mjs";
 import type Settings from "../settings.mjs";
 import type UI from "../ui.mjs";
 import type { Terminal } from "../terminal.mjs";
@@ -121,6 +122,18 @@ export class SessionContext {
     }
 
     return false;
+  }
+
+  /**
+   * Shows the vREPL for a command's output, unless the plotter is open in its
+   * place: the user is watching the data there and the output reaches it anyway.
+   */
+  public async revealTerminal(): Promise<void> {
+    if (this.output?.isPlotterVisible()) {
+      return;
+    }
+
+    await focusTerminal(this.terminalOptions);
   }
 
   public setBackgroundProgram(running: boolean): void {

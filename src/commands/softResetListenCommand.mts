@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { StringDecoder } from "string_decoder";
 import { OperationResultType } from "@paulober/pico-mpy-com";
-import { focusTerminal } from "../api.mjs";
 import { Command } from "./command.mjs";
 
 /** Interactive soft reset that streams the board output into the vREPL. */
@@ -17,7 +16,7 @@ export class SoftResetListenCommand extends Command {
       return;
     }
 
-    await focusTerminal(this.ctx.terminalOptions);
+    await this.ctx.revealTerminal();
     const decoder = new StringDecoder("utf-8");
     const result = await this.ctx.com.sendCtrlD(
       (open: boolean) => {

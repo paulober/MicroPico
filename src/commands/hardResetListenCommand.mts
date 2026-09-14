@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { StringDecoder } from "string_decoder";
 import { OperationResultType } from "@paulober/pico-mpy-com";
-import { focusTerminal } from "../api.mjs";
 import { Command } from "./command.mjs";
 
 /** Interactive hard reset that streams the board output into the vREPL. */
@@ -28,7 +27,7 @@ export class HardResetListenCommand extends Command {
       return;
     }
 
-    await focusTerminal(this.ctx.terminalOptions);
+    await this.ctx.revealTerminal();
     const decoder = new StringDecoder("utf-8");
     const result = await this.ctx.com.hardReset(
       (open: boolean) => {

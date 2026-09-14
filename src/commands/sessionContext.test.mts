@@ -1,6 +1,7 @@
 import { describe, test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import {
+  __getTerminalLookups,
   __queueWarningMessage,
   __resetPrompts,
 } from "../test-support/vscodeStub.mjs";
@@ -40,6 +41,28 @@ describe("SessionContext.checkForRunningOperation", () => {
 
     assert.equal(await ctx.checkForRunningOperation(), false);
     assert.equal(interrupted, 1);
+  });
+});
+
+describe("SessionContext.revealTerminal", () => {
+  test("leaves the plotter in front when it's open", async () => {
+    const ctx = makeCtx();
+    ctx.output = { isPlotterVisible: () => true } as never;
+    const before = __getTerminalLookups();
+
+    await ctx.revealTerminal();
+
+    assert.equal(__getTerminalLookups(), before);
+  });
+
+  test("shows the vREPL otherwise", async () => {
+    const ctx = makeCtx();
+    ctx.output = { isPlotterVisible: () => false } as never;
+    const before = __getTerminalLookups();
+
+    await ctx.revealTerminal();
+
+    assert.equal(__getTerminalLookups(), before + 1);
   });
 });
 
