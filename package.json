@@ -742,7 +742,7 @@
     "typescript-eslint": "^8.69.0",
     "uplot": "^1.6.32",
     "webpack": "^5.109.2",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^7.2.3"
   },
   "dependencies": {
     "@paulober/pico-mpy-com": "^1.0.28",
