@@ -18,6 +18,8 @@
   let frame = 0;
   // while the user has zoomed in, new data must not reset the view
   let zoomed = false;
+  // samples that arrive after a clear while paused, shown on resume
+  let held = [];
 
   function readVars(names, fallback) {
     const style = getComputedStyle(document.body);
@@ -166,6 +168,18 @@
   }
 
   function addSamples(samples) {
+    if (paused && !plot) {
+      // cleared while paused: keep the hint up until the user resumes
+      for (const values of samples) {
+        held.push(values);
+      }
+      if (held.length > MAX_POINTS) {
+        held.splice(0, held.length - MAX_POINTS);
+      }
+
+      return;
+    }
+
     for (const values of samples) {
       addSample(values);
     }
@@ -186,6 +200,7 @@
     }
     xs = [];
     ys = [];
+    held = [];
     seriesCount = 0;
     zoomed = false;
     showEmptyState(true);
@@ -214,6 +229,11 @@
   pauseBtn.addEventListener("click", () => {
     paused = !paused;
     pauseBtn.textContent = paused ? "Resume" : "Pause";
+    if (!paused && held.length > 0) {
+      const samples = held;
+      held = [];
+      addSamples(samples);
+    }
     redraw();
   });
 
