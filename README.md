@@ -49,7 +49,7 @@ On most Linux installations the device file of the Pico serial port is owned by 
 
 ## Getting started
 
-- First of all open a folder and run `> MicroPico > Initialize MicroPico project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the autocompletion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in [\#Requirements](#requirements).
+- First of all open a folder and run `> MicroPico > Initialize MicroPico Project` command via `Ctrl+Shift+P` (or the equivalent on your platform) VS Code command palette. This will import stubs for autocompletion and the settings into your project folder. For the autocompletion to work, the extension prompts you (after project configuration) to install recommended extensions mentioned in [\#Requirements](#requirements).
 
 - Blink the onboard LED in under 5 minutes:
 
@@ -68,9 +68,9 @@ led.off()
 print("Done.")
 ```
 
-- To run the open file, use `> MicroPico > Run current file on Pico` or the "Run" button in the status bar.
+- To run the open file, use `> MicroPico > Run Current File on Board` or the "Run" button in the status bar.
 
-- To stop the execution of the currently running program or other operation, run `> MicroPico > Stop execution`. The "Stop" button at the status bar does the same.
+- To stop the execution of the currently running program or other operation, run `> MicroPico > Stop Execution`. The "Stop" button at the status bar does the same.
 
 - To plot values, run `> MicroPico > Open Plotter` and print comma-separated numbers, e.g. `print("%.2f, %.2f" % (temp, humidity))`. An optional first line like `print("temp, humidity")` names the series.
 

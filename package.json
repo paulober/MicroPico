@@ -87,74 +87,75 @@
       },
       {
         "command": "micropico.initialise",
-        "title": "Initialize MicroPico project",
+        "title": "Initialize MicroPico Project",
         "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.newProject",
-        "title": "Create new Project",
+        "title": "Create New Project",
         "category": "MicroPico"
       },
       {
         "command": "micropico.upload",
-        "title": "Upload project to Pico",
+        "title": "Upload Project to Board",
         "enablement": "micropico.isConnected && (resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.uploadFile",
-        "title": "Upload file to Pico",
+        "title": "Upload File to Board",
         "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource",
         "category": "MicroPico"
       },
       {
         "command": "micropico.downloadFile",
-        "title": "Download file from Pico",
-        "enablement": "micropico.isConnected && resourceScheme == pico && isFileSystemResource"
+        "title": "Download File from Board",
+        "enablement": "micropico.isConnected && resourceScheme == pico && isFileSystemResource",
+        "category": "MicroPico"
       },
       {
         "command": "micropico.download",
-        "title": "Download project from Pico",
+        "title": "Download Project from Board",
         "enablement": "(resourceScheme == pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.run",
-        "title": "Run current file on Pico",
+        "title": "Run Current File on Board",
         "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
         "category": "MicroPico"
       },
       {
         "command": "micropico.remote.run",
-        "title": "Run current file on Pico",
+        "title": "Run Current File on Board",
         "enablement": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py",
         "category": "MicroPico"
       },
       {
         "command": "micropico.universalStop",
-        "title": "Stop execution",
+        "title": "Stop Execution",
         "category": "MicroPico"
       },
       {
         "command": "micropico.runselection",
-        "title": "Run current selection on Pico",
+        "title": "Run Selection on Board",
         "enablement": "micropico.isConnected && !inQuickOpen && !listFocus && editorLangId == python",
         "category": "MicroPico"
       },
       {
         "command": "micropico.deleteAllFiles",
-        "title": "Delete all files from board",
+        "title": "Delete All Files from Board",
         "category": "MicroPico"
       },
       {
         "command": "micropico.globalSettings",
-        "title": "Global settings",
+        "title": "Global Settings",
         "category": "MicroPico"
       },
       {
         "command": "micropico.workspaceSettings",
-        "title": "Workspace settings",
+        "title": "Workspace Settings",
         "category": "MicroPico"
       },
       {
@@ -174,7 +175,7 @@
       },
       {
         "command": "micropico.help",
-        "title": "Help > Getting started",
+        "title": "Help > Getting Started",
         "category": "MicroPico"
       },
       {
@@ -184,22 +185,22 @@
       },
       {
         "command": "micropico.extra.getSerial",
-        "title": "Help > List serial ports",
+        "title": "Help > List Serial Ports",
         "category": "MicroPico"
       },
       {
         "command": "micropico.extra.firmwareUpdates",
-        "title": "Help > Check for firmware updates",
+        "title": "Help > Check for Firmware Updates",
         "category": "MicroPico"
       },
       {
         "command": "micropico.extra.switchStubs",
-        "title": "Extra > Switch stubs",
+        "title": "Extra > Switch Stubs",
         "category": "MicroPico"
       },
       {
         "command": "micropico.listCommands",
-        "title": "List all Commands",
+        "title": "List All Commands",
         "category": "MicroPico"
       },
       {
@@ -209,7 +210,7 @@
       },
       {
         "command": "micropico.switchPico",
-        "title": "Switch Pico",
+        "title": "Switch Board",
         "category": "MicroPico"
       },
       {
@@ -224,7 +225,7 @@
       },
       {
         "command": "micropico.device-wifi.itemClicked",
-        "title": "Wifi > Connect",
+        "title": "Wi-Fi > Connect",
         "category": "MicroPico"
       },
       {
@@ -238,17 +239,17 @@
       },
       {
         "command": "micropico.garbageCollect",
-        "title": "Trigger garbage collection",
+        "title": "Trigger Garbage Collection",
         "category": "MicroPico"
       },
       {
         "command": "micropico.flashPico",
-        "title": "Flash Pico in BOOTSEL mode",
+        "title": "Flash Pico in BOOTSEL Mode",
         "category": "MicroPico"
       },
       {
         "command": "micropico.redirectOutput",
-        "title": "MicroPython output redirection settings (experimental)",
+        "title": "Redirect Output (Experimental)",
         "category": "MicroPico",
         "enablement": "micropico.isConnected"
       },
@@ -261,61 +262,14 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "micropico.upload",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme != pico"
-        },
-        {
-          "command": "micropico.uploadFile",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme != pico"
-        },
-        {
-          "command": "micropico.downloadFile",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme == pico"
-        },
-        {
-          "command": "micropico.download",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme == pico"
-        },
-        {
-          "command": "micropico.run",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
-        },
-        {
-          "command": "micropico.remote.run",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
-        },
-        {
-          "command": "micropico.initialise",
-          "group": "micropico",
-          "when": "resourceScheme != pico"
+          "submenu": "micropico.explorerContext",
+          "group": "micropico"
         }
       ],
       "editor/context": [
         {
-          "command": "micropico.run",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
-        },
-        {
-          "command": "micropico.remote.run",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
-        },
-        {
-          "command": "micropico.runselection",
-          "group": "micropico",
-          "when": "micropico.isActivated"
-        },
-        {
-          "command": "micropico.uploadFile",
-          "group": "micropico",
-          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource"
+          "submenu": "micropico.editorContext",
+          "group": "micropico"
         }
       ],
       "editor/title": [
@@ -352,6 +306,65 @@
           "command": "micropico.redirectOutput",
           "group": "MicroPico",
           "when": "micropico.isConnected"
+        }
+      ],
+      "micropico.explorerContext": [
+        {
+          "command": "micropico.upload",
+          "group": "2_transfer@3",
+          "when": "micropico.isActivated && resourceScheme != pico"
+        },
+        {
+          "command": "micropico.uploadFile",
+          "group": "2_transfer@1",
+          "when": "micropico.isActivated && resourceScheme != pico"
+        },
+        {
+          "command": "micropico.downloadFile",
+          "group": "2_transfer@2",
+          "when": "micropico.isActivated && resourceScheme == pico"
+        },
+        {
+          "command": "micropico.download",
+          "group": "2_transfer@4",
+          "when": "micropico.isActivated && resourceScheme == pico"
+        },
+        {
+          "command": "micropico.run",
+          "group": "1_run@1",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py"
+        },
+        {
+          "command": "micropico.remote.run",
+          "group": "1_run@1",
+          "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py"
+        },
+        {
+          "command": "micropico.initialise",
+          "group": "3_project@1",
+          "when": "resourceScheme != pico"
+        }
+      ],
+      "micropico.editorContext": [
+        {
+          "command": "micropico.run",
+          "group": "1_run@1",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+        },
+        {
+          "command": "micropico.remote.run",
+          "group": "1_run@1",
+          "when": "micropico.isActivated && resourceScheme == pico && isFileSystemResource && resourceExtname == .py && editorLangId == python"
+        },
+        {
+          "command": "micropico.runselection",
+          "group": "1_run@2",
+          "when": "micropico.isActivated"
+        },
+        {
+          "command": "micropico.uploadFile",
+          "group": "2_transfer@1",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource"
         }
       ]
     },
@@ -615,6 +628,16 @@
         "contents": "[Create MicroPico Project](command:micropico.newProject)",
         "when": "workspaceFolderCount == 0"
       }
+    ],
+    "submenus": [
+      {
+        "id": "micropico.explorerContext",
+        "label": "MicroPico"
+      },
+      {
+        "id": "micropico.editorContext",
+        "label": "MicroPico"
+      }
     ]
   },
   "statusBar": [
@@ -652,7 +675,7 @@
       "key": "download",
       "name": "$(triangle-down) Download",
       "command": "micropico.downloadFile",
-      "tooltip": "Download current file to your board"
+      "tooltip": "Download current file from your board"
     },
     {
       "key": "uploadproject",

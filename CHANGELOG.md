@@ -23,6 +23,7 @@ All notable changes to the "MicroPico" extension will be documented in this file
 ### Changed
 
 - License changed from MPL-2.0 to Apache-2.0
+- Context menu entries are grouped in a "MicroPico" submenu, and commands say "board" instead of "Pico" where they work with any board (e.g. "Upload File to Board")
 - Changed minimum Visual Studio Code version to `1.137.0` (Node.js 24)
 - Run and Remote Run soft reset the board before running, wherever they are started from, and no longer afterwards, so timers, interrupts and threads keep running. Set `micropico.noSoftResetOnRun` to skip the reset
 - Remote Run from the Pico file explorer runs the clicked file instead of the focused editor
