@@ -51,9 +51,22 @@
     const legendHeight = legend ? legend.offsetHeight : 0;
 
     return {
-      width: Math.max(100, chartEl.clientWidth - padX),
-      height: Math.max(80, chartEl.clientHeight - padY - legendHeight),
+      width: chartEl.clientWidth - padX,
+      height: chartEl.clientHeight - padY - legendHeight,
     };
+  }
+
+  // Follows the panel size. The chart can be built before the view has its
+  // final size (e.g. right after it becomes visible), so it must not keep the
+  // size measured at that moment.
+  function fit() {
+    if (!plot) {
+      return;
+    }
+    const size = chartSize();
+    if (size.width > 0 && size.height > 0) {
+      plot.setSize(size);
+    }
   }
 
   function showEmptyState(show) {
@@ -93,9 +106,11 @@
       ticks: { stroke: gridStroke, width: 1 },
     };
 
+    const initial = chartSize();
     plot = new uPlot(
       {
-        ...chartSize(),
+        width: Math.max(initial.width, 100),
+        height: Math.max(initial.height, 80),
         series,
         scales: { x: { time: false } },
         axes: [axis, axis],
@@ -118,7 +133,7 @@
       zoomed = false;
     });
     // the legend exists now, so fit again without it overflowing
-    plot.setSize(chartSize());
+    fit();
   }
 
   function redraw() {
@@ -194,11 +209,7 @@
     }
   });
 
-  window.addEventListener("resize", () => {
-    if (plot) {
-      plot.setSize(chartSize());
-    }
-  });
+  new ResizeObserver(fit).observe(chartEl);
 
   pauseBtn.addEventListener("click", () => {
     paused = !paused;
