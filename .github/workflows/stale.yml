@@ -1,0 +1,36 @@
+name: Close issues without reply
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          # only issues waiting for details from the reporter
+          only-labels: needs-info
+          days-before-issue-stale: 30
+          days-before-issue-close: 7
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-label: stale
+          stale-issue-message: >-
+            There hasn't been a reply for 30 days. If this still happens with
+            the latest version, please add the requested details. Otherwise
+            this issue will be closed in 7 days.
+          close-issue-message: >-
+            Closing because the requested details weren't provided. Feel free
+            to comment with them and I'll reopen it.
+          close-issue-reason: not_planned
+          # a reply means the reporter is back, so it no longer waits for info
+          labels-to-remove-when-unstale: needs-info
