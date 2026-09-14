@@ -5,6 +5,7 @@
 
   const vscode = acquireVsCodeApi();
   const chartEl = document.getElementById("chart");
+  const emptyEl = document.getElementById("empty");
   const pauseBtn = document.getElementById("pause");
   const MAX_POINTS = 1000;
 
@@ -15,6 +16,8 @@
   let paused = false;
   let plot = null;
   let frame = 0;
+  // while the user has zoomed in, new data must not reset the view
+  let zoomed = false;
 
   function readVars(names, fallback) {
     const style = getComputedStyle(document.body);
@@ -39,11 +42,23 @@
     );
   }
 
+  // the space inside the chart's padding, minus the legend below the plot
   function chartSize() {
+    const style = getComputedStyle(chartEl);
+    const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const legend = chartEl.querySelector(".u-legend");
+    const legendHeight = legend ? legend.offsetHeight : 0;
+
     return {
-      width: chartEl.clientWidth || 400,
-      height: Math.max(120, chartEl.clientHeight || 260),
+      width: Math.max(100, chartEl.clientWidth - padX),
+      height: Math.max(80, chartEl.clientHeight - padY - legendHeight),
     };
+  }
+
+  function showEmptyState(show) {
+    emptyEl.hidden = !show;
+    chartEl.hidden = show;
   }
 
   function build(count) {
@@ -51,7 +66,9 @@
       plot.destroy();
       plot = null;
     }
+    showEmptyState(false);
     seriesCount = count;
+    zoomed = false;
     xs = [];
     ys = Array.from({ length: count }, () => []);
 
@@ -76,24 +93,37 @@
       ticks: { stroke: gridStroke, width: 1 },
     };
 
-    const size = chartSize();
     plot = new uPlot(
       {
-        width: size.width,
-        height: size.height,
+        ...chartSize(),
         series,
         scales: { x: { time: false } },
         axes: [axis, axis],
         legend: { show: count > 1 },
+        hooks: {
+          setSelect: [
+            (u) => {
+              if (u.select.width > 0) {
+                zoomed = true;
+              }
+            },
+          ],
+        },
       },
       [xs].concat(ys),
       chartEl
     );
+    // double-click resets the zoom inside uPlot
+    plot.over.addEventListener("dblclick", () => {
+      zoomed = false;
+    });
+    // the legend exists now, so fit again without it overflowing
+    plot.setSize(chartSize());
   }
 
   function redraw() {
     if (plot && !paused) {
-      plot.setData([xs].concat(ys));
+      plot.setData([xs].concat(ys), !zoomed);
     }
   }
 
@@ -142,6 +172,8 @@
     xs = [];
     ys = [];
     seriesCount = 0;
+    zoomed = false;
+    showEmptyState(true);
   }
 
   window.addEventListener("message", (event) => {
@@ -174,6 +206,13 @@
     redraw();
   });
 
+  document.getElementById("resetZoom").addEventListener("click", () => {
+    zoomed = false;
+    if (plot) {
+      plot.setData([xs].concat(ys), true);
+    }
+  });
+
   document.getElementById("clear").addEventListener("click", () => {
     vscode.postMessage({ command: "clear" });
   });
@@ -192,5 +231,6 @@
     });
   });
 
+  showEmptyState(true);
   vscode.postMessage({ command: "ready" });
 })();

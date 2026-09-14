@@ -8,10 +8,14 @@ body {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
+  /* the chart is sized to fit, scrollbars would only flicker */
+  overflow: hidden;
 }
 
 .toolbar {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 4px 6px;
   flex: 0 0 auto;
@@ -32,10 +36,26 @@ body {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
+.toolbar .hint {
+  margin-left: auto;
+  color: var(--vscode-descriptionForeground);
+}
+
 #chart {
   flex: 1 1 auto;
   min-height: 0;
   padding: 6px;
+  overflow: hidden;
+}
+
+.empty {
+  padding: 12px;
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.6;
+}
+
+.empty code {
+  font-family: var(--vscode-editor-font-family);
 }
 
 /* uPlot inherits the panel colors */

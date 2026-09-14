@@ -199,8 +199,15 @@ export default class PlotterViewProvider implements WebviewViewProvider {
     <div class="toolbar">
       <button id="pause" title="Pause / resume">Pause</button>
       <button id="clear" title="Clear the plot">Clear</button>
+      <button id="resetZoom" title="Show all data again">Reset zoom</button>
       <button id="csv" title="Export data as CSV">Export CSV</button>
       <button id="png" title="Export chart as PNG">Export PNG</button>
+      <span class="hint">Drag to zoom, double-click to reset</span>
+    </div>
+    <div id="empty" class="empty">
+      Waiting for data. Print comma-separated numbers, for example
+      <code>print("%.1f, %.1f" % (temp, humidity))</code>. An optional first
+      line like <code>print("temp, humidity")</code> names the series.
     </div>
     <div id="chart"></div>
     <script nonce="${nonce}" src="${uplotJsUri.toString()}"></script>
