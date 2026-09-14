@@ -1,4 +1,9 @@
-import type { Memento, Uri, WorkspaceConfiguration } from "vscode";
+import type {
+  Disposable,
+  Memento,
+  Uri,
+  WorkspaceConfiguration,
+} from "vscode";
 import { window, workspace as vsWorkspace } from "vscode";
 import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
 import { dirname, join, relative } from "path";
@@ -43,6 +48,21 @@ export default class Settings {
 
   public reload(): void {
     this.config = vsWorkspace.getConfiguration(extName);
+  }
+
+  /**
+   * Reloads the cached configuration whenever the user changes a setting, so
+   * changes take effect without reloading the window.
+   */
+  public watch(): Disposable {
+    return vsWorkspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration(extName)) {
+        this.reload();
+      }
+      if (event.affectsConfiguration("python.analysis")) {
+        this.reloadPython();
+      }
+    });
   }
 
   public reloadPython(): void {

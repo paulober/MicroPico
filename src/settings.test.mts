@@ -1,6 +1,10 @@
 import { describe, test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { __setConfig, __resetConfig } from "./test-support/vscodeStub.mjs";
+import {
+  __changeConfig,
+  __setConfig,
+  __resetConfig,
+} from "./test-support/vscodeStub.mjs";
 import Settings from "./settings.mjs";
 
 function makeSettings(): Settings {
@@ -21,6 +25,36 @@ describe("Settings.update", () => {
 
     // the configuration is a cached snapshot; without a reload this stayed false
     assert.equal(settings.get("disableRunFileTypeWarning"), true);
+  });
+});
+
+describe("Settings.watch", () => {
+  beforeEach(() => {
+    __resetConfig();
+  });
+
+  test("picks up a change made in the settings UI", () => {
+    __setConfig("micropico", { disableRunFileTypeWarning: true });
+    const settings = makeSettings();
+    const watcher = settings.watch();
+
+    __changeConfig("micropico", { disableRunFileTypeWarning: false });
+
+    assert.equal(settings.get("disableRunFileTypeWarning"), false);
+    watcher.dispose();
+  });
+
+  test("keeps the cached values for changes of other extensions", () => {
+    __setConfig("micropico", { disableRunFileTypeWarning: true });
+    const settings = makeSettings();
+    const watcher = settings.watch();
+
+    // written without an event for micropico, so the snapshot stays
+    __changeConfig("python", { defaultInterpreterPath: "/usr/bin/python3" });
+    __setConfig("micropico", { disableRunFileTypeWarning: false });
+
+    assert.equal(settings.get("disableRunFileTypeWarning"), true);
+    watcher.dispose();
   });
 });
 

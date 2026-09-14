@@ -72,7 +72,32 @@ export function __resetPrompts(): void {
   quickPickCalls = 0;
 }
 
+type ConfigChangeListener = (event: {
+  affectsConfiguration(section: string): boolean;
+}) => void;
+const configListeners: ConfigChangeListener[] = [];
+
+/** Change a section like the settings UI would and notify listeners. */
+export function __changeConfig(section: string, values: ConfigValues): void {
+  store[section] = { ...store[section], ...values };
+  for (const listener of [...configListeners]) {
+    listener({
+      affectsConfiguration: (name: string) =>
+        section === name || section.startsWith(name + "."),
+    });
+  }
+}
+
 export const workspace = {
+  onDidChangeConfiguration(listener: ConfigChangeListener) {
+    configListeners.push(listener);
+
+    return {
+      dispose() {
+        configListeners.splice(configListeners.indexOf(listener), 1);
+      },
+    };
+  },
   // Like VS Code, a configuration object is a snapshot: updates only show up
   // in configurations fetched afterwards.
   getConfiguration(section: string) {

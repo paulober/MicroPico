@@ -83,6 +83,7 @@ export default class Activator {
   ): Promise<UI | undefined> {
     // TODO: maybe store the PicoMpyCom.getInstance() in a class variable
     this.settings = new Settings(context.workspaceState);
+    context.subscriptions.push(this.settings.watch());
     const ctx = new SessionContext(this.settings);
 
     // The connection lifecycle (auto-connect polling, reconnect, board events)
