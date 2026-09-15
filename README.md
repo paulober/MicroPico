@@ -74,6 +74,17 @@ print("Finished.")
 
 ---
 
+## Beginner checklist
+
+MicroPico has two ways to work with files. For a first project, use a **local project folder**: open the folder in VS Code, run `MicroPico: Initialize MicroPico project` once, and keep your source files there. The **Pico virtual workspace** is for editing files already on the board and intentionally disables Pylance auto-completion.
+
+- **Install the recommended extensions for auto-completion.** The Python, IntelliCode, and Pylance extensions listed under [Requirements](#requirements) provide the editor support used by an initialized local project. Pylance being unavailable in the Pico virtual workspace is expected.
+- **Upload a multi-file project before running it.** Put `main.py` and its imported modules in the same local project, then run `MicroPico: Upload project to Pico`. The `micropico.syncFolder` setting limits the upload to one project subfolder; leave it empty to upload the complete project. `Run current file on Pico` runs only the file in the active editor.
+- **Use the correct terminal.** A regular VS Code terminal opens on your computer. Open the MicroPico vREPL terminal when you want to enter MicroPython commands on the connected board.
+- **Keep the two file views distinct.** Changes in the local project are copied to the board only when you run an upload command. Changes in the Pico virtual workspace edit the board copy directly.
+
+If the board does not connect on Linux, follow the [Linux device-permission guide](https://github.com/paulober/MicroPico/wiki/Linux).
+
 ## Extension Settings
 
 This extension contributes the following settings:
