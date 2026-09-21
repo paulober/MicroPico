@@ -10,6 +10,29 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.5.0] - 2026-09-22
+
+### Added
+
+- German, Spanish and Italian translations; MicroPico follows the VS Code display language
+- `micropico.alwaysStopRunningProgram` setting and an "Always Stop" button to stop a running program without asking before uploads, downloads and resets (#339, idea by @kai-morich)
+- "Switch Board" lists every serial port with the device behind it (e.g. "Espressif · USB 303A:1001"), so boards that aren't detected automatically can be picked directly; the picked port is remembered (#285)
+- A "Select Port" button when no board is found
+
+### Changed
+
+- `micropico.manualComDevice` is always used when set, `micropico.autoConnect` no longer has to be turned off (#285)
+- "Toggle Virtual File System" is now "Mount/Unmount Board Filesystem", the status bar button is "Board Filesystem"
+- The status bar says "Board Connected" instead of "Pico Connected"
+- When another program holds the port, MicroPico stops trying after a few seconds and says so, instead of showing an error every 1.5 seconds
+- Updated dependencies, including `@paulober/pico-mpy-com` `1.0.29`
+
+### Fixed
+
+- Garbled characters (`�`) in the vREPL and a board that stopped responding on macOS when another program or VS Code window tried to open the same port, e.g. while the window reloaded
+- The mounted board filesystem stayed empty after a window reload and kept listing files after disconnecting
+- The "Download Project" status bar button was labeled like the file download
+
 ## [4.4.0] - 2026-09-14
 
 ### Added

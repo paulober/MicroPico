@@ -12,7 +12,7 @@ authors:
 repository-code: https://github.com/paulober/MicroPico
 url: https://micropico.paulober.dev
 license: Apache-2.0
-version: 4.4.0
+version: 4.5.0
 keywords:
   - MicroPython
   - Raspberry Pi Pico
