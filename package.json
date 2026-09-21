@@ -671,7 +671,7 @@
     "verify:vsix": "node ./scripts/check-vsix.mjs"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
+    "@eslint/js": "^10.0.1",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@serialport/bindings-cpp": "^13.0.1",
     "@types/eslint": "^9.6.1",
