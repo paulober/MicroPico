@@ -26,6 +26,8 @@ Works with:
 - Switch between auto-completion and IntelliSense for MicroPython ports `RPi Pico`, `RPi Pico (W)` and `ESP32` (requires pip installed an in PATH)
 - Device Manager UI for managing wifi connection and installing mip packages (only on `Pico W`; experimental)
 - `ESP32-WROOM-32`, `ESP32-C3`, `ESP32-S3`, `ESP32-S3-Pico` and `Teensy 4.0` support (experimental)
+- Works with any MicroPython board: pick its serial port with `MicroPico: Switch Board` if it isn't detected automatically
+- Available in English, German, Spanish and Italian (follows the VS Code display language)
 
 ![Preview](images/preview.gif)
 
@@ -80,20 +82,21 @@ print("Done.")
 
 This extension contributes the following settings:
 
-* `micropico.autoConnect`: Ignores any 'device address' setting and automatically connects to the top item in the serial-port list (of Picos).
-* `micropico.manualComDevice`: If `autoConnect` is set to false MicroPico will automatically connect to the serial port specified here.
+* `micropico.autoConnect`: Automatically connects to the first detected MicroPython board. A port set in `micropico.manualComDevice` is always used instead.
+* `micropico.manualComDevice`: Serial port to always connect to, e.g. `COM3` or `/dev/ttyACM0`. Works with any board, also ones that aren't detected automatically. `MicroPico: Switch Board` lets you pick the port from a list.
 * `micropico.syncFolder`: This folder will be uploaded to the pyboard when using the upload-project command/button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash.
 * `micropico.additionalSyncFolders`: Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.
 * `micropico.syncAllFileTypes`: If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored.
-* `micropico.syncFileTypes`: All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action.
+* `micropico.syncFileTypes`: All types of files that will be uploaded to the board, separated by comma. All other filetypes will be ignored during an upload (or download) action.
 * `micropico.pyIgnore`: Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file|folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `micropico.additionalSyncFolders` setting or the value from `micropico.syncFolder`.
 * `micropico.openOnStart`: Automatically open the MicroPico terminal (Pico (W) vREPL) and connect to the board after starting VS Code.
 * `micropico.statusbarButtons`: Select which buttons to show in the statusbar (DO NOT CHANGE, unless you know what you are doing)
-* `micropico.gcBeforeUpload`: Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.
-* `micropico.softResetAfterUpload`: Soft-resets your board after any upload action. Usefull if you are developing with `main.py` or `boot.py`.
+* `micropico.gcBeforeUpload`: Run garbage collection before uploading files to the board. This frees up memory, which helps when uploading large files, but adds a second or two to the upload.
+* `micropico.softResetAfterUpload`: Soft-resets your board after any upload action. Useful if you are developing with `main.py` or `boot.py`.
 * `micropico.executeOnConnect`: Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable. (must be relative to the root of the Pico's filesystem; doesn't need to begin with a slash; overrides `micropico.openOnStart` setting)
 * `micropico.importOnConnect`: A MicroPython module to import in vREPL on connect. Leave empty to disable.
 * `micropico.noSoftResetOnRun`: Disables the soft reset before running a file on the Pico.
+* `micropico.alwaysStopRunningProgram`: Stop a program still running on the board without asking before uploading, downloading or resetting.
 * `micropico.disableRunFileTypeWarning`: Don't ask for confirmation when running a file that is not a `.py` or `.mpy` file.
 * `micropico.customVidPidPairs`: Additional USB vendor/product ID pairs (in decimal) to detect as MicroPython boards, e.g. `[{ "vid": 1027, "pid": 24592 }]` for an FTDI FT2232H (0x0403/0x6010).
 
