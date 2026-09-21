@@ -1,0 +1,34 @@
+name: Check Marketplace identity
+
+# Run by hand while setting up Entra ID publishing: prints the ID to add as a
+# member of the Marketplace publisher, then checks the publish rights.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  identity:
+    runs-on: ubuntu-latest
+    environment: marketplace
+    permissions:
+      id-token: write # sign in to Entra ID without a stored secret
+
+    steps:
+      - name: Sign in to Microsoft Entra ID
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Show the ID to add to the Marketplace publisher
+        run: >-
+          az rest
+          -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me
+          --resource 499b84ac-1321-427f-aa17-267ca6975798
+          --query id -o tsv
+
+      - name: Check publish rights
+        run: npx --yes @vscode/vsce@3.7.1 verify-pat paulober --azure-credential
