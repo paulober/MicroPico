@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { l10n } from "vscode";
 import { PicoMpyCom } from "@paulober/pico-mpy-com";
 import { focusTerminal } from "../api.mjs";
+import { SettingsKey } from "../settings.mjs";
 import type Settings from "../settings.mjs";
 import type UI from "../ui.mjs";
 import type { Terminal } from "../terminal.mjs";
@@ -100,12 +101,41 @@ export class SessionContext {
   ) {}
 
   /**
+   * Ask whether to stop the running program before `action`, unless the user
+   * chose to always stop it.
+   *
+   * @returns `true` to stop the program and go ahead with `action`.
+   */
+  private async confirmStop(
+    action: BoardAction,
+    background: boolean,
+  ): Promise<boolean> {
+    if (this.settings.getBoolean(SettingsKey.alwaysStopRunningProgram)) {
+      return true;
+    }
+
+    const { button, message } = stopPrompt(action, background);
+    const always = l10n.t("Always Stop");
+    const choice = await vscode.window.showWarningMessage(
+      message,
+      { modal: true },
+      button,
+      always,
+    );
+    if (choice === always) {
+      await this.settings.update(SettingsKey.alwaysStopRunningProgram, true);
+    }
+
+    return choice === button || choice === always;
+  }
+
+  /**
    * If an operation is already running, ask the user whether to cancel it.
    * Board operations run one at a time, so anything started now would
    * otherwise wait silently until the running program ends.
    *
    * @param action The action about to start (e.g. "Upload"). When given, the
-   * prompt offers a single "Stop and <action>" button next to Cancel.
+   * prompt offers "Stop and <action>" and "Always Stop" next to Cancel.
    * @returns `true` if the caller should abort (the user kept the running
    * operation), `false` to proceed.
    */
@@ -115,13 +145,7 @@ export class SessionContext {
     // Output of a program printing in the background can interleave with file
     // transfers, so offer to stop it first. Run resets the board anyway.
     if (!this.commandExecuting && this.backgroundProgram && action) {
-      const { button, message } = stopPrompt(action, true);
-      const choice = await vscode.window.showWarningMessage(
-        message,
-        { modal: true },
-        button,
-      );
-      if (choice !== button) {
+      if (!(await this.confirmStop(action, true))) {
         this.statusbarMsgDisposable?.dispose();
         this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
           l10n.t("Operation canceled."),
@@ -137,27 +161,21 @@ export class SessionContext {
     }
 
     if (this.commandExecuting) {
-      let proceed: string;
-      let choice: string | undefined;
+      let stop: boolean;
       if (action === undefined) {
-        proceed = l10n.t("Yes");
-        choice = await vscode.window.showWarningMessage(
+        const yes = l10n.t("Yes");
+        const choice = await vscode.window.showWarningMessage(
           l10n.t("An operation is already running. Do you want to cancel it?"),
           { modal: true },
-          proceed,
+          yes,
           l10n.t("No"),
         );
+        stop = choice === yes;
       } else {
-        const { button, message } = stopPrompt(action, false);
-        proceed = button;
-        choice = await vscode.window.showWarningMessage(
-          message,
-          { modal: true },
-          proceed,
-        );
+        stop = await this.confirmStop(action, false);
       }
 
-      if (choice === proceed) {
+      if (stop) {
         if (this.commandExecuting) {
           this.com.interruptExecution();
 

@@ -66,6 +66,8 @@
   "config.noSoftResetOnRun.description": "El reinicio suave borra el estado del REPL para que los cambios en clases y otras estructuras surtan efecto. Sin él, los programas siguen ejecutándose después de que termine el archivo, p. ej., los temporizadores.",
   "config.disableRunFileTypeWarning.title": "Desactivar el aviso al ejecutar un archivo que no es de Python.",
   "config.disableRunFileTypeWarning.description": "Si está activado, al ejecutar un archivo que no es `.py` ni `.mpy` ya no se pide confirmación.",
+  "config.alwaysStopRunningProgram.title": "Detener siempre el programa en ejecución",
+  "config.alwaysStopRunningProgram.description": "Detiene sin preguntar un programa que sigue ejecutándose en la placa antes de subir, descargar o reiniciar.",
   "viewContainer.micropico-device-controller.title": "Control de dispositivo MicroPico (experimental)",
   "viewContainer.micropico-plotter-panel.title": "Plotter de MicroPico",
   "view.micropico-device-wifi.name": "Wi-Fi (solo Pico W)",

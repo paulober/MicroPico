@@ -9,8 +9,18 @@ import { SessionContext } from "./sessionContext.mjs";
 
 function makeCtx(
   com: Partial<{ interruptExecution(): void }> = {},
+  settings: Record<string, unknown> = {},
 ): SessionContext {
-  return new SessionContext({} as never, com as never);
+  const fakeSettings = {
+    getBoolean: (key: string) => settings[key],
+    update: (key: string, value: unknown) => {
+      settings[key] = value;
+
+      return Promise.resolve();
+    },
+  };
+
+  return new SessionContext(fakeSettings as never, com as never);
 }
 
 describe("SessionContext.checkForRunningOperation", () => {
@@ -95,6 +105,30 @@ describe("SessionContext.checkForRunningOperation with an action", () => {
 
     assert.equal(await ctx.checkForRunningOperation("Upload"), true);
     assert.equal(interrupted, 0);
+  });
+
+  test("stops without asking when always stop is enabled", async () => {
+    let interrupted = 0;
+    const ctx = makeCtx(
+      { interruptExecution: () => interrupted++ },
+      { alwaysStopRunningProgram: true },
+    );
+    ctx.commandExecuting = true;
+
+    assert.equal(await ctx.checkForRunningOperation("Upload"), false);
+    assert.equal(interrupted, 1);
+  });
+
+  test("'Always Stop' stops and remembers the choice", async () => {
+    const settings: Record<string, unknown> = {};
+    let interrupted = 0;
+    const ctx = makeCtx({ interruptExecution: () => interrupted++ }, settings);
+    ctx.commandExecuting = true;
+    __queueWarningMessage("Always Stop");
+
+    assert.equal(await ctx.checkForRunningOperation("Reset"), false);
+    assert.equal(interrupted, 1);
+    assert.equal(settings.alwaysStopRunningProgram, true);
   });
 });
 

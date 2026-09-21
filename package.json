@@ -574,6 +574,14 @@
           "title": "%config.disableRunFileTypeWarning.title%",
           "description": "%config.disableRunFileTypeWarning.description%",
           "order": 17
+        },
+        "micropico.alwaysStopRunningProgram": {
+          "type": "boolean",
+          "scope": "machine-overridable",
+          "default": false,
+          "title": "%config.alwaysStopRunningProgram.title%",
+          "description": "%config.alwaysStopRunningProgram.description%",
+          "order": 18
         }
       }
     },

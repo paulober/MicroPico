@@ -66,6 +66,8 @@
   "config.noSoftResetOnRun.description": "The soft reset clears the REPL state so changes to classes and other structures take effect. Programs keep running after the file finished, e.g. timers.",
   "config.disableRunFileTypeWarning.title": "Disable the warning when running a non-Python file.",
   "config.disableRunFileTypeWarning.description": "When enabled, running a file that is not a `.py` or `.mpy` file no longer prompts for confirmation.",
+  "config.alwaysStopRunningProgram.title": "Always stop a running program",
+  "config.alwaysStopRunningProgram.description": "Stop a program still running on the board without asking before uploading, downloading or resetting.",
   "viewContainer.micropico-device-controller.title": "MicroPico Device Controller (experimental)",
   "viewContainer.micropico-plotter-panel.title": "MicroPico Plotter",
   "view.micropico-device-wifi.name": "Wi-Fi (Pico W only)",

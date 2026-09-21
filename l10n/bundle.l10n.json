@@ -11,6 +11,7 @@
   "A soft reset is already in progress.": "A soft reset is already in progress.",
   "All commands": "All commands",
   "All files on the board were deleted.": "All files on the board were deleted.",
+  "Always Stop": "Always Stop",
   "An operation is already running. Do you want to cancel it?": "An operation is already running. Do you want to cancel it?",
   "Available vREPL commands:": "Available vREPL commands:",
   "Board Connected": "Board Connected",

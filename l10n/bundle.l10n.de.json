@@ -11,6 +11,7 @@
   "A soft reset is already in progress.": "Ein Soft-Reset läuft bereits.",
   "All commands": "Alle Befehle",
   "All files on the board were deleted.": "Alle Dateien auf dem Board wurden gelöscht.",
+  "Always Stop": "Immer stoppen",
   "An operation is already running. Do you want to cancel it?": "Es läuft bereits ein Vorgang. Möchtest du ihn abbrechen?",
   "Available vREPL commands:": "Verfügbare vREPL-Befehle:",
   "Board Connected": "Board verbunden",

@@ -31,7 +31,10 @@ function setup(): {
     },
   };
 
-  const ctx = new SessionContext({} as never, com as never);
+  const ctx = new SessionContext(
+    { getBoolean: () => false } as never,
+    com as never,
+  );
   ctx.ui = { setBackgroundProgram: () => {} } as never;
 
   return {
