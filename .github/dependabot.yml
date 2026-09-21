@@ -20,6 +20,10 @@ updates:
       - dependency-name: "@types/vscode"
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # typescript-eslint and ts-loader need the JS compiler API, which the
+      # native TypeScript 7 doesn't ship yet
+      - dependency-name: "typescript"
+        versions: [">=7"]
 
   - package-ecosystem: github-actions
     directory: /
