@@ -118,7 +118,9 @@ if (mode === "export") {
 } else if (mode === "check") {
   const problems = [];
 
-  if (readFileSync(bundlePath, "utf8") !== serialize(strings)) {
+  // Windows checkouts may use CRLF
+  const bundle = readFileSync(bundlePath, "utf8").replace(/\r\n/g, "\n");
+  if (bundle !== serialize(strings)) {
     problems.push(
       "l10n/bundle.l10n.json is out of date, run: node scripts/l10n.mjs export"
     );
