@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Publishes the platform VSIX files created by package.sh to the VS Code
 # Marketplace and Open VSX. The universal VSIX only goes to the GitHub release.
+# The Marketplace uses the Entra ID sign-in from azure/login (--azure-credential).
 set -euo pipefail
 
 : "${RELEASE_TAG_NAME:?RELEASE_TAG_NAME must be set}"
-: "${VSCE_PAT:?VSCE_PAT must be set}"
 : "${OVSX_PAT:?OVSX_PAT must be set}"
 
 shopt -s nullglob
@@ -18,6 +18,7 @@ fi
 for package in "${packages[@]}"; do
   echo "Publishing $package"
   # --skip-duplicate makes a failed run safe to re-run
-  npx @vscode/vsce publish --skip-duplicate --packagePath "$package"
-  npx ovsx publish --skip-duplicate -p "$OVSX_PAT" "$package"
+  npx --yes @vscode/vsce@3.7.1 publish --azure-credential --skip-duplicate \
+    --packagePath "$package"
+  npx --yes ovsx@1.2.0 publish --skip-duplicate -p "$OVSX_PAT" "$package"
 done
