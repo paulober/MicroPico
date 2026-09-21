@@ -508,6 +508,8 @@ export class ConnectionManager {
    */
   private boardOnExit(error?: Error | string): void {
     this.ctx.ui?.refreshState(false);
+    // otherwise it keeps listing files that can't be opened anymore
+    this.refreshBoardFilesystem();
     this.ctx.setBackgroundProgram(false);
     if (error === undefined) {
       this.logger.info("Connection to board was closed.");
@@ -547,6 +549,19 @@ export class ConnectionManager {
     this.setupAutoConnect();
   }
 
+  /** Reloads the mounted board filesystem so it matches the connection. */
+  private refreshBoardFilesystem(): void {
+    if (
+      vscode.workspace.workspaceFolders?.some(
+        folder => folder.uri.scheme === "pico",
+      )
+    ) {
+      void vscode.commands.executeCommand(
+        "workbench.files.action.refreshFilesExplorer",
+      );
+    }
+  }
+
   private boardOnOpen(): void {
     if (this.ctx.ui?.getState()) {
       return;
@@ -574,17 +589,9 @@ export class ConnectionManager {
       );
     }
 
-    // the remote workspace failed to load while disconnected, e.g. right after
-    // a window reload, and VS Code doesn't retry on its own
-    if (
-      vscode.workspace.workspaceFolders?.some(
-        folder => folder.uri.scheme === "pico",
-      )
-    ) {
-      void vscode.commands.executeCommand(
-        "workbench.files.action.refreshFilesExplorer",
-      );
-    }
+    // the board filesystem failed to load while disconnected, e.g. right
+    // after a window reload, and VS Code doesn't retry on its own
+    this.refreshBoardFilesystem();
 
     const moduleToImport = this.ctx.settings.getString(
       SettingsKey.importOnConnect,
