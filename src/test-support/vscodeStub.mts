@@ -62,6 +62,7 @@ export const ProgressLocation = {
   Window: 10,
   Notification: 15,
 };
+export const QuickPickItemKind = { Separator: -1, Default: 0 };
 export const FileChangeType = { Changed: 1, Created: 2, Deleted: 3 };
 
 /** Clear any queued prompt results between tests. */

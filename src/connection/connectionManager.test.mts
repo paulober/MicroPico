@@ -178,6 +178,15 @@ function makeDeps(): FakeDeps {
 
       return Promise.resolve(this.allPorts);
     },
+    async listPortDetails() {
+      const supported = await this.listSupportedPorts();
+      const all = await this.listAllPorts();
+
+      return [...new Set([...supported, ...all])].map(path => ({
+        path,
+        supported: supported.includes(path),
+      }));
+    },
     checkForUsbMsd(): Promise<boolean> {
       this.usbMsdCalls++;
 

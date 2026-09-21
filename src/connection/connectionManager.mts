@@ -1,10 +1,14 @@
 import * as vscode from "vscode";
 import { l10n } from "vscode";
 import { PicoSerialEvents } from "@paulober/pico-mpy-com";
-import type { VidPidPair } from "@paulober/pico-mpy-com";
+import type {
+  SerialPortDetails,
+  VidPidPair,
+} from "@paulober/pico-mpy-com";
 import { SettingsKey } from "../settings.mjs";
 import Logger from "../logger.mjs";
 import { commandPrefix } from "../api.mjs";
+import { describePort } from "../utils/portName.mjs";
 import type { SessionContext } from "../commands/sessionContext.mjs";
 
 /**
@@ -18,6 +22,8 @@ export interface ConnectionDeps {
   listSupportedPorts(vidPidPairs?: VidPidPair[]): Promise<string[]>;
   /** All serial ports, unfiltered (=`PicoMpyCom.getAllSerialPorts`). */
   listAllPorts(): Promise<string[]>;
+  /** All serial ports with USB details (=`PicoMpyCom.getSerialPortDetails`). */
+  listPortDetails(vidPidPairs?: VidPidPair[]): Promise<SerialPortDetails[]>;
   /**
    * Offer to flash a Pico that enumerated as a USB mass-storage device.
    * Returns whether the check should be suppressed on the next 0-ports tick
@@ -344,12 +350,8 @@ export class ConnectionManager {
     const customVidPidPairs = this.ctx.settings.getCustomVidPidPairs();
     const manualComDevice =
       this.ctx.settings.getString(SettingsKey.manualComDevice) ?? "";
-    const [boards, allPorts] = await Promise.all([
-      this.deps.listSupportedPorts(customVidPidPairs),
-      this.deps.listAllPorts(),
-    ]);
-    const otherPorts = allPorts.filter(port => !boards.includes(port));
-    if (boards.length === 0 && otherPorts.length === 0) {
+    const ports = await this.deps.listPortDetails(customVidPidPairs);
+    if (ports.length === 0) {
       void vscode.window.showErrorMessage(l10n.t("No serial port found."));
 
       // Without this return the empty list would fall through to an empty
@@ -357,19 +359,35 @@ export class ConnectionManager {
       return;
     }
 
-    const items: Array<vscode.QuickPickItem & { port?: string }> = [
-      ...boards.map(port => ({
-        label: port,
-        description: l10n.t("MicroPython board"),
-        port,
-      })),
-      ...otherPorts.map(port => ({
-        label: port,
-        description: l10n.t("Other serial port"),
-        port,
-      })),
-    ];
+    type PortItem = vscode.QuickPickItem & { port?: string };
+    const toItem = (port: SerialPortDetails): PortItem => ({
+      label: port.path,
+      description: describePort(port),
+      port: port.path,
+    });
+    const boards = ports.filter(port => port.supported);
+    const otherPorts = ports.filter(port => !port.supported);
+    const items: PortItem[] = [];
+    if (boards.length > 0) {
+      items.push(
+        {
+          label: l10n.t("Detected boards"),
+          kind: vscode.QuickPickItemKind.Separator,
+        },
+        ...boards.map(toItem),
+      );
+    }
+    if (otherPorts.length > 0) {
+      items.push(
+        {
+          label: l10n.t("Other serial ports"),
+          kind: vscode.QuickPickItemKind.Separator,
+        },
+        ...otherPorts.map(toItem),
+      );
+    }
     if (manualComDevice.length > 0) {
+      items.push({ label: "", kind: vscode.QuickPickItemKind.Separator });
       items.push({
         label: l10n.t("Detect boards automatically"),
         description: l10n.t("Stop always using {0}", manualComDevice),
@@ -395,7 +413,8 @@ export class ConnectionManager {
     }
 
     // a saved port wins over detection, so keep it in sync with the choice
-    if (manualComDevice.length > 0 || !boards.includes(choice.port)) {
+    const detected = boards.some(port => port.path === choice.port);
+    if (manualComDevice.length > 0 || !detected) {
       await this.ctx.settings.update(SettingsKey.manualComDevice, choice.port);
       if (manualComDevice !== choice.port) {
         void vscode.window.showInformationMessage(

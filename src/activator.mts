@@ -89,6 +89,8 @@ export default class Activator {
       listSupportedPorts: vidPidPairs =>
         PicoMpyCom.getSerialPorts(vidPidPairs),
       listAllPorts: () => PicoMpyCom.getAllSerialPorts(),
+      listPortDetails: vidPidPairs =>
+        PicoMpyCom.getSerialPortDetails(vidPidPairs),
       checkForUsbMsd: () => flashPicoInteractively(),
       onConnected: () => this.onBoardConnected(),
     };
