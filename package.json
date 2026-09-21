@@ -693,7 +693,7 @@
     "webpack-cli": "^7.2.3"
   },
   "dependencies": {
-    "@paulober/pico-mpy-com": "^1.0.28",
+    "@paulober/pico-mpy-com": "^1.0.29",
     "@vscode/python-extension": "^1.0.6",
     "axios": "^1.13.6",
     "fs-extra": "^11.4.0",
