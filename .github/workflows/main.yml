@@ -65,6 +65,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Check translations
+        run: npm run l10n:check
+
       - name: Unit tests
         run: npm test
 

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import UI from "./ui.mjs";
 import {
   TERMINAL_NAME,
@@ -148,17 +149,16 @@ export default class Activator {
     ) {
       connection.comDevice = undefined;
 
+      const openSettingsLabel = l10n.t("Open Settings");
       void vscode.window
         .showErrorMessage(
-          "No COM device found. Please check your connection or ports and " +
-            "try again. Alternatively you can set the manualComDevice " +
-            "setting to the path of your COM device in the settings but " +
-            "make sure to deactivate autoConnect. For Linux users: check you " +
-            "sufficient permission to access the device file of the Pico.",
-          "Open Settings",
+          l10n.t(
+            "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect. For Linux users: check you have sufficient permission to access the device file of the board.",
+          ),
+          openSettingsLabel,
         )
-        .then((choice: "Open Settings" | undefined) => {
-          if (choice === "Open Settings") {
+        .then(choice => {
+          if (choice === openSettingsLabel) {
             openSettings();
           }
         });
@@ -195,16 +195,19 @@ export default class Activator {
           "\x1b[1;32m" +
           result.response +
           "\x1b[0m" +
-          'Type "help()" for more information or ' +
-          ".help for custom vREPL commands." +
+          l10n.t(
+            'Type "help()" for more information or .help for custom vREPL commands.',
+          ) +
           "\r\n".repeat(2)
         );
       }
 
       return (
         "\x1b[38;2;255;165;0m" + // Set text color to orange (RGB: 255, 165, 0)
-        "Failed to get MicroPython version and machine type.\r\n" +
-        "Waiting for board to connect...\r\n" +
+        l10n.t("Failed to get MicroPython version and machine type.") +
+        "\r\n" +
+        l10n.t("Waiting for board to connect...") +
+        "\r\n" +
         "\x1b[0m\r\n" // Reset text color to default
       );
     });
@@ -252,7 +255,9 @@ export default class Activator {
       );
       if (result.type !== OperationResultType.commandResult || !result.result) {
         // write red text into terminal
-        this.terminal?.write("\x1b[31mException occured\x1b[0m\r\n");
+        this.terminal?.write(
+          "\x1b[31m" + l10n.t("Exception occurred") + "\x1b[0m\r\n",
+        );
         this.terminal?.write("\r\n");
         // important if for example a command requests input and the user
         // stops it with the universal stop command but had already entered
@@ -346,8 +351,9 @@ export default class Activator {
             }
 
             void vscode.window.showWarningMessage(
-              "Only one instance of MicroPico vREPL is recommended. " +
-                "Closing new instance.",
+              l10n.t(
+                "Only one instance of MicroPico vREPL is recommended. Closing new instance.",
+              ),
             );
             // would freeze old terminal if this is not set
             this.terminal.awaitClose();
@@ -541,9 +547,9 @@ export default class Activator {
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title:
-            "Downloading stubs for current project, " +
-            "this may take a while...",
+          title: l10n.t(
+            "Downloading stubs for current project, this may take a while...",
+          ),
           cancellable: false,
         },
         async (progress, token) => {
@@ -559,15 +565,16 @@ export default class Activator {
           if (result) {
             progress.report({
               increment: 100,
-              message: "Stubs installed successfully.",
+              message: l10n.t("Stubs installed successfully."),
             });
             void vscode.window.showInformationMessage(
-              "Stubs installed successfully.",
+              l10n.t("Stubs installed successfully."),
             );
           } else {
             void vscode.window.showErrorMessage(
-              "Stubs installation failed. " +
-                "Selecting a different version might help.",
+              l10n.t(
+                "Stubs installation failed. Selecting a different version might help.",
+              ),
             );
           }
         },

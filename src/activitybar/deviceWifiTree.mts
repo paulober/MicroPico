@@ -7,6 +7,7 @@ import {
   EventEmitter,
   Uri,
   window,
+  l10n,
 } from "vscode";
 import Logger from "../logger.mjs";
 import type PackagesWebviewProvider from "./packagesWebview.mjs";
@@ -124,7 +125,10 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
             connectedTo
           );
           void window.showInformationMessage(
-            "Your Pico is connected to following Wifi network: " + connectedTo
+            l10n.t(
+              "Your board is connected to the Wi-Fi network {0}.",
+              connectedTo
+            )
           );
           // currently triggers rebuild of webview so be careful with this
           await this.packagesWebviewProvider.enable();
@@ -134,7 +138,9 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
         // else if to not refresh UI to often if this function is run periodically
         this._connectedTo = "";
         this._logger.info("Pico disconnected from Wifi.");
-        void window.showWarningMessage("Pico disconnected from Wifi.");
+        void window.showWarningMessage(
+          l10n.t("Your board disconnected from Wi-Fi.")
+        );
         this.refresh();
         // currently triggers rebuild of webview so be careful with this
         await this.packagesWebviewProvider.disable();
@@ -155,7 +161,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
           element.label
         );
         void window.showInformationMessage(
-          `Successfully connected Pico to ${element.label}.`
+          l10n.t("Successfully connected your board to {0}.", element.label)
         );
 
         //sleep for 2 seconds
@@ -172,7 +178,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
         this._logger.error("Failed to connect to wifi: ", element.label, resp);
 
         await window.showErrorMessage(
-          "Failed to connect to wifi. Maybe the password was wrong?"
+          l10n.t("Failed to connect to Wi-Fi. Maybe the password was wrong?")
         );
       }
     }
@@ -184,20 +190,21 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
     this._connectedTo = "";
     this._logger.info("Successfully disconnected Pico from wifi.");
     void window.showInformationMessage(
-      "Successfully disconnected Pico from wifi."
+      l10n.t("Successfully disconnected your board from Wi-Fi.")
     );
     this.refresh();
   }
 
   public async elementSelected(element: Wifi): Promise<void> {
     if (element.label === this._connectedTo) {
+      const yes = l10n.t("Yes");
       const result = await window.showInformationMessage(
-        "Do you want to disconnect from this wifi?",
-        "Yes",
-        "No"
+        l10n.t("Do you want to disconnect from this Wi-Fi network?"),
+        yes,
+        l10n.t("No")
       );
 
-      if (result === "Yes") {
+      if (result === yes) {
         await this._disconnectWifi();
       }
 
@@ -209,7 +216,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
     } else {
       // ask for password input
       const password = await window.showInputBox({
-        prompt: `Enter password for ${element.label}`,
+        prompt: l10n.t("Enter password for {0}", element.label),
         password: true,
       });
 
@@ -219,7 +226,7 @@ export default class DeviceWifiProvider implements TreeDataProvider<Wifi> {
         return this.elementSelected(element);
       } else {
         await window.showWarningMessage(
-          "Password is required to connect to wifi."
+          l10n.t("Password is required to connect to Wi-Fi.")
         );
       }
     }
@@ -295,6 +302,6 @@ export class Wifi extends TreeItem {
     super(label, collapsibleState);
 
     this.tooltip = `${this.label}-${this.ssid}`;
-    this.description = `RSSI ${this.rssi} dBm`;
+    this.description = l10n.t("RSSI {0} dBm", this.rssi);
   }
 }

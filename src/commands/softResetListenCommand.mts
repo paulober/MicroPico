@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { StringDecoder } from "string_decoder";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { Command } from "./command.mjs";
@@ -10,7 +11,7 @@ export class SoftResetListenCommand extends Command {
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -40,10 +41,10 @@ export class SoftResetListenCommand extends Command {
     if (result.type === OperationResultType.commandResult) {
       if (result.result) {
         void vscode.window.showInformationMessage(
-          "Interactive Soft Reset finished",
+          l10n.t("Interactive Soft Reset finished"),
         );
       } else {
-        void vscode.window.showErrorMessage("Soft reset failed");
+        void vscode.window.showErrorMessage(l10n.t("Soft reset failed"));
       }
     }
     this.ctx.terminal?.melt();

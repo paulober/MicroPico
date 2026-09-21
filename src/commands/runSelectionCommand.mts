@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { StringDecoder } from "string_decoder";
 import { getSelectedCodeOrLine } from "../api.mjs";
 import { Command } from "./command.mjs";
@@ -10,7 +11,7 @@ export class RunSelectionCommand extends Command {
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -24,7 +25,7 @@ export class RunSelectionCommand extends Command {
 
     const code = getSelectedCodeOrLine();
     if (code === undefined) {
-      void vscode.window.showWarningMessage("No code selected.");
+      void vscode.window.showWarningMessage(l10n.t("No code selected."));
 
       return;
     }

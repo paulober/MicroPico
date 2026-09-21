@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { Command } from "./command.mjs";
 
@@ -8,7 +9,7 @@ export class RtcSyncCommand extends Command {
 
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
-      void vscode.window.showWarningMessage("Please connect to the Pico first.");
+      void vscode.window.showWarningMessage(l10n.t("Please connect to the board first."));
 
       return;
     }
@@ -16,9 +17,9 @@ export class RtcSyncCommand extends Command {
     const result = await this.ctx.com.syncRtcTime();
     if (result.type === OperationResultType.commandResult) {
       if (result.result) {
-        void vscode.window.showInformationMessage("RTC synchronized");
+        void vscode.window.showInformationMessage(l10n.t("RTC synchronized"));
       } else {
-        void vscode.window.showErrorMessage("RTC synchronization failed");
+        void vscode.window.showErrorMessage(l10n.t("RTC synchronization failed"));
       }
     }
   }

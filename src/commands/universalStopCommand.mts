@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { Command } from "./command.mjs";
 
 /**
@@ -10,7 +11,7 @@ export class UniversalStopCommand extends Command {
 
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
-      void vscode.window.showInformationMessage("Nothing to stop.");
+      void vscode.window.showInformationMessage(l10n.t("Nothing to stop."));
 
       return;
     }
@@ -28,13 +29,13 @@ export class UniversalStopCommand extends Command {
     if (this.ctx.backgroundProgram) {
       if (!(await this.ctx.stopBackgroundProgram())) {
         void vscode.window.showErrorMessage(
-          "Failed to stop the program running in the background.",
+          l10n.t("Failed to stop the program running in the background."),
         );
       }
 
       return;
     }
 
-    void vscode.window.showInformationMessage("Nothing to stop.");
+    void vscode.window.showInformationMessage(l10n.t("Nothing to stop."));
   }
 }

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { StringDecoder } from "string_decoder";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { Command } from "./command.mjs";
@@ -12,7 +13,7 @@ export class HardResetListenCommand extends Command {
 
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -40,7 +41,9 @@ export class HardResetListenCommand extends Command {
         this.ctx.ui?.userOperationStarted();
 
         // inform user about ongoing operation
-        this.ctx.terminal?.write("\x1b[33mPerforming hard reset...\x1b[0m\r\n");
+        this.ctx.terminal?.write(
+          "\x1b[33m" + l10n.t("Performing hard reset...") + "\x1b[0m\r\n",
+        );
       },
       (data: Buffer) => {
         this.ctx.output?.route(data);
@@ -55,9 +58,9 @@ export class HardResetListenCommand extends Command {
     this.ctx.ui?.userOperationStopped();
     if (result.type === OperationResultType.commandResult) {
       if (result.result) {
-        void vscode.window.showInformationMessage("Hard reset done");
+        void vscode.window.showInformationMessage(l10n.t("Hard reset done"));
       } else {
-        void vscode.window.showErrorMessage("Hard reset failed");
+        void vscode.window.showErrorMessage(l10n.t("Hard reset failed"));
       }
     }
   }

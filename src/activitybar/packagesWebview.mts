@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
 import { OperationResultType, PicoMpyCom } from "@paulober/pico-mpy-com";
 import {
+  env,
+  l10n,
   Uri,
   window,
   type Webview,
@@ -85,7 +87,7 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
 
       if (!response.toLowerCase().includes("not found")) {
         void window.showInformationMessage(
-          "[mip] Package installed successfully."
+          l10n.t("[mip] Package installed successfully.")
         );
         // send message installed successfully to webview for packages list
         if (this._view) {
@@ -96,7 +98,7 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
         }
       } else {
         await window.showErrorMessage(
-          "[mip] Package not found or failed to install."
+          l10n.t("[mip] Package not found or failed to install.")
         );
       }
     }
@@ -146,10 +148,10 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
 
     return `
       <!DOCTYPE html>
-      <html lang="en">
+      <html lang="${escapeHtml(env.language)}">
       <head>
         <meta charset="UTF-8">
-        <title>Device Packages</title>
+        <title>${escapeHtml(l10n.t("Device Packages"))}</title>
 
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${
           webview.cspSource
@@ -163,17 +165,25 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
         <div style="width: 100%;" class="input-div">
           ${
             this._isDisabled
-              ? "<p>Your board must be connected to Wifi for this feature to work</p>"
+              ? `<p>${escapeHtml(
+                  l10n.t(
+                    "Your board must be connected to Wi-Fi for this feature to work."
+                  )
+                )}</p>`
               : `
-          <input type="text" id="packageInput" placeholder="Enter package name" style=""/>
-          <button id="installButton"><strong>Install</strong></button>`
+          <input type="text" id="packageInput" placeholder="${escapeHtml(
+            l10n.t("Enter package name")
+          )}" style=""/>
+          <button id="installButton"><strong>${escapeHtml(
+            l10n.t("Install")
+          )}</strong></button>`
           }
           
         </div>
         <div style="width: 100%;">
-          <p><strong>Installed packages:</strong></p>
+          <p><strong>${escapeHtml(l10n.t("Installed packages:"))}</strong></p>
           <ul id="installedPackagesList" ${this._isDisabled ? "disabled" : ""}>
-          ${installedPackages.map(p => `<li>${p}</li>`).join("")}
+          ${installedPackages.map(p => `<li>${escapeHtml(p)}</li>`).join("")}
           </ul>
         </div>
 
@@ -182,6 +192,15 @@ export default class PackagesWebviewProvider implements WebviewViewProvider {
       </html>
     `;
   }
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function getNonce(): string {

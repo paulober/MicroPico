@@ -2,6 +2,7 @@ import {
   commands,
   env,
   extensions,
+  l10n,
   ProgressLocation,
   type QuickPickItem,
   ThemeIcon,
@@ -30,13 +31,15 @@ export async function flashPicoInteractively(
   // TODO: maybe show hint to use
   if (picoExtension === undefined) {
     if (verbose) {
+      const openMarketplace = l10n.t("Open Marketplace");
       const result = await window.showErrorMessage(
-        "The Raspberry Pi Pico extension is not installed. " +
-          "Please install it from the marketplace.",
-        "Open Marketplace"
+        l10n.t(
+          "The Raspberry Pi Pico extension is not installed. Please install it from the Marketplace."
+        ),
+        openMarketplace
       );
 
-      if (result === "Open Marketplace") {
+      if (result === openMarketplace) {
         void env.openExternal(
           Uri.parse("vscode:extension/raspberry-pi.raspberry-pi-pico")
         );
@@ -60,7 +63,9 @@ export async function flashPicoInteractively(
   if (picotoolPath === undefined) {
     if (verbose) {
       void window.showErrorMessage(
-        "Failed to get picotool path from the Raspberry Pi Pico extension."
+        l10n.t(
+          "Failed to get picotool path from the Raspberry Pi Pico extension."
+        )
       );
     }
 
@@ -81,8 +86,9 @@ export async function flashPicoInteractively(
     if (stdout.length <= 0) {
       if (verbose) {
         void window.showErrorMessage(
-          "Failed to get any connected devices. " +
-            "Please make sure your board is in BOOTSEL mode."
+          l10n.t(
+            "Failed to get any connected devices. Please make sure your board is in BOOTSEL mode."
+          )
         );
       }
 
@@ -109,8 +115,9 @@ export async function flashPicoInteractively(
       if (type === undefined) {
         if (verbose) {
           void window.showErrorMessage(
-            "Failed to get device type. " +
-              "Please make sure your board is in BOOTSEL mode."
+            l10n.t(
+              "Failed to get device type. Please make sure your board is in BOOTSEL mode."
+            )
           );
         }
 
@@ -140,8 +147,9 @@ export async function flashPicoInteractively(
 
     if (verbose) {
       void window.showErrorMessage(
-        "Failed to check for connected devices. " +
-          "Please make sure your board is in BOOTSEL mode."
+        l10n.t(
+          "Failed to check for connected devices. Please make sure your board is in BOOTSEL mode."
+        )
       );
     }
 
@@ -150,18 +158,19 @@ export async function flashPicoInteractively(
   }
 
   if (devices !== undefined) {
+    const yes = l10n.t("Yes");
+    const flashManually = l10n.t("Flash manually");
     const result = await window.showInformationMessage(
-      "Found a connected Pico in BOOTSEL mode. Before using it with " +
-        "this extension, you need to flash the MicroPython firmware. " +
-        "Do you want to flash it now? " +
-        "(Auto-flash for Raspberry Pi boards only)",
-      "Yes",
-      "Flash manually",
-      "Don't ask again"
+      l10n.t(
+        "Found a connected Pico in BOOTSEL mode. Before using it with this extension, you need to flash the MicroPython firmware. Do you want to flash it now? (Auto-flash for Raspberry Pi boards only)"
+      ),
+      yes,
+      flashManually,
+      l10n.t("Don't ask again")
     );
 
-    if (result !== "Yes") {
-      if (result === "Flash manually") {
+    if (result !== yes) {
+      if (result === flashManually) {
         // open micropython download website
         void env.openExternal(Uri.parse("https://micropython.org/download/"));
 
@@ -189,8 +198,8 @@ export async function flashPicoInteractively(
       // ask user which defvice to flash
       const deviceSelection = await window.showQuickPick(
         devices.map(d => ({
-          label: `${d.type} (${d.flashSize} flash)`,
-          detail: `Bus: ${d.bus}, Address: ${d.address}`,
+          label: l10n.t("{0} ({1} flash)", d.type, d.flashSize),
+          detail: l10n.t("Bus: {0}, Address: {1}", d.bus, d.address),
           iconPath: new ThemeIcon("device"),
           bus: d.bus,
           address: d.address,
@@ -199,7 +208,7 @@ export async function flashPicoInteractively(
         })) as DeviceQuickPickItem[],
         {
           canPickMany: false,
-          placeHolder: "Select the device you want to flash",
+          placeHolder: l10n.t("Select the device you want to flash"),
           ignoreFocusOut: false,
         }
       );
@@ -221,12 +230,12 @@ export async function flashPicoInteractively(
     let wirelessFirmware = false;
 
     const flashWireless = await window.showInformationMessage(
-      "Do you want to flash the Wireless firmware?",
-      "Yes",
-      "No"
+      l10n.t("Do you want to flash the Wireless firmware?"),
+      yes,
+      l10n.t("No")
     );
 
-    if (flashWireless === "Yes") {
+    if (flashWireless === yes) {
       wirelessFirmware = true;
     }
 
@@ -249,7 +258,7 @@ export async function flashPicoInteractively(
     if (firmwareType === undefined) {
       // TODO: disable auto connect check for MSDs and show button for download link
       void window.showErrorMessage(
-        "Unsupported board type. Please flash the firmware manually."
+        l10n.t("Unsupported board type. Please flash the firmware manually.")
       );
 
       return false;
@@ -261,7 +270,7 @@ export async function flashPicoInteractively(
     await window.withProgress(
       {
         location: ProgressLocation.Notification,
-        title: "Downloading firmware...",
+        title: l10n.t("Downloading firmware..."),
         cancellable: false,
       },
       async progress => {
@@ -273,13 +282,15 @@ export async function flashPicoInteractively(
       }
     );
 
-    void window.showInformationMessage("Firmware downloaded. Now flashing...");
+    void window.showInformationMessage(
+      l10n.t("Firmware downloaded. Now flashing...")
+    );
 
     // flash with picotool load -x --ignore-partitions --bus <bus> --address <address> <firmware>
     window.withProgress(
       {
         location: ProgressLocation.Notification,
-        title: "Flashing firmware...",
+        title: l10n.t("Flashing firmware..."),
         cancellable: false,
       },
       async progress => {
@@ -293,17 +304,19 @@ export async function flashPicoInteractively(
           await execAsync(command);
           progress.report({ increment: 100 });
           void window.showInformationMessage(
-            "Firmware flashed successfully. Trying to connect..."
+            l10n.t("Firmware flashed successfully. Trying to connect...")
           );
         } catch (error) {
           progress.report({ increment: 100 });
           void window.showErrorMessage(
-            "Failed to flash firmware: " +
-              (error instanceof Error
+            l10n.t(
+              "Failed to flash firmware: {0}",
+              error instanceof Error
                 ? error.message
                 : typeof error === "string"
                 ? error
-                : "Unknown error")
+                : l10n.t("Unknown error")
+            )
           );
           /*this.logger.error(
             error instanceof Error

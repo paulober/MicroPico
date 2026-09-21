@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { PicoMpyCom } from "@paulober/pico-mpy-com";
 import { focusTerminal } from "../api.mjs";
 import type Settings from "../settings.mjs";
@@ -6,6 +7,54 @@ import type UI from "../ui.mjs";
 import type { Terminal } from "../terminal.mjs";
 import type { OutputRouter } from "../output/outputRouter.mjs";
 import type { PicoRemoteFileSystem } from "../filesystem.mjs";
+
+/** An action that has to wait for a running program to stop first. */
+export type BoardAction = "Upload" | "Download" | "Reset";
+
+/**
+ * The button and question offered before `action` when a program is still
+ * running. Whole sentences per action so they can be translated.
+ */
+function stopPrompt(
+  action: BoardAction,
+  background: boolean,
+): { button: string; message: string } {
+  switch (action) {
+    case "Upload":
+      return {
+        button: l10n.t("Stop and Upload"),
+        message: background
+          ? l10n.t(
+              "A program is still running in the background on the board. Stop it to upload?",
+            )
+          : l10n.t(
+              "A program is still running on the board. Stop it to upload?",
+            ),
+      };
+    case "Download":
+      return {
+        button: l10n.t("Stop and Download"),
+        message: background
+          ? l10n.t(
+              "A program is still running in the background on the board. Stop it to download?",
+            )
+          : l10n.t(
+              "A program is still running on the board. Stop it to download?",
+            ),
+      };
+    case "Reset":
+      return {
+        button: l10n.t("Stop and Reset"),
+        message: background
+          ? l10n.t(
+              "A program is still running in the background on the board. Stop it to reset?",
+            )
+          : l10n.t(
+              "A program is still running on the board. Stop it to reset?",
+            ),
+      };
+  }
+}
 
 /**
  * The single home for state shared across commands and the connection manager.
@@ -60,21 +109,22 @@ export class SessionContext {
    * @returns `true` if the caller should abort (the user kept the running
    * operation), `false` to proceed.
    */
-  public async checkForRunningOperation(action?: string): Promise<boolean> {
+  public async checkForRunningOperation(
+    action?: BoardAction,
+  ): Promise<boolean> {
     // Output of a program printing in the background can interleave with file
     // transfers, so offer to stop it first. Run resets the board anyway.
     if (!this.commandExecuting && this.backgroundProgram && action) {
-      const proceed = `Stop and ${action}`;
+      const { button, message } = stopPrompt(action, true);
       const choice = await vscode.window.showWarningMessage(
-        "A program is still running in the background on the board. " +
-          `Stop it to ${action.toLowerCase()}?`,
+        message,
         { modal: true },
-        proceed,
+        button,
       );
-      if (choice !== proceed) {
+      if (choice !== button) {
         this.statusbarMsgDisposable?.dispose();
         this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
-          "Operation canceled.",
+          l10n.t("Operation canceled."),
           5000,
         );
 
@@ -87,21 +137,25 @@ export class SessionContext {
     }
 
     if (this.commandExecuting) {
-      const proceed = action === undefined ? "Yes" : `Stop and ${action}`;
-      const choice =
-        action === undefined
-          ? await vscode.window.showWarningMessage(
-              "An operation is already running. Do you want to cancel it?",
-              { modal: true },
-              proceed,
-              "No",
-            )
-          : await vscode.window.showWarningMessage(
-              "A program is still running on the board. " +
-                `Stop it to ${action.toLowerCase()}?`,
-              { modal: true },
-              proceed,
-            );
+      let proceed: string;
+      let choice: string | undefined;
+      if (action === undefined) {
+        proceed = l10n.t("Yes");
+        choice = await vscode.window.showWarningMessage(
+          l10n.t("An operation is already running. Do you want to cancel it?"),
+          { modal: true },
+          proceed,
+          l10n.t("No"),
+        );
+      } else {
+        const { button, message } = stopPrompt(action, false);
+        proceed = button;
+        choice = await vscode.window.showWarningMessage(
+          message,
+          { modal: true },
+          proceed,
+        );
+      }
 
       if (choice === proceed) {
         if (this.commandExecuting) {
@@ -113,7 +167,7 @@ export class SessionContext {
       } else {
         this.statusbarMsgDisposable?.dispose();
         this.statusbarMsgDisposable = vscode.window.setStatusBarMessage(
-          "Operation canceled.",
+          l10n.t("Operation canceled."),
           5000,
         );
 
@@ -160,18 +214,18 @@ export class SessionContext {
 
   /** Warn the user that no Python interpreter is selected. */
   public showNoActivePythonError(): void {
+    const openDocs = l10n.t("Open Documentation");
     void vscode.window
       .showWarningMessage(
-        "Python path not found. Please check your Python environment.\n" +
-          "See the Python extension for instructions on how to select " +
-          "a Python interpreter.",
-        "Open Documentation",
+        l10n.t(
+          "Python path not found. Please check your Python environment.\nSee the Python extension for instructions on how to select a Python interpreter.",
+        ),
+        openDocs,
       )
       .then(selection => {
-        if (selection?.toLocaleLowerCase().startsWith("open")) {
+        if (selection === openDocs) {
           void vscode.env.openExternal(
             vscode.Uri.parse(
-              // eslint-disable-next-line max-len
               "https://code.visualstudio.com/docs/languages/python#_environments",
             ),
           );
@@ -192,19 +246,19 @@ export class SessionContext {
     // stat means boot.py exists. Checked structurally to avoid importing the
     // OperationResultType enum, which the CJS lib does not expose to node:test.
     if ("stat" in bootPyResult && bootPyResult.stat !== null) {
+      const yes = l10n.t("Yes");
       const result = await vscode.window.showWarningMessage(
-        "A boot.py script is present on the Pico. " +
-          "If it contains an infinite loop or long running code, " +
-          "the Pico may not enter the REPL or take longer to do so. " +
-          "Do you want to continue?",
+        l10n.t(
+          "A boot.py script is present on the board. If it contains an infinite loop or long running code, the board may not enter the REPL or take longer to do so. Do you want to continue?",
+        ),
         { modal: true },
-        "Yes",
+        yes,
       );
 
-      return result !== "Yes";
+      return result !== yes;
     } else {
       void vscode.window.showErrorMessage(
-        "Failed to retrieve details about the boot.py file.",
+        l10n.t("Failed to retrieve details about the boot.py file."),
       );
     }
 

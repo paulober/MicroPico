@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { join } from "path";
 import { PicoMpyCom } from "@paulober/pico-mpy-com";
 import { commandPrefix, writeIntoClipboard } from "../api.mjs";
@@ -62,7 +63,7 @@ export function registerHelpCommands(
     async () => {
       const picoVariant = await vscode.window.showQuickPick(PICO_VARIANTS, {
         canPickMany: false,
-        placeHolder: "Select your Pico variant",
+        placeHolder: l10n.t("Select your Pico variant"),
         ignoreFocusOut: false,
       });
 
@@ -73,7 +74,7 @@ export function registerHelpCommands(
 
       const panel = vscode.window.createWebviewPanel(
         commandPrefix + "pinoout",
-        `${PICO_VARIANTS[variantIdx]} Pinout`,
+        l10n.t("{0} Pinout", PICO_VARIANTS[variantIdx]),
         vscode.ViewColumn.Active,
         {
           enableScripts: false,
@@ -111,15 +112,15 @@ export function registerHelpCommands(
       if (ports.length > 1) {
         // TODO: maybe replace with quick pick in the future
         void vscode.window.showInformationMessage(
-          "Found: " + ports.join(", "),
+          l10n.t("Found: {0}", ports.join(", ")),
         );
       } else if (ports.length === 1) {
         writeIntoClipboard(ports[0]);
         void vscode.window.showInformationMessage(
-          `Found: ${ports[0]} (copied to clipboard).`,
+          l10n.t("Found: {0} (copied to clipboard).", ports[0]),
         );
       } else {
-        void vscode.window.showWarningMessage("No connected Pico found.");
+        void vscode.window.showWarningMessage(l10n.t("No connected board found."));
       }
     },
   );
@@ -141,15 +142,14 @@ export function registerHelpCommands(
     commandPrefix + "flashPico",
     async () => {
       const result = await vscode.window.showInformationMessage(
-        "This will flash the latest MicroPython firmware to your Pico. " +
-          "Do you want to continue?",
+        l10n.t(
+          "This will flash the latest MicroPython firmware to your Pico. Do you want to continue?",
+        ),
         {
           modal: true,
-          detail:
-            "Note: Only Raspberry Pi Pico boards are supported. " +
-            "Make sure it is connected and in BOOTSEL mode. " +
-            "You can verify this by checking if a drive " +
-            "labeled RPI-RP2 or RP2350 is mounted.",
+          detail: l10n.t(
+            "Note: Only Raspberry Pi Pico boards are supported. Make sure it is connected and in BOOTSEL mode. You can verify this by checking if a drive labeled RPI-RP2 or RP2350 is mounted.",
+          ),
         },
       );
 

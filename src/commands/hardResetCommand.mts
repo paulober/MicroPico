@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { Command } from "./command.mjs";
 
@@ -10,14 +11,14 @@ export class HardResetCommand extends Command {
 
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
-      void vscode.window.showWarningMessage("Please connect to the Pico first.");
+      void vscode.window.showWarningMessage(l10n.t("Please connect to the board first."));
 
       return;
     }
 
     // repeated clicks would otherwise queue one reset each
     if (this.inProgress) {
-      vscode.window.setStatusBarMessage("A hard reset is already in progress.", 3000);
+      vscode.window.setStatusBarMessage(l10n.t("A hard reset is already in progress."), 3000);
 
       return;
     }
@@ -39,7 +40,7 @@ export class HardResetCommand extends Command {
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: "Performing hard reset...",
+          title: l10n.t("Performing hard reset..."),
           cancellable: true,
         },
         async (progress, token) => {
@@ -59,9 +60,9 @@ export class HardResetCommand extends Command {
           if (result.type === OperationResultType.commandResult) {
             if (result.result) {
               this.ctx.setBackgroundProgram(false);
-              void vscode.window.showInformationMessage("Hard reset is done.");
+              void vscode.window.showInformationMessage(l10n.t("Hard reset is done."));
             } else {
-              void vscode.window.showErrorMessage("Hard reset has failed.");
+              void vscode.window.showErrorMessage(l10n.t("Hard reset has failed."));
             }
           }
         },

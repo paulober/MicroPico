@@ -1,3 +1,5 @@
+import { l10n } from "vscode";
+
 /**
  * Convert an unknown typed error to a string.
  *
@@ -14,8 +16,8 @@ export function unknownErrorToString(err: unknown): string {
   } else if (typeof err === "object") {
     return JSON.stringify(err);
   } else if (typeof err === "undefined") {
-    return "Undefined error";
+    return l10n.t("Undefined error");
   } else {
-    return "Unknown error";
+    return l10n.t("Unknown error");
   }
 }

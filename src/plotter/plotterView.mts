@@ -1,4 +1,6 @@
 import {
+  env,
+  l10n,
   Uri,
   window,
   workspace,
@@ -139,16 +141,17 @@ export default class PlotterViewProvider implements WebviewViewProvider {
   private async exportCsv(): Promise<void> {
     const csv = this.store.toCsv(this.labels);
     if (csv === undefined) {
-      void window.showInformationMessage("No plot data to export yet.");
+      void window.showInformationMessage(
+        l10n.t("No plot data to export yet.")
+      );
 
       return;
     }
 
     const target = await window.showSaveDialog({
-      saveLabel: "Export plot data",
+      saveLabel: l10n.t("Export plot data"),
       filters: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "CSV files": ["csv"],
+        [l10n.t("CSV files")]: ["csv"],
       },
     });
     if (target) {
@@ -159,10 +162,9 @@ export default class PlotterViewProvider implements WebviewViewProvider {
   private async exportPng(dataUrl: string): Promise<void> {
     const base64 = dataUrl.replace(/^data:image\/png;base64,/, "");
     const target = await window.showSaveDialog({
-      saveLabel: "Export plot image",
+      saveLabel: l10n.t("Export plot image"),
       filters: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "PNG images": ["png"],
+        [l10n.t("PNG images")]: ["png"],
       },
     });
     if (target) {
@@ -181,9 +183,24 @@ export default class PlotterViewProvider implements WebviewViewProvider {
     );
     const styleUri = webview.asWebviewUri(Uri.joinPath(base, "plotter.css"));
     const nonce = getNonce();
+    const pause = escapeHtml(l10n.t("Pause"));
+    const button = (id: string, title: string, text: string): string =>
+      `<button id="${id}" title="${escapeHtml(title)}">${escapeHtml(
+        text
+      )}</button>`;
+    // the code examples are inserted after escaping the translated sentence
+    const emptyHint = escapeHtml(
+      l10n.t(
+        "Waiting for data. Print comma-separated numbers, for example {0}. An optional first line like {1} names the series.",
+        "{0}",
+        "{1}"
+      )
+    )
+      .replace("{0}", '<code>print("%.1f, %.1f" % (temp, humidity))</code>')
+      .replace("{1}", '<code>print("temp, humidity")</code>');
 
     return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escapeHtml(env.language)}">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -193,28 +210,47 @@ export default class PlotterViewProvider implements WebviewViewProvider {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="${uplotCssUri.toString()}" rel="stylesheet" />
     <link href="${styleUri.toString()}" rel="stylesheet" />
-    <title>MicroPico Plotter</title>
+    <title>${escapeHtml(l10n.t("MicroPico Plotter"))}</title>
   </head>
   <body>
     <div class="toolbar">
-      <button id="pause" title="Pause / resume">Pause</button>
-      <button id="clear" title="Clear the plot">Clear</button>
-      <button id="resetZoom" title="Show all data again">Reset zoom</button>
-      <button id="csv" title="Export data as CSV">Export CSV</button>
-      <button id="png" title="Export chart as PNG">Export PNG</button>
-      <span class="hint">Drag to zoom, double-click to reset</span>
+      <button
+        id="pause"
+        title="${escapeHtml(l10n.t("Pause / resume"))}"
+        data-pause="${pause}"
+        data-resume="${escapeHtml(l10n.t("Resume"))}"
+      >${pause}</button>
+      ${button("clear", l10n.t("Clear the plot"), l10n.t("Clear"))}
+      ${button(
+        "resetZoom",
+        l10n.t("Show all data again"),
+        l10n.t("Reset zoom")
+      )}
+      ${button("csv", l10n.t("Export data as CSV"), l10n.t("Export CSV"))}
+      ${button("png", l10n.t("Export chart as PNG"), l10n.t("Export PNG"))}
+      <span class="hint">${escapeHtml(
+        l10n.t("Drag to zoom, double-click to reset")
+      )}</span>
     </div>
-    <div id="empty" class="empty">
-      Waiting for data. Print comma-separated numbers, for example
-      <code>print("%.1f, %.1f" % (temp, humidity))</code>. An optional first
-      line like <code>print("temp, humidity")</code> names the series.
-    </div>
-    <div id="chart"></div>
+    <div id="empty" class="empty">${emptyHint}</div>
+    <div
+      id="chart"
+      data-series-label="${escapeHtml(l10n.t("series {0}", "{0}"))}"
+    ></div>
     <script nonce="${nonce}" src="${uplotJsUri.toString()}"></script>
     <script nonce="${nonce}" src="${scriptUri.toString()}"></script>
   </body>
 </html>`;
   }
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function getNonce(): string {

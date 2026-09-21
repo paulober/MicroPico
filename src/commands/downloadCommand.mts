@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { Command } from "./command.mjs";
 
@@ -9,7 +10,7 @@ export class DownloadCommand extends Command {
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -20,7 +21,7 @@ export class DownloadCommand extends Command {
     const syncDir = await this.ctx.settings.requestSyncFolder("Download");
     if (syncDir === undefined) {
       void vscode.window.showWarningMessage(
-        "Download canceled. No sync folder selected.",
+        l10n.t("Download canceled. No sync folder selected."),
       );
 
       return;
@@ -33,7 +34,7 @@ export class DownloadCommand extends Command {
     void vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: "Downloading",
+        title: l10n.t("Downloading"),
         cancellable: false,
       },
       async (progress, token) => {
@@ -59,7 +60,7 @@ export class DownloadCommand extends Command {
               increment: 100 / totalChunksCount,
               message:
                 totalChunksCount === currentChunk
-                  ? "Project downloaded"
+                  ? l10n.t("Project downloaded")
                   : relativePath,
             });
           },
@@ -69,9 +70,13 @@ export class DownloadCommand extends Command {
         }
         if (data?.type === OperationResultType.commandResult) {
           if (data.result) {
-            void vscode.window.showInformationMessage("Project downloaded.");
+            void vscode.window.showInformationMessage(
+              l10n.t("Project downloaded."),
+            );
           } else {
-            void vscode.window.showErrorMessage("Project download failed.");
+            void vscode.window.showErrorMessage(
+              l10n.t("Project download failed."),
+            );
           }
         }
       },

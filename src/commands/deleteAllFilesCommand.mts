@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { Command } from "./command.mjs";
 
@@ -8,7 +9,7 @@ export class DeleteAllFilesCommand extends Command {
 
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
-      void vscode.window.showWarningMessage("Please connect to the Pico first.");
+      void vscode.window.showWarningMessage(l10n.t("Please connect to the board first."));
 
       return;
     }
@@ -17,10 +18,10 @@ export class DeleteAllFilesCommand extends Command {
     if (result.type === OperationResultType.commandResult) {
       if (result.result) {
         void vscode.window.showInformationMessage(
-          "All files on Pico were deleted.",
+          l10n.t("All files on the board were deleted."),
         );
       } else {
-        void vscode.window.showErrorMessage("File deletion on Pico failed.");
+        void vscode.window.showErrorMessage(l10n.t("File deletion on the board failed."));
       }
     }
   }

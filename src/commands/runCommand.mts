@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { extname } from "path";
 import { StringDecoder } from "string_decoder";
 import { OperationResultType } from "@paulober/pico-mpy-com";
@@ -19,7 +20,7 @@ export class RunCommand extends Command {
 
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -30,7 +31,9 @@ export class RunCommand extends Command {
     if (file === undefined || resourceURI?.scheme === "pico") {
       file = await getFocusedFile(true);
       if (file === undefined) {
-        void vscode.window.showWarningMessage("No file open and focused.");
+        void vscode.window.showWarningMessage(
+          l10n.t("No file open and focused."),
+        );
 
         return;
       } else {
@@ -45,16 +48,18 @@ export class RunCommand extends Command {
       false;
 
     if (!disableWarning && ![".py", ".mpy"].includes(extname(file))) {
-      const dontShowAgain = "Yes, don't show this again";
+      const yes = l10n.t("Yes");
+      const dontShowAgain = l10n.t("Yes, don't show this again");
       const choice = await vscode.window.showWarningMessage(
-        "The selected file is not a Python file. " +
-          "Do you still want to run it?",
-        "Yes",
-        "No",
+        l10n.t(
+          "The selected file is not a Python file. Do you still want to run it?",
+        ),
+        yes,
+        l10n.t("No"),
         dontShowAgain,
       );
 
-      if (choice !== "Yes" && choice !== dontShowAgain) {
+      if (choice !== yes && choice !== dontShowAgain) {
         return;
       }
 

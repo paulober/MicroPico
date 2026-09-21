@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { Command } from "./command.mjs";
 
 /** Adds or removes the virtual `pico://` remote workspace folder. */
@@ -18,7 +19,7 @@ export class ToggleFileSystemCommand extends Command {
 
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -31,7 +32,7 @@ export class ToggleFileSystemCommand extends Command {
       null,
       {
         uri: vscode.Uri.parse("pico://"),
-        name: "Mpy Remote Workspace",
+        name: l10n.t("Mpy Remote Workspace"),
       },
     );
   }

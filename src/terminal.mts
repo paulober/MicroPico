@@ -1,4 +1,4 @@
-import { commands, EventEmitter } from "vscode";
+import { commands, EventEmitter, l10n } from "vscode";
 import type { Pseudoterminal, Event, TerminalDimensions } from "vscode";
 import History from "./models/history.mjs";
 import { OperationResultType, PicoMpyCom } from "@paulober/pico-mpy-com";
@@ -378,20 +378,25 @@ export class Terminal implements Pseudoterminal {
         .then(time => {
           if (time.type === OperationResultType.getRtcTime) {
             this.writeEmitter.fire(
-              `RTC time: ${time.time ? time.time.toLocaleString() : "N/A"}\r\n`
+              l10n.t(
+                "RTC time: {0}",
+                time.time ? time.time.toLocaleString() : l10n.t("N/A")
+              ) + "\r\n"
             );
             this.prompt();
           } else {
             // log in red
             this.writeEmitter.fire(
-              "\x1b[1;31mError getting RTC time\x1b[0m\r\n"
+              "\x1b[1;31m" + l10n.t("Error getting RTC time") + "\x1b[0m\r\n"
             );
             this.prompt();
           }
         })
         .catch(() => {
           // log in red
-          this.writeEmitter.fire("\x1b[1;31mError getting RTC time\x1b[0m\r\n");
+          this.writeEmitter.fire(
+            "\x1b[1;31m" + l10n.t("Error getting RTC time") + "\x1b[0m\r\n"
+          );
           this.prompt();
         });
 
@@ -413,16 +418,20 @@ export class Terminal implements Pseudoterminal {
       return;
     } else if (input === ".help") {
       this.writeEmitter.fire("\r\n");
-      this.writeEmitter.fire("Available vREPL commands:\r\n");
-      this.writeEmitter.fire(".cls/.clear - clear screen and prompt\r\n");
-      this.writeEmitter.fire(".empty - clean vREPL\r\n");
-      this.writeEmitter.fire(".ls - list files on Pico\r\n");
-      this.writeEmitter.fire(".rtc - get the time form the onboard RTC\r\n");
-      this.writeEmitter.fire(".sr - soft reset the Pico\r\n");
-      this.writeEmitter.fire(".hr - hard reset the Pico\r\n");
-      this.writeEmitter.fire(".gc - trigger garbage collector\r\n");
-
-      this.writeEmitter.fire(".help - show this help\r\n");
+      this.writeEmitter.fire(l10n.t("Available vREPL commands:") + "\r\n");
+      const helpLines: Array<[string, string]> = [
+        [".cls/.clear", l10n.t("clear screen and prompt")],
+        [".empty", l10n.t("clean vREPL")],
+        [".ls", l10n.t("list files on the board")],
+        [".rtc", l10n.t("get the time from the onboard RTC")],
+        [".sr", l10n.t("soft reset the board")],
+        [".hr", l10n.t("hard reset the board")],
+        [".gc", l10n.t("trigger garbage collector")],
+        [".help", l10n.t("show this help")],
+      ];
+      for (const [command, description] of helpLines) {
+        this.writeEmitter.fire(`${command} - ${description}\r\n`);
+      }
       this.prompt();
 
       return;

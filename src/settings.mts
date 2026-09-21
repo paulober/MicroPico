@@ -4,7 +4,7 @@ import type {
   Uri,
   WorkspaceConfiguration,
 } from "vscode";
-import { window, workspace as vsWorkspace } from "vscode";
+import { l10n, window, workspace as vsWorkspace } from "vscode";
 import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
 import { dirname, join, relative } from "path";
 import { PicoMpyCom, type VidPidPair } from "@paulober/pico-mpy-com";
@@ -151,7 +151,10 @@ export default class Settings {
           const message =
             typeof e === "string" ? e : e instanceof Error ? e.message : "";
           void window.showErrorMessage(
-            "Error while reading (COM) ports for autoConnect: " + message,
+            l10n.t(
+              "Error while reading (COM) ports for autoConnect: {0}",
+              message,
+            ),
           );
         }
       }
@@ -161,9 +164,9 @@ export default class Settings {
     if (!silent && (manualComDevice === undefined || manualComDevice === "")) {
       manualComDevice = undefined;
       void window.showErrorMessage(
-        "No Pico has been found automatically " +
-          "or the `autoConnect` setting has been disabled " +
-          "but no `manualComDevice` has been set.",
+        l10n.t(
+          "No board has been found automatically or the `autoConnect` setting has been disabled but no `manualComDevice` has been set.",
+        ),
       );
     }
 
@@ -204,7 +207,7 @@ export default class Settings {
    * The absolute path to one sync folder]
    */
   public async requestSyncFolder(
-    actionTitle: string,
+    actionTitle: "Upload" | "Download",
   ): Promise<[string, string] | undefined> {
     // eslint-disable-next-line prefer-const
     let [syncFolder, syncSettingNotSet] = this.getSyncFolderAbsPath();
@@ -231,13 +234,10 @@ export default class Settings {
         );
 
         void window.showWarningMessage(
-          `Sync folder has been set to \`${relative(
-            projectDir,
-            actParent,
-          )}\` ` +
-            "because the `.micropico` file was found in a subdirectory " +
-            "and no sync folder was set. To disable this behavior, " +
-            "set a sync folder in the settings to `.` for the project root.",
+          l10n.t(
+            "Sync folder has been set to `{0}` because the `.micropico` file was found in a subdirectory and no sync folder was set. To disable this behavior, set a sync folder in the settings to `.` for the project root.",
+            relative(projectDir, actParent),
+          ),
         );
       }
     }
@@ -265,13 +265,16 @@ export default class Settings {
       additionalSyncFolders = [syncFolder, ...additionalSyncFolders];
     }
 
+    const isUpload = actionTitle === "Upload";
     const selectedFolder = await window.showQuickPick(additionalSyncFolders, {
-      placeHolder:
-        `Select a sync folder to ${actionTitle.toLowerCase()} ` +
-        "(add more in settings)",
+      placeHolder: isUpload
+        ? l10n.t("Select a sync folder to upload (add more in settings)")
+        : l10n.t("Select a sync folder to download (add more in settings)"),
       canPickMany: false,
       ignoreFocusOut: false,
-      title: `${actionTitle} sync folder selection`,
+      title: isUpload
+        ? l10n.t("Upload sync folder selection")
+        : l10n.t("Download sync folder selection"),
     });
 
     return selectedFolder === undefined

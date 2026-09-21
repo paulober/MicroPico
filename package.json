@@ -1,7 +1,7 @@
 {
   "name": "pico-w-go",
   "displayName": "MicroPico",
-  "description": "Auto-completion, remote workspace and a REPL console integration for the Raspberry Pi Pico boards running MicroPython firmware.",
+  "description": "%extension.description%",
   "version": "4.4.0",
   "publisher": "paulober",
   "license": "Apache-2.0",
@@ -19,6 +19,7 @@
     "theme": "dark"
   },
   "markdown": "github",
+  "l10n": "./l10n",
   "engines": {
     "vscode": "^1.137.0",
     "node": ">=24.18"
@@ -77,160 +78,160 @@
     "commands": [
       {
         "command": "micropico.connect",
-        "title": "Connect",
+        "title": "%command.connect.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.disconnect",
-        "title": "Disconnect",
+        "title": "%command.disconnect.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.initialise",
-        "title": "Initialize MicroPico Project",
+        "title": "%command.initialise.title%",
         "enablement": "(resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.newProject",
-        "title": "Create New Project",
+        "title": "%command.newProject.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.upload",
-        "title": "Upload Project to Board",
+        "title": "%command.upload.title%",
         "enablement": "micropico.isConnected && (resourceScheme != pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.uploadFile",
-        "title": "Upload File to Board",
+        "title": "%command.uploadFile.title%",
         "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource",
         "category": "MicroPico"
       },
       {
         "command": "micropico.downloadFile",
-        "title": "Download File from Board",
+        "title": "%command.downloadFile.title%",
         "enablement": "micropico.isConnected && resourceScheme == pico && isFileSystemResource",
         "category": "MicroPico"
       },
       {
         "command": "micropico.download",
-        "title": "Download Project from Board",
+        "title": "%command.download.title%",
         "enablement": "(resourceScheme == pico && isFileSystemResource) || inQuickOpen",
         "category": "MicroPico"
       },
       {
         "command": "micropico.run",
-        "title": "Run Current File on Board",
+        "title": "%command.run.title%",
         "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource && resourceExtname == .py",
         "category": "MicroPico"
       },
       {
         "command": "micropico.remote.run",
-        "title": "Run Current File on Board",
+        "title": "%command.remote.run.title%",
         "enablement": "resourceScheme == pico && isFileSystemResource && resourceExtname == .py",
         "category": "MicroPico"
       },
       {
         "command": "micropico.universalStop",
-        "title": "Stop Execution",
+        "title": "%command.universalStop.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.runselection",
-        "title": "Run Selection on Board",
+        "title": "%command.runselection.title%",
         "enablement": "micropico.isConnected && !inQuickOpen && !listFocus && editorLangId == python",
         "category": "MicroPico"
       },
       {
         "command": "micropico.deleteAllFiles",
-        "title": "Delete All Files from Board",
+        "title": "%command.deleteAllFiles.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.globalSettings",
-        "title": "Global Settings",
+        "title": "%command.globalSettings.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.workspaceSettings",
-        "title": "Workspace Settings",
+        "title": "%command.workspaceSettings.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.reset.soft",
-        "title": "Reset > Soft",
+        "title": "%command.reset.soft.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.reset.hard",
-        "title": "Reset > Hard",
+        "title": "%command.reset.hard.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.reset.hard.listen",
-        "title": "Reset > Hard (interactive)",
+        "title": "%command.reset.hard.listen.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.help",
-        "title": "Help > Getting Started",
+        "title": "%command.help.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.extra.pins",
-        "title": "Help > Show Pico Pin Map",
+        "title": "%command.extra.pins.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.extra.getSerial",
-        "title": "Help > List Serial Ports",
+        "title": "%command.extra.getSerial.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.extra.firmwareUpdates",
-        "title": "Help > Check for Firmware Updates",
+        "title": "%command.extra.firmwareUpdates.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.extra.switchStubs",
-        "title": "Extra > Switch Stubs",
+        "title": "%command.extra.switchStubs.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.listCommands",
-        "title": "List All Commands",
+        "title": "%command.listCommands.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.toggleFileSystem",
-        "title": "Toggle Virtual File System (reloads UI and closes existing vREPLs)",
+        "title": "%command.toggleFileSystem.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.switchPico",
-        "title": "Switch Board",
+        "title": "%command.switchPico.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.reset.soft.listen",
-        "title": "Reset > Soft (interactive)",
+        "title": "%command.reset.soft.listen.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.rtc.sync",
-        "title": "Sync RTC",
+        "title": "%command.rtc.sync.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.device-wifi.itemClicked",
-        "title": "Wi-Fi > Connect",
+        "title": "%command.device-wifi.itemClicked.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.device-wifi.refresh",
-        "title": "Scan",
+        "title": "%command.device-wifi.refresh.title%",
         "icon": {
           "dark": "images/refresh-dark.svg",
           "light": "images/refresh-light.svg"
@@ -239,23 +240,23 @@
       },
       {
         "command": "micropico.garbageCollect",
-        "title": "Trigger Garbage Collection",
+        "title": "%command.garbageCollect.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.flashPico",
-        "title": "Flash Pico in BOOTSEL Mode",
+        "title": "%command.flashPico.title%",
         "category": "MicroPico"
       },
       {
         "command": "micropico.redirectOutput",
-        "title": "Redirect Output (Experimental)",
+        "title": "%command.redirectOutput.title%",
         "category": "MicroPico",
         "enablement": "micropico.isConnected"
       },
       {
         "command": "micropico.openPlotter",
-        "title": "Open Plotter",
+        "title": "%command.openPlotter.title%",
         "category": "MicroPico"
       }
     ],
@@ -375,16 +376,16 @@
           "type": "boolean",
           "scope": "machine-overridable",
           "default": true,
-          "title": "Autoconnect on USB",
-          "description": "Ignores any 'device address' setting and automatically connects to the top item in the serialport list.",
+          "title": "%config.autoConnect.title%",
+          "description": "%config.autoConnect.description%",
           "order": 2
         },
         "micropico.manualComDevice": {
           "type": "string",
           "scope": "machine-overridable",
           "default": "",
-          "title": "Manual COM device",
-          "description": "If autoConnect is set to false MicroPico will automatically connect to the serial port specified here.",
+          "title": "%config.manualComDevice.title%",
+          "description": "%config.manualComDevice.description%",
           "order": 3
         },
         "micropico.customVidPidPairs": {
@@ -408,16 +409,16 @@
             ]
           },
           "default": [],
-          "title": "Custom VID/PID pairs",
-          "markdownDescription": "Additional USB Vendor ID (VID) and Product ID (PID) pairs to recognize as MicroPython boards. Useful for boards with custom USB-to-serial adapters not in the built-in list. Enter values in **decimal** format (e.g., `{\"vid\": 1027, \"pid\": 24592}` for FTDI FT2232H with VID 0x0403 and PID 0x6010).",
+          "title": "%config.customVidPidPairs.title%",
+          "markdownDescription": "%config.customVidPidPairs.markdownDescription%",
           "order": 4
         },
         "micropico.syncFolder": {
           "type": "string",
           "scope": "machine-overridable",
           "default": null,
-          "title": "Sync Folder",
-          "description": "This folder will be uploaded to the pyboard when using the sync button. Leave empty to sync the complete project. (only allows folders within the project). Use a path relative to the project you opened in vscode, without leading or trailing slash",
+          "title": "%config.syncFolder.title%",
+          "description": "%config.syncFolder.description%",
           "order": 5
         },
         "micropico.additionalSyncFolders": {
@@ -428,16 +429,16 @@
             "uniqueItems": true
           },
           "default": [],
-          "title": "Additional Sync Folders",
-          "description": "Specifies additional folders that can be selected as upload sources when uploading a project. If left empty, the sync will be performed based on the folder specified in the 'syncFolder' setting. Only folders within the project are allowed. Specify the path relative to the project you have opened in Visual Studio Code, without a leading or trailing slash.",
+          "title": "%config.additionalSyncFolders.title%",
+          "description": "%config.additionalSyncFolders.description%",
           "order": 6
         },
         "micropico.syncAllFileTypes": {
           "type": "boolean",
           "scope": "machine-overridable",
           "default": false,
-          "title": "Upload all file types",
-          "description": "If enabled, all files will be uploaded no matter the file type. The list of file types below will be ignored",
+          "title": "%config.syncAllFileTypes.title%",
+          "description": "%config.syncAllFileTypes.description%",
           "order": 7
         },
         "micropico.syncFileTypes": {
@@ -458,14 +459,14 @@
             "css",
             "mpy"
           ],
-          "title": "Upload file types",
-          "description": "All types of files that will be uploaded to the board, seperated by comma. All other filetypes will be ignored during an upload (or download) action",
+          "title": "%config.syncFileTypes.title%",
+          "description": "%config.syncFileTypes.description%",
           "order": 8
         },
         "micropico.pyIgnore": {
-          "title": "Pyignore list",
+          "title": "%config.pyIgnore.title%",
           "scope": "machine-overridable",
-          "markdownDescription": "Comma separated list of files and folders to ignore when uploading relative to syncFolder (no wildcard or regular expressions supported except `**/<file/folder>` to exclude an item by its name in every sub folder). Use `<additionalSyncFolder>:file/to/exclude.py` to create sync folder exclusive exclusion rules (all other rules will always be applied relative to the selected sync folder). Replace `additionalSyncFolder` with a value from your `micropico.additionalSyncFolders` setting or the value from `micropico.syncFolder`.",
+          "markdownDescription": "%config.pyIgnore.markdownDescription%",
           "type": "array",
           "items": {
             "type": "string"
@@ -489,15 +490,15 @@
           "type": "boolean",
           "default": false,
           "scope": "machine-overridable",
-          "title": "Open on start",
-          "description": "Automatically open the MicroPico vREPL after starting VS Code. Could cause random terminal freezes on Linux.",
+          "title": "%config.openOnStart.title%",
+          "description": "%config.openOnStart.description%",
           "order": 10
         },
         "micropico.statusbarButtons": {
           "type": "array",
           "scope": "machine-overridable",
-          "title": "Statusbar buttons",
-          "description": "Select which buttons to show in the statusbar",
+          "title": "%config.statusbarButtons.title%",
+          "description": "%config.statusbarButtons.description%",
           "items": {
             "type": "string",
             "uniqueItems": true,
@@ -530,48 +531,48 @@
           "type": "boolean",
           "default": true,
           "scope": "machine-overridable",
-          "title": "Garbage collection before upload",
-          "description": "Run garbage collection before uploading files to the board. This will free up some memory usefull when uploading large files but adds about a second or two to the upload process.",
+          "title": "%config.gcBeforeUpload.title%",
+          "description": "%config.gcBeforeUpload.description%",
           "order": 12
         },
         "micropico.softResetAfterUpload": {
           "type": "boolean",
           "scope": "machine-overridable",
           "default": false,
-          "title": "Soft-reset after upload",
-          "description": "Soft-resets your board after any upload action which also reruns main.py and boot.py. Usefull when working with main.py and boot.py.",
+          "title": "%config.softResetAfterUpload.title%",
+          "description": "%config.softResetAfterUpload.description%",
           "order": 13
         },
         "micropico.executeOnConnect": {
           "type": "string",
           "scope": "machine-overridable",
           "default": "",
-          "title": "Script to execute on connect",
-          "description": "Path to a MicroPython script on the Pico to execute on connect. Leave empty to disable.",
+          "title": "%config.executeOnConnect.title%",
+          "description": "%config.executeOnConnect.description%",
           "order": 14
         },
         "micropico.importOnConnect": {
           "type": "string",
           "scope": "machine-overridable",
           "default": "",
-          "title": "MicroPython module to import on connect",
-          "description": "A MicroPython module to import in vREPL on connect. Leave empty to disable.",
+          "title": "%config.importOnConnect.title%",
+          "description": "%config.importOnConnect.description%",
           "order": 15
         },
         "micropico.noSoftResetOnRun": {
           "type": "boolean",
           "scope": "machine-overridable",
           "default": false,
-          "title": "Disable the soft reset before running a file.",
-          "description": "The soft reset clears the REPL state so changes to classes and other structures take effect. Programs keep running after the file finished, e.g. timers.",
+          "title": "%config.noSoftResetOnRun.title%",
+          "description": "%config.noSoftResetOnRun.description%",
           "order": 16
         },
         "micropico.disableRunFileTypeWarning": {
           "type": "boolean",
           "scope": "machine-overridable",
           "default": false,
-          "title": "Disable the warning when running a non-Python file.",
-          "description": "When enabled, running a file that is not a `.py` or `.mpy` file no longer prompts for confirmation.",
+          "title": "%config.disableRunFileTypeWarning.title%",
+          "description": "%config.disableRunFileTypeWarning.description%",
           "order": 17
         }
       }
@@ -588,14 +589,14 @@
       "activitybar": [
         {
           "id": "micropico-device-controller",
-          "title": "MicroPico Device Controller (experimental)",
+          "title": "%viewContainer.micropico-device-controller.title%",
           "icon": "images/logo-black.png"
         }
       ],
       "panel": [
         {
           "id": "micropico-plotter-panel",
-          "title": "MicroPico Plotter",
+          "title": "%viewContainer.micropico-plotter-panel.title%",
           "icon": "images/logo-black.png"
         }
       ]
@@ -604,19 +605,19 @@
       "micropico-device-controller": [
         {
           "id": "micropico-device-wifi",
-          "name": "Wifi (Pico-W only)",
+          "name": "%view.micropico-device-wifi.name%",
           "type": "tree"
         },
         {
           "id": "micropico-device-packages",
-          "name": "Packages (Pico-W only)",
+          "name": "%view.micropico-device-packages.name%",
           "type": "webview"
         }
       ],
       "micropico-plotter-panel": [
         {
           "id": "micropico-plotter",
-          "name": "Plotter",
+          "name": "%view.micropico-plotter.name%",
           "type": "webview",
           "when": "micropico.isActivated"
         }
@@ -625,7 +626,7 @@
     "viewsWelcome": [
       {
         "view": "explorer",
-        "contents": "[Create MicroPico Project](command:micropico.newProject)",
+        "contents": "%viewsWelcome.createProject%",
         "when": "workspaceFolderCount == 0"
       }
     ],
@@ -640,92 +641,6 @@
       }
     ]
   },
-  "statusBar": [
-    {
-      "key": "status",
-      "name": "",
-      "command": "micropico.toggleConnect",
-      "tooltip": "Toggle board connection"
-    },
-    {
-      "key": "stop",
-      "name": "$(primitive-square) Stop",
-      "command": "micropico.universalStop",
-      "tooltip": "Stop"
-    },
-    {
-      "key": "run",
-      "name": "$(play) Run",
-      "command": "micropico.run",
-      "tooltip": "Run current file"
-    },
-    {
-      "key": "runselection",
-      "name": "$(play) Run Line",
-      "command": "micropico.runselection",
-      "tooltip": "Run selected lines"
-    },
-    {
-      "key": "upload",
-      "name": "$(triangle-up) Upload",
-      "command": "micropico.uploadFile",
-      "tooltip": "Upload current file to your board"
-    },
-    {
-      "key": "download",
-      "name": "$(triangle-down) Download",
-      "command": "micropico.downloadFile",
-      "tooltip": "Download current file from your board"
-    },
-    {
-      "key": "uploadproject",
-      "name": "$(triangle-up) Upload Project",
-      "command": "micropico.upload",
-      "tooltip": "Upload current project to your board"
-    },
-    {
-      "key": "downloadproject",
-      "name": "$(triangle-down) Download",
-      "command": "micropico.download",
-      "tooltip": "Download project from your board. This will overwrite all files in the sync folder."
-    },
-    {
-      "key": "disconnect",
-      "name": "$(chrome-close) Disconnect",
-      "command": "micropico.disconnect",
-      "tooltip": "Disconnect"
-    },
-    {
-      "key": "softreset",
-      "name": "$(refresh) Reset",
-      "command": "micropico.reset.soft",
-      "tooltip": "Clears the state of the MicroPython virtual machine"
-    },
-    {
-      "key": "settings",
-      "name": "$(gear) Settings",
-      "command": "micropico.globalSettings",
-      "tooltip": "Global MicroPico settings"
-    },
-    {
-      "key": "listserial",
-      "name": "$(list-unordered) List serial ports",
-      "command": "micropico.extra.getSerial",
-      "tooltip": "List available serial ports"
-    },
-    {
-      "key": "listcommands",
-      "name": "$(list-unordered) All commands",
-      "command": "micropico.listCommands",
-      "tooltip": "List all available MicroPico commands"
-    },
-    {
-      "key": "togglepicowfs",
-      "name": "$(list-tree) Toggle Mpy FS",
-      "command": "micropico.toggleFileSystem",
-      "tooltip": "Toggle virtual MicroPico workspace"
-    }
-  ],
   "scripts": {
     "vscode:uninstall": "node ./dist/vscodeUninstall.mjs",
     "vscode:prepublish": "npm run package",
@@ -740,6 +655,8 @@
     "watch-tests": "tsc -p tsconfig.test.json -w",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint src",
+    "l10n:export": "node ./scripts/l10n.mjs export",
+    "l10n:check": "node ./scripts/l10n.mjs check",
     "pretest": "node -e \"require('fs').rmSync('test-out',{recursive:true,force:true})\"",
     "test": "npm run compile-tests && node --import ./test/register.mjs --test \"test-out/**/*.test.mjs\"",
     "test:e2e": "npm run package-local && node ./test/e2e/runE2E.mjs",

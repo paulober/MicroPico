@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { basename, join } from "path";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { getFocusedFile } from "../api.mjs";
@@ -13,7 +14,7 @@ export class DownloadFileCommand extends Command {
 
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -22,7 +23,7 @@ export class DownloadFileCommand extends Command {
     const syncDir = await this.ctx.settings.requestSyncFolder("Download");
     if (syncDir === undefined) {
       void vscode.window.showWarningMessage(
-        "Download canceled. No sync folder selected.",
+        l10n.t("Download canceled. No sync folder selected."),
       );
 
       return;
@@ -33,7 +34,7 @@ export class DownloadFileCommand extends Command {
       (await getFocusedFile())?.replaceAll("\\", "/");
 
     if (file === undefined) {
-      void vscode.window.showWarningMessage("No file open.");
+      void vscode.window.showWarningMessage(l10n.t("No file open."));
 
       return;
     }
@@ -45,7 +46,7 @@ export class DownloadFileCommand extends Command {
     void vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: "Downloading file",
+        title: l10n.t("Downloading file"),
         cancellable: false,
       },
       async (progress, token) => {
@@ -68,7 +69,9 @@ export class DownloadFileCommand extends Command {
             progress.report({
               increment: 100 / totalChunksCount,
               message:
-                totalChunksCount === currentChunk ? "Downloaded" : relativePath,
+                totalChunksCount === currentChunk
+                  ? l10n.t("Downloaded")
+                  : relativePath,
             });
           },
         );
@@ -78,10 +81,12 @@ export class DownloadFileCommand extends Command {
         if (data?.type === OperationResultType.commandResult) {
           if (data.result) {
             void vscode.window.showInformationMessage(
-              `${file} was downloaded successfully.`,
+              l10n.t("{0} was downloaded successfully.", file),
             );
           } else {
-            void vscode.window.showErrorMessage("File download failed.");
+            void vscode.window.showErrorMessage(
+              l10n.t("File download failed."),
+            );
           }
         }
       },

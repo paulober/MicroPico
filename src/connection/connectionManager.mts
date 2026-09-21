@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { PicoSerialEvents } from "@paulober/pico-mpy-com";
 import type { VidPidPair } from "@paulober/pico-mpy-com";
 import { SettingsKey } from "../settings.mjs";
@@ -236,10 +237,13 @@ export class ConnectionManager {
           return;
         } else {
           const availablePorts =
-            allPorts.length > 0 ? allPorts.join(", ") : "none";
+            allPorts.length > 0 ? allPorts.join(", ") : l10n.t("none");
           void vscode.window.showErrorMessage(
-            `Manual COM device '${manualComDevice}' not found. ` +
-              `Available ports: ${availablePorts}`,
+            l10n.t(
+              "Manual COM device '{0}' not found. Available ports: {1}",
+              manualComDevice,
+              availablePorts,
+            ),
           );
 
           return;
@@ -247,7 +251,7 @@ export class ConnectionManager {
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
         void vscode.window.showErrorMessage(
-          "Failed to connect to manual COM device: " + errorMsg,
+          l10n.t("Failed to connect to manual COM device: {0}", errorMsg),
         );
 
         return;
@@ -257,10 +261,10 @@ export class ConnectionManager {
     const boards = await this.deps.listSupportedPorts(customVidPidPairs);
     if (boards.length > 1) {
       const comDevice = await vscode.window.showQuickPick(boards, {
-        placeHolder: "Select the board to connect to",
+        placeHolder: l10n.t("Select the board to connect to"),
         canPickMany: false,
         ignoreFocusOut: false,
-        title: "Connect to Micropython board",
+        title: l10n.t("Connect to MicroPython board"),
       });
 
       if (comDevice !== undefined) {
@@ -274,8 +278,9 @@ export class ConnectionManager {
       await this.ctx.com.openSerialPort(boards[0]);
     } else {
       void vscode.window.showWarningMessage(
-        "No board running MicroPython has been found. " +
-          "Check your connection and VID/PID settings.",
+        l10n.t(
+          "No board running MicroPython has been found. Check your connection and VID/PID settings.",
+        ),
       );
       await this.checkForUsbMsd();
     }
@@ -311,7 +316,7 @@ export class ConnectionManager {
     const customVidPidPairs = this.ctx.settings.getCustomVidPidPairs();
     const ports = await this.deps.listSupportedPorts(customVidPidPairs);
     if (ports.length === 0) {
-      void vscode.window.showErrorMessage("No connected Pico found!");
+      void vscode.window.showErrorMessage(l10n.t("No connected board found!"));
 
       // Without this return the empty list would fall through to an empty
       // quick pick (the flagged missing-return bug).
@@ -320,8 +325,9 @@ export class ConnectionManager {
 
     const port = await vscode.window.showQuickPick(ports, {
       canPickMany: false,
-      placeHolder:
-        "Select your the COM port of the Pico you want to connect to",
+      placeHolder: l10n.t(
+        "Select the COM port of the board you want to connect to",
+      ),
       ignoreFocusOut: false,
     });
 
@@ -346,7 +352,7 @@ export class ConnectionManager {
           ? error.message
           : typeof error === "string"
             ? error
-            : "Unknown error",
+            : l10n.t("Unknown error"),
       );
     }
   }
@@ -366,15 +372,21 @@ export class ConnectionManager {
         // cancel any running operation
         if (this.ctx.ui?.isUserOperationOngoing()) {
           void vscode.window.showWarningMessage(
-            "Connection to board was closed. Stopping ongoing operation.",
+            l10n.t(
+              "Connection to board was closed. Stopping ongoing operation.",
+            ),
           );
           this.ctx.ui?.userOperationStopped();
           this.ctx.commandExecuting = false;
         }
-        void vscode.window.showInformationMessage("Disconnected from board.");
+        void vscode.window.showInformationMessage(
+          l10n.t("Disconnected from board."),
+        );
         this.ctx.terminal?.freeze();
         this.ctx.terminal?.write(
-          "\r\n\x1b[31mConnection has been closed.\x1b[0m\r\n",
+          "\r\n\x1b[31m" +
+            l10n.t("Connection has been closed.") +
+            "\x1b[0m\r\n",
         );
         this.ctx.terminal?.clean();
       }
@@ -385,7 +397,9 @@ export class ConnectionManager {
           error instanceof Error ? error.message : error
         }`,
       );
-      void vscode.window.showErrorMessage("Connection to board has been lost.");
+      void vscode.window.showErrorMessage(
+        l10n.t("Connection to board has been lost."),
+      );
     }
     this.setupAutoConnect();
   }
@@ -402,7 +416,7 @@ export class ConnectionManager {
     this.deps.onConnected?.();
 
     void vscode.window.showInformationMessage(
-      "Connection to MicoPython board established.",
+      l10n.t("Connection to MicroPython board established."),
     );
 
     const scriptToExecute = this.ctx.settings.getString(

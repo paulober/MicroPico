@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { existsSync } from "fs";
 import { join } from "path";
 import { commandPrefix, openSettings } from "../api.mjs";
@@ -91,8 +92,8 @@ export function registerProjectCommands(
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
-        openLabel: "Select",
-        title: "Select location for new project folder",
+        openLabel: l10n.t("Select"),
+        title: l10n.t("Select location for new project folder"),
       });
 
       if (result === undefined || result.length === 0) {
@@ -103,24 +104,22 @@ export function registerProjectCommands(
       const folderPath = folderUri.fsPath;
 
       const projectName = await vscode.window.showInputBox({
-        prompt: "Enter the new project name",
-        placeHolder: "Project name",
+        prompt: l10n.t("Enter the new project name"),
+        placeHolder: l10n.t("Project name"),
         validateInput: (value: string) => {
           if (value.trim().length === 0) {
-            return "Project name cannot be empty.";
+            return l10n.t("Project name cannot be empty.");
           }
           // check for invalid characters in folder names
           // or reserved names
           if (!isValidFolderName(value)) {
-            return (
-              "Project name contains invalid" +
-              " characters or is a reserved name."
+            return l10n.t(
+              "Project name contains invalid characters or is a reserved name.",
             );
           }
           if (existsSync(join(folderPath, value))) {
-            return (
-              "A folder with this name already" +
-              " exists in the selected location."
+            return l10n.t(
+              "A folder with this name already exists in the selected location.",
             );
           }
 
@@ -185,7 +184,10 @@ print("Finished.")\r\n`;
         );
       } catch (error) {
         void vscode.window.showErrorMessage(
-          `Failed to create project folder: ${unknownErrorToString(error)}`,
+          l10n.t(
+            "Failed to create project folder: {0}",
+            unknownErrorToString(error),
+          ),
         );
 
         return;

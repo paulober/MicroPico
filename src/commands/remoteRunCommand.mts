@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { StringDecoder } from "string_decoder";
 import { getFocusedFile } from "../api.mjs";
 import { SettingsKey } from "../settings.mjs";
@@ -37,7 +38,7 @@ export class RemoteRunCommand extends Command {
 
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -53,7 +54,9 @@ export class RemoteRunCommand extends Command {
       resolveRemoteRunOverride(fileOverride) ?? (await getFocusedFile(true));
 
     if (file === undefined) {
-      void vscode.window.showWarningMessage("No remote file open and focused.");
+      void vscode.window.showWarningMessage(
+        l10n.t("No remote file open and focused."),
+      );
 
       return;
     }

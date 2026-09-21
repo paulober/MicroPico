@@ -1,4 +1,4 @@
-import { commands, Uri, window } from "vscode";
+import { commands, l10n, Uri, window } from "vscode";
 import { join } from "path";
 import {
   getProjectPath,
@@ -111,8 +111,9 @@ export default class Stubs {
     // no folfer opened in vscode
     if (!workspace) {
       void window.showErrorMessage(
-        "You need to open your project folder in " +
-          "VS Code before you can configure it!"
+        l10n.t(
+          "You need to open your project folder in VS Code before you can configure it!"
+        )
       );
 
       return;
@@ -131,7 +132,9 @@ export default class Stubs {
     await this.addSettings(vsc);
     await this.addProjectFile(workspace);
 
-    void window.showInformationMessage("Project configuration complete!");
+    void window.showInformationMessage(
+      l10n.t("Project configuration complete!")
+    );
 
     if (shouldRecommendExtensions()) {
       void commands.executeCommand(
@@ -302,15 +305,16 @@ export async function installStubsByVersion(
       });
       if (result.toString("utf-8").toLowerCase().includes("no module named")) {
         void window.showWarningMessage(
-          "The selected python interpreter does not have pip installed."
+          l10n.t("The selected Python interpreter does not have pip installed.")
         );
         command = "";
       }
     } catch (error) {
       logger.error(error instanceof Error ? error.message : String(error));
       void window.showErrorMessage(
-        "python3 or py (with pip) is required (in PATH) to install" +
-          " stubs different from the included ones."
+        l10n.t(
+          "python3 or py (with pip) is required (in PATH) to install stubs different from the included ones."
+        )
       );
       command = "";
     }
@@ -339,8 +343,10 @@ export async function installStubsByVersion(
           result.toString("utf-8").toLowerCase().includes("no module named")
         ) {
           void window.showErrorMessage(
-            `pip module is required (in ${pyCmd}) to install` +
-              " stubs different from the included ones."
+            l10n.t(
+              "pip module is required (in {0}) to install stubs different from the included ones.",
+              pyCmd
+            )
           );
 
           return false;
@@ -348,8 +354,9 @@ export async function installStubsByVersion(
         command = `"${pyCmd}" -m pip`;
       } else {
         void window.showErrorMessage(
-          "python3 or py is required (in PATH) to install" +
-            " stubs different from the included ones."
+          l10n.t(
+            "python3 or py is required (in PATH) to install stubs different from the included ones."
+          )
         );
 
         return false;

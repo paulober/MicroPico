@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { commandPrefix } from "../api.mjs";
 import { SettingsKey } from "../settings.mjs";
@@ -15,7 +16,7 @@ export class UploadCommand extends Command {
   public async execute(): Promise<void> {
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -26,7 +27,7 @@ export class UploadCommand extends Command {
     const syncDir = await this.ctx.settings.requestSyncFolder("Upload");
     if (syncDir === undefined) {
       void vscode.window.showWarningMessage(
-        "Upload canceled. No sync folder selected.",
+        l10n.t("Upload canceled. No sync folder selected."),
       );
 
       return;
@@ -51,7 +52,7 @@ export class UploadCommand extends Command {
     void vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: "Uploading project",
+        title: l10n.t("Uploading project"),
         cancellable: true,
       },
       async (progress, token) => {
@@ -94,9 +95,13 @@ export class UploadCommand extends Command {
 
         if (data.type === OperationResultType.commandResult) {
           if (data.result) {
-            void vscode.window.showInformationMessage("Project uploaded.");
+            void vscode.window.showInformationMessage(
+              l10n.t("Project uploaded."),
+            );
           } else {
-            void vscode.window.showErrorMessage("Project upload failed.");
+            void vscode.window.showErrorMessage(
+              l10n.t("Project upload failed."),
+            );
 
             return;
           }

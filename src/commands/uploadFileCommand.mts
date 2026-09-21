@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { basename } from "path";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { commandPrefix, getFocusedFile } from "../api.mjs";
@@ -14,7 +15,7 @@ export class UploadFileCommand extends Command {
 
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
-        "Please connect to the Pico first.",
+        l10n.t("Please connect to the board first."),
       );
 
       return;
@@ -22,7 +23,7 @@ export class UploadFileCommand extends Command {
 
     const file = resourceURI?.fsPath ?? (await getFocusedFile());
     if (file === undefined) {
-      void vscode.window.showWarningMessage("No file open.");
+      void vscode.window.showWarningMessage(l10n.t("No file open."));
 
       return;
     }
@@ -40,7 +41,7 @@ export class UploadFileCommand extends Command {
     void vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: "Uploading file",
+        title: l10n.t("Uploading file"),
         cancellable: false,
       },
       async (progress, token) => {
@@ -65,7 +66,9 @@ export class UploadFileCommand extends Command {
             progress.report({
               increment: 100 / totalChunksCount,
               message:
-                totalChunksCount === currentChunk ? "Uploaded" : relativePath,
+                totalChunksCount === currentChunk
+                  ? l10n.t("Uploaded")
+                  : relativePath,
             });
           },
         );
@@ -79,7 +82,7 @@ export class UploadFileCommand extends Command {
               vscode.Uri.from({ scheme: "pico", path: "/" + basename(file) }),
             );
             void vscode.window.showInformationMessage(
-              `${file} was uploaded successfully.`,
+              l10n.t("{0} was uploaded successfully.", file),
             );
             if (
               this.ctx.settings.getBoolean(SettingsKey.softResetAfterUpload)
@@ -89,7 +92,7 @@ export class UploadFileCommand extends Command {
               );
             }
           } else {
-            void vscode.window.showErrorMessage("File upload failed.");
+            void vscode.window.showErrorMessage(l10n.t("File upload failed."));
           }
         }
       },

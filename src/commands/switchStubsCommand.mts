@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import {
   displayStringToStubPort,
   fetchAvailableStubsVersions,
@@ -18,11 +19,12 @@ export class SwitchStubsCommand extends Command {
   public readonly id = "extra.switchStubs";
 
   public async execute(): Promise<void> {
+    const included = l10n.t("Included");
     const stubPort = await vscode.window.showQuickPick(
-      ["Included", ...STUB_PORTS.map(stubPortToDisplayString)],
+      [included, ...STUB_PORTS.map(stubPortToDisplayString)],
       {
         canPickMany: false,
-        placeHolder: "Select the stubs port you want to use",
+        placeHolder: l10n.t("Select the stubs port you want to use"),
         ignoreFocusOut: false,
       },
     );
@@ -31,9 +33,11 @@ export class SwitchStubsCommand extends Command {
       return;
     }
 
-    if (stubPort.toLowerCase() === "included") {
+    if (stubPort === included) {
       await installIncludedStubs(this.ctx.settings);
-      void vscode.window.showInformationMessage("Included stubs selected.");
+      void vscode.window.showInformationMessage(
+        l10n.t("Included stubs selected."),
+      );
 
       return;
     }
@@ -46,7 +50,7 @@ export class SwitchStubsCommand extends Command {
 
     const version = await vscode.window.showQuickPick(versions, {
       canPickMany: false,
-      placeHolder: "Select the stubs version you want to use",
+      placeHolder: l10n.t("Select the stubs version you want to use"),
       ignoreFocusOut: false,
     });
 
@@ -57,7 +61,7 @@ export class SwitchStubsCommand extends Command {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: "Downloading stubs, this may take a while...",
+        title: l10n.t("Downloading stubs, this may take a while..."),
         cancellable: false,
       },
       async progress => {
@@ -75,10 +79,15 @@ export class SwitchStubsCommand extends Command {
         );
 
         if (result) {
-          progress.report({ increment: 100, message: "Stubs installed." });
-          void vscode.window.showInformationMessage("Stubs installed.");
+          progress.report({
+            increment: 100,
+            message: l10n.t("Stubs installed."),
+          });
+          void vscode.window.showInformationMessage(l10n.t("Stubs installed."));
         } else {
-          void vscode.window.showErrorMessage("Stubs installation failed.");
+          void vscode.window.showErrorMessage(
+            l10n.t("Stubs installation failed."),
+          );
         }
       },
     );

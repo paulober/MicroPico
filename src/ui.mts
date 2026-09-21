@@ -1,25 +1,106 @@
-import { StatusBarAlignment, commands, extensions, window } from "vscode";
+import { StatusBarAlignment, commands, l10n, window } from "vscode";
 import type { StatusBarItem } from "vscode";
 import Logger from "./logger.mjs";
 import { SettingsKey } from "./settings.mjs";
 import type Settings from "./settings.mjs";
 import { ContextKeys } from "./models/contextKeys.mjs";
-import { extId } from "./api.mjs";
 
-interface PkgJSON {
-  statusBar: Array<{
-    key: string;
-    name: string;
-    command: string;
-    tooltip: string;
-  }>;
-  contributes: { commands: Array<{ title: string; command: string }> };
+interface StatusBarButton {
+  key: string;
+  name: string;
+  command: string;
+  tooltip: string;
 }
 
-const pkg = (extensions.getExtension(extId)?.packageJSON as PkgJSON) ?? {
-  statusBar: [],
-  contributes: { commands: [] },
-};
+// the order here is the order in the status bar
+const statusBarButtons = (): StatusBarButton[] => [
+  {
+    key: "status",
+    name: "",
+    command: "micropico.toggleConnect",
+    tooltip: l10n.t("Toggle board connection"),
+  },
+  {
+    key: "stop",
+    name: "$(primitive-square) " + l10n.t("Stop"),
+    command: "micropico.universalStop",
+    tooltip: l10n.t("Stop"),
+  },
+  {
+    key: "run",
+    name: "$(play) " + l10n.t("Run"),
+    command: "micropico.run",
+    tooltip: l10n.t("Run current file"),
+  },
+  {
+    key: "runselection",
+    name: "$(play) " + l10n.t("Run Line"),
+    command: "micropico.runselection",
+    tooltip: l10n.t("Run selected lines"),
+  },
+  {
+    key: "upload",
+    name: "$(triangle-up) " + l10n.t("Upload"),
+    command: "micropico.uploadFile",
+    tooltip: l10n.t("Upload current file to your board"),
+  },
+  {
+    key: "download",
+    name: "$(triangle-down) " + l10n.t("Download"),
+    command: "micropico.downloadFile",
+    tooltip: l10n.t("Download current file from your board"),
+  },
+  {
+    key: "uploadproject",
+    name: "$(triangle-up) " + l10n.t("Upload Project"),
+    command: "micropico.upload",
+    tooltip: l10n.t("Upload current project to your board"),
+  },
+  {
+    key: "downloadproject",
+    name: "$(triangle-down) " + l10n.t("Download Project"),
+    command: "micropico.download",
+    tooltip: l10n.t(
+      "Download project from your board. This will overwrite all files in the sync folder."
+    ),
+  },
+  {
+    key: "disconnect",
+    name: "$(chrome-close) " + l10n.t("Disconnect"),
+    command: "micropico.disconnect",
+    tooltip: l10n.t("Disconnect"),
+  },
+  {
+    key: "softreset",
+    name: "$(refresh) " + l10n.t("Reset"),
+    command: "micropico.reset.soft",
+    tooltip: l10n.t("Clears the state of the MicroPython virtual machine"),
+  },
+  {
+    key: "settings",
+    name: "$(gear) " + l10n.t("Settings"),
+    command: "micropico.globalSettings",
+    tooltip: l10n.t("Global MicroPico settings"),
+  },
+  {
+    key: "listserial",
+    name: "$(list-unordered) " + l10n.t("List serial ports"),
+    command: "micropico.extra.getSerial",
+    tooltip: l10n.t("List available serial ports"),
+  },
+  {
+    key: "listcommands",
+    name: "$(list-unordered) " + l10n.t("All commands"),
+    command: "micropico.listCommands",
+    tooltip: l10n.t("List all available MicroPico commands"),
+  },
+  {
+    key: "togglepicowfs",
+    name: "$(list-tree) " + l10n.t("Toggle Mpy FS"),
+    command: "micropico.toggleFileSystem",
+    tooltip: l10n.t("Toggle virtual MicroPico workspace"),
+  },
+];
 
 export default class UI {
   private settings: Settings;
@@ -43,7 +124,7 @@ export default class UI {
     }
     this.initialized = true;
 
-    for (const item of pkg.statusBar) {
+    for (const item of statusBarButtons()) {
       this.items[item.key] = this.createStatusBarItem(
         item.key,
         item.name,
@@ -110,12 +191,12 @@ export default class UI {
     this.setButton(
       "status",
       connected ? "check" : "debug-disconnect",
-      connected ? "Pico Connected" : "Pico Disconnected"
+      connected ? l10n.t("Board Connected") : l10n.t("Board Disconnected")
     );
   }
 
   public setDisconnecting(): void {
-    this.setButton("status", "watch", "Closing port...");
+    this.setButton("status", "watch", l10n.t("Closing port..."));
   }
 
   public getState(): boolean {

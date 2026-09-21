@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { l10n } from "vscode";
 import { OperationResultType } from "@paulober/pico-mpy-com";
 import { Command } from "./command.mjs";
 
@@ -8,7 +9,7 @@ export class GarbageCollectCommand extends Command {
 
   public execute(): void {
     if (this.ctx.com.isPortDisconnected()) {
-      void vscode.window.showWarningMessage("Please connect to the Pico first.");
+      void vscode.window.showWarningMessage(l10n.t("Please connect to the board first."));
 
       return;
     }
@@ -16,7 +17,7 @@ export class GarbageCollectCommand extends Command {
     void vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: "Running garbage collector...",
+        title: l10n.t("Running garbage collector..."),
         cancellable: false,
       },
       async progress => {
@@ -26,12 +27,12 @@ export class GarbageCollectCommand extends Command {
           result.type === OperationResultType.commandResult &&
           result.result
         ) {
-          void vscode.window.showInformationMessage("Garbage collection done");
+          void vscode.window.showInformationMessage(l10n.t("Garbage collection done"));
 
           return;
         }
 
-        void vscode.window.showErrorMessage("Garbage collection failed");
+        void vscode.window.showErrorMessage(l10n.t("Garbage collection failed"));
       },
     );
   }

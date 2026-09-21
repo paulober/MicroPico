@@ -56,7 +56,11 @@ export default tseslint.config(
             "no-this-before-super": "warn",
             "no-unreachable": "warn",
             "no-unused-vars": "off",
-            "max-len": ["warn", { code: 80, comments: 100, ignoreComments: false }],
+            // translatable strings have to stay one literal, so they may run long
+            "max-len": [
+              "warn",
+              { code: 80, comments: 100, ignoreComments: false, ignoreStrings: true },
+            ],
             "no-fallthrough": "warn",
             "newline-before-return": "warn",
             "no-return-await": "warn",

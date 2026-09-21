@@ -5,6 +5,7 @@ import { TextDecoder } from "util";
 import {
   commands,
   extensions,
+  l10n,
   window,
   workspace,
   env as vscodeEnv,
@@ -251,7 +252,7 @@ export async function focusTerminal(
           setTimeout(resolve, ms);
         }))(200);
     } else {
-      void window.showWarningMessage("Pico vREPL not open.");
+      void window.showWarningMessage(l10n.t("MicroPico vREPL is not open."));
     }
   }
 }

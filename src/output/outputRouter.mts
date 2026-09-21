@@ -103,38 +103,40 @@ export class OutputRouter {
 
   /** Prompt the user to disable, inspect or pick a file for output redirection. */
   public async promptForRedirect(): Promise<void> {
+    const disable = `$(x) ${vscode.l10n.t("Disable")}`;
+    const status = `$(info) ${vscode.l10n.t("Status")}`;
+    const toFile = `$(arrow-right) ${vscode.l10n.t("File")}`;
     const location = await vscode.window.showQuickPick(
-      ["$(x) Disable", "$(info) Status", "$(arrow-right) File"],
+      [disable, status, toFile],
       {
         canPickMany: false,
-        placeHolder: "Select the output location or manage settings",
-        title: "Output redirection for this session",
+        placeHolder: vscode.l10n.t(
+          "Select the output location or manage settings",
+        ),
+        title: vscode.l10n.t("Output redirection for this session"),
         ignoreFocusOut: false,
       },
     );
 
     switch (location) {
-      case "$(x) Disable":
+      case disable:
         this.target = undefined;
         break;
-      case "$(info) Status":
+      case status:
         void vscode.window.showInformationMessage(
           this.target
-            ? `Output is redirected to: ${this.target}`
-            : "Output redirection is disabled",
+            ? vscode.l10n.t("Output is redirected to: {0}", this.target)
+            : vscode.l10n.t("Output redirection is disabled"),
         );
         break;
-      case "$(arrow-right) File": {
+      case toFile: {
         const file = await vscode.window.showSaveDialog({
           filters: {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            "Text files": ["txt"],
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            "Log files": ["log"],
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            "All files": ["*"],
+            [vscode.l10n.t("Text files")]: ["txt"],
+            [vscode.l10n.t("Log files")]: ["log"],
+            [vscode.l10n.t("All files")]: ["*"],
           },
-          saveLabel: "Save output to file",
+          saveLabel: vscode.l10n.t("Save output to file"),
         });
 
         if (file) {

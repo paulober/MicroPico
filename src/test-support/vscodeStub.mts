@@ -244,3 +244,18 @@ export class Uri {
     return components;
   }
 }
+
+// Returns the English source string with its {0}-style placeholders filled in.
+export const l10n = {
+  t(
+    message: string | { message: string; args?: unknown[] },
+    ...args: unknown[]
+  ): string {
+    const text = typeof message === "string" ? message : message.message;
+    const values = typeof message === "string" ? args : (message.args ?? []);
+
+    return text.replace(/\{(\d+)\}/g, (match, index: string) =>
+      Number(index) < values.length ? String(values[Number(index)]) : match,
+    );
+  },
+};

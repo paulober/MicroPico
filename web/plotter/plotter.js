@@ -96,7 +96,12 @@
     const series = [{}];
     for (let i = 0; i < count; i++) {
       series.push({
-        label: labels[i] || "series " + (i + 1),
+        label:
+          labels[i] ||
+          (chartEl.dataset.seriesLabel || "series {0}").replace(
+            "{0}",
+            String(i + 1)
+          ),
         stroke: colors[i % colors.length],
         width: 1.5,
       });
@@ -228,7 +233,9 @@
 
   pauseBtn.addEventListener("click", () => {
     paused = !paused;
-    pauseBtn.textContent = paused ? "Resume" : "Pause";
+    pauseBtn.textContent = paused
+      ? pauseBtn.dataset.resume || "Resume"
+      : pauseBtn.dataset.pause || "Pause";
     if (!paused && held.length > 0) {
       const samples = held;
       held = [];
