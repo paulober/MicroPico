@@ -22,6 +22,7 @@
   "Clear the plot": "Pulisci il grafico",
   "Clears the state of the MicroPython virtual machine": "Azzera lo stato della macchina virtuale MicroPython",
   "Closing port...": "Chiusura della porta...",
+  "Connect": "Connetti",
   "Connect to MicroPython board": "Connetti alla scheda MicroPython",
   "Connection has been closed.": "La connessione è stata chiusa.",
   "Connection to MicroPython board established.": "Connessione alla scheda MicroPython stabilita.",
@@ -221,6 +222,7 @@
   "trigger garbage collector": "avvia la garbage collection",
   "{0} ({1} flash)": "{0} ({1} di flash)",
   "{0} Pinout": "Pinout di {0}",
+  "{0} is in use by another program, e.g. another VS Code window. Close it there, then connect again.": "{0} è in uso da un altro programma, ad es. un'altra finestra di VS Code. Chiudilo lì e poi connettiti di nuovo.",
   "{0} pinout graphic": "Grafico del pinout di {0}",
   "{0} was downloaded successfully.": "{0} è stato scaricato correttamente.",
   "{0} was uploaded successfully.": "{0} è stato caricato correttamente."

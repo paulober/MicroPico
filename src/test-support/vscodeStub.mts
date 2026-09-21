@@ -44,6 +44,14 @@ export function __queueSaveDialog(...values: unknown[]): void {
   saveDialogQueue.push(...values);
 }
 
+// Messages passed to showWarningMessage, so tests can check what was shown.
+const shownWarnings: string[] = [];
+
+/** The warnings shown since the last reset. */
+export function __getShownWarnings(): string[] {
+  return shownWarnings;
+}
+
 /** Queue values the next `showWarningMessage` calls will resolve to, in order. */
 export function __queueWarningMessage(...values: unknown[]): void {
   warningMessageQueue.push(...values);
@@ -67,6 +75,7 @@ export const FileChangeType = { Changed: 1, Created: 2, Deleted: 3 };
 
 /** Clear any queued prompt results between tests. */
 export function __resetPrompts(): void {
+  shownWarnings.length = 0;
   quickPickQueue.length = 0;
   saveDialogQueue.length = 0;
   warningMessageQueue.length = 0;
@@ -134,7 +143,9 @@ export const window = {
   showErrorMessage() {
     return Promise.resolve(undefined);
   },
-  showWarningMessage() {
+  showWarningMessage(message: string) {
+    shownWarnings.push(message);
+
     return Promise.resolve(
       warningMessageQueue.length > 0 ? warningMessageQueue.shift() : undefined,
     );

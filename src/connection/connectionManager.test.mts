@@ -10,6 +10,7 @@ import {
   __resetCommands,
   __getQuickPickCalls,
   __queueQuickPick,
+  __getShownWarnings,
 } from "../test-support/vscodeStub.mjs";
 import { ConnectionManager, type ConnectionDeps } from "./connectionManager.mjs";
 
@@ -509,6 +510,60 @@ describe("ConnectionManager.switchPico", () => {
 
     assert.equal(com.openCalls.length, 0);
     assert.equal(state.manualComDevice, "");
+  });
+});
+
+describe("ConnectionManager with a port in use", () => {
+  beforeEach(() => {
+    __resetPrompts();
+    __resetCommands();
+  });
+
+  const lockError = new Error("Error Resource temporarily unavailable Cannot lock port");
+
+  test("keeps retrying quietly for a moment, e.g. during a window reload", async t => {
+    enableTimers(t);
+    const { cm, com, deps } = makeHarness({ autoConnect: true });
+    deps.supportedQueue = [["/dev/pico"]];
+    cm.setupAutoConnect();
+    await flush();
+
+    for (let i = 0; i < 6; i++) {
+      com.emit(PicoSerialEvents.portError, lockError);
+    }
+
+    assert.equal(__getShownWarnings().length, 0);
+  });
+
+  test("stops polling and tells the user once when the port stays busy", async t => {
+    enableTimers(t);
+    const { cm, com, deps } = makeHarness({ autoConnect: true });
+    deps.supportedQueue = [["/dev/pico"]];
+    // the port never opens
+    com.openSerialPort = (dev: string): Promise<void> => {
+      com.openCalls.push(dev);
+
+      return Promise.resolve();
+    };
+    cm.setupAutoConnect();
+    await flush();
+
+    for (let i = 0; i < 10; i++) {
+      com.emit(PicoSerialEvents.portError, lockError);
+    }
+    assert.equal(__getShownWarnings().length, 1);
+
+    const attempts = com.openCalls.length;
+    t.mock.timers.tick(10_000);
+    await flush();
+    assert.equal(com.openCalls.length, attempts);
+  });
+
+  test("never re-arms after dispose", () => {
+    const { cm } = makeHarness({ autoConnect: true });
+    cm.dispose();
+
+    assert.equal(cm.setupAutoConnect(), false);
   });
 });
 

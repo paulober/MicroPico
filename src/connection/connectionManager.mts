@@ -54,6 +54,13 @@ export class ConnectionManager {
 
   private autoConnectTimer?: NodeJS.Timeout;
   private noCheckForUsbMsd = false;
+  private disposed = false;
+  /**
+   * Failed attempts because another program holds the port. On macOS every
+   * attempt disturbs that program's connection, so polling stops after a few.
+   */
+  private portInUseAttempts = 0;
+  private portInUse = false;
   /**
    * Set by {@link disconnect} so the next {@link setupAutoConnect} does not
    * immediately re-arm the poller after a user-requested disconnect.
@@ -80,6 +87,10 @@ export class ConnectionManager {
    * not (intentional disconnect, or neither auto-connect nor a manual device).
    */
   public setupAutoConnect(): boolean {
+    if (this.disposed) {
+      return false;
+    }
+
     if (this.intentionalDisconnect) {
       this.intentionalDisconnect = false;
 
@@ -106,7 +117,7 @@ export class ConnectionManager {
     }
 
     const onAutoConnect = async (): Promise<void> => {
-      if (!this.ctx.com.isPortDisconnected()) {
+      if (!this.ctx.com.isPortDisconnected() || this.portInUse) {
         clearInterval(this.autoConnectTimer);
 
         return;
@@ -224,6 +235,9 @@ export class ConnectionManager {
 
   /** Connect on demand (the `connect` command). */
   public async connect(): Promise<void> {
+    this.portInUse = false;
+    this.portInUseAttempts = 0;
+
     const customVidPidPairs = this.ctx.settings.getCustomVidPidPairs();
     const manualComDevice =
       this.ctx.settings.getString(SettingsKey.manualComDevice) ?? "";
@@ -432,6 +446,7 @@ export class ConnectionManager {
 
   /** Clear the poller and detach all board listeners (on deactivate). */
   public dispose(): void {
+    this.disposed = true;
     clearInterval(this.autoConnectTimer);
     this.ctx.com.off(PicoSerialEvents.portError, this.boundOnError);
     this.ctx.com.off(PicoSerialEvents.portClosed, this.boundOnExit);
@@ -439,6 +454,12 @@ export class ConnectionManager {
   }
 
   private boardOnError(error?: Error): void {
+    if (error?.message.includes("Cannot lock port")) {
+      this.onPortInUse();
+
+      return;
+    }
+
     if (error) {
       void vscode.window.showErrorMessage(
         error instanceof Error
@@ -448,6 +469,35 @@ export class ConnectionManager {
             : l10n.t("Unknown error"),
       );
     }
+  }
+
+  /**
+   * Another program (or VS Code window) holds the port. Right after a window
+   * reload that is the previous extension host for a moment, so keep trying
+   * for a while before giving up.
+   */
+  private onPortInUse(): void {
+    this.logger.warn(`Port ${this.comDevice ?? ""} is in use by another program`);
+    if (this.portInUse || ++this.portInUseAttempts < 7) {
+      return;
+    }
+
+    this.portInUse = true;
+    clearInterval(this.autoConnectTimer);
+    const connect = l10n.t("Connect");
+    void vscode.window
+      .showWarningMessage(
+        l10n.t(
+          "{0} is in use by another program, e.g. another VS Code window. Close it there, then connect again.",
+          this.comDevice ?? "",
+        ),
+        connect,
+      )
+      .then(choice => {
+        if (choice === connect) {
+          void this.connect();
+        }
+      });
   }
 
   /**
@@ -502,6 +552,7 @@ export class ConnectionManager {
       return;
     }
 
+    this.portInUseAttempts = 0;
     this.logger.debug("Connected to a board. Now executing *OnConnect stuff...");
     this.logger.info("Connection to board successfully established");
 
@@ -520,6 +571,18 @@ export class ConnectionManager {
         commandPrefix + "remote.run",
         scriptToExecute,
         true,
+      );
+    }
+
+    // the remote workspace failed to load while disconnected, e.g. right after
+    // a window reload, and VS Code doesn't retry on its own
+    if (
+      vscode.workspace.workspaceFolders?.some(
+        folder => folder.uri.scheme === "pico",
+      )
+    ) {
+      void vscode.commands.executeCommand(
+        "workbench.files.action.refreshFilesExplorer",
       );
     }
 
