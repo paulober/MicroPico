@@ -24,7 +24,7 @@
   "command.extra.firmwareUpdates.title": "Aiuto > Cerca aggiornamenti del firmware",
   "command.extra.switchStubs.title": "Extra > Cambia stub",
   "command.listCommands.title": "Mostra tutti i comandi",
-  "command.toggleFileSystem.title": "Attiva/disattiva il file system virtuale (ricarica l'interfaccia e chiude i vREPL aperti)",
+  "command.toggleFileSystem.title": "Monta/smonta il file system della scheda (ricarica la finestra)",
   "command.switchPico.title": "Cambia scheda",
   "command.reset.soft.listen.title": "Reset > Soft (interattivo)",
   "command.rtc.sync.title": "Sincronizza RTC",

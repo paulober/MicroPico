@@ -32,7 +32,7 @@ export class ToggleFileSystemCommand extends Command {
       null,
       {
         uri: vscode.Uri.parse("pico://"),
-        name: l10n.t("Mpy Remote Workspace"),
+        name: l10n.t("Board Filesystem"),
       },
     );
   }

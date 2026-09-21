@@ -96,9 +96,9 @@ const statusBarButtons = (): StatusBarButton[] => [
   },
   {
     key: "togglepicowfs",
-    name: "$(list-tree) " + l10n.t("Toggle Mpy FS"),
+    name: "$(list-tree) " + l10n.t("Board Filesystem"),
     command: "micropico.toggleFileSystem",
-    tooltip: l10n.t("Toggle virtual MicroPico workspace"),
+    tooltip: l10n.t("Mount or unmount the board filesystem in the Explorer"),
   },
 ];
 

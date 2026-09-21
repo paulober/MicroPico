@@ -24,7 +24,7 @@
   "command.extra.firmwareUpdates.title": "Hilfe > Nach Firmware-Updates suchen",
   "command.extra.switchStubs.title": "Extra > Stubs wechseln",
   "command.listCommands.title": "Alle Befehle anzeigen",
-  "command.toggleFileSystem.title": "Virtuelles Dateisystem umschalten (lädt die Oberfläche neu und schließt offene vREPLs)",
+  "command.toggleFileSystem.title": "Board-Dateisystem ein-/aushängen (lädt das Fenster neu)",
   "command.switchPico.title": "Board wechseln",
   "command.reset.soft.listen.title": "Reset > Soft (interaktiv)",
   "command.rtc.sync.title": "RTC synchronisieren",

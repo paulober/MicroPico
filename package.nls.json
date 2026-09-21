@@ -24,7 +24,7 @@
   "command.extra.firmwareUpdates.title": "Help > Check for Firmware Updates",
   "command.extra.switchStubs.title": "Extra > Switch Stubs",
   "command.listCommands.title": "List All Commands",
-  "command.toggleFileSystem.title": "Toggle Virtual File System (reloads UI and closes existing vREPLs)",
+  "command.toggleFileSystem.title": "Mount/Unmount Board Filesystem (reloads the window)",
   "command.switchPico.title": "Switch Board",
   "command.reset.soft.listen.title": "Reset > Soft (interactive)",
   "command.rtc.sync.title": "Sync RTC",
