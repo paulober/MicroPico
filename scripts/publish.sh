@@ -18,7 +18,7 @@ fi
 for package in "${packages[@]}"; do
   echo "Publishing $package"
   # --skip-duplicate makes a failed run safe to re-run
-  npx --yes @vscode/vsce@3.7.1 publish --azure-credential --skip-duplicate \
+  npx --yes @vscode/vsce@4.0.0 publish --azure-credential --skip-duplicate \
     --packagePath "$package"
   npx --yes ovsx@1.2.0 publish --skip-duplicate -p "$OVSX_PAT" "$package"
 done

@@ -31,4 +31,4 @@ jobs:
           --query id -o tsv
 
       - name: Check publish rights
-        run: npx --yes @vscode/vsce@3.7.1 verify-pat paulober --azure-credential
+        run: npx --yes @vscode/vsce@4.0.0 verify-pat paulober --azure-credential
