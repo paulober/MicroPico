@@ -130,14 +130,19 @@ export default class Settings {
 
   // helpers
   /**
-   * Get the COM port to connect to.
+   * Get the COM port to connect to: the manually set one if there is one,
+   * otherwise the first detected board when autoConnect is enabled.
    *
-   * @returns the com device to use. If autoConnect is true, the first port is returned.
-   * Otherwise the manual com device is returned.
+   * @param silent Don't show an error if reading the ports fails.
+   * @returns The port, or undefined if there is nothing to connect to.
    */
   public async getComDevice(silent = false): Promise<string | undefined> {
-    // manual com device undefined if this.getBoolean(SettingsKey.autoConnect) is true
-    // or if manualComDevice is undefined
+    // a manually set port always wins, it is used without any USB ID check
+    const manual = this.getString(SettingsKey.manualComDevice);
+    if (manual !== undefined && manual !== "") {
+      return manual;
+    }
+
     if (this.getBoolean(SettingsKey.autoConnect) === true) {
       try {
         // process.env.NODE_ENV = "production";
@@ -161,17 +166,7 @@ export default class Settings {
       }
     }
 
-    let manualComDevice = this.getString(SettingsKey.manualComDevice);
-    if (!silent && (manualComDevice === undefined || manualComDevice === "")) {
-      manualComDevice = undefined;
-      void window.showErrorMessage(
-        l10n.t(
-          "No board has been found automatically or the `autoConnect` setting has been disabled but no `manualComDevice` has been set.",
-        ),
-      );
-    }
-
-    return manualComDevice;
+    return undefined;
   }
 
   /**

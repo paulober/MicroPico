@@ -122,7 +122,8 @@ export class ConnectionManager {
       }
 
       // Manual COM device set: connect directly without VID/PID filtering.
-      if (manualComDevice.length > 0 && !autoPort) {
+      // It wins over auto-connect so picking a port is all a user has to do.
+      if (manualComDevice.length > 0) {
         try {
           const allPorts = await this.deps.listAllPorts();
 
@@ -217,14 +218,24 @@ export class ConnectionManager {
 
   /** Connect on demand (the `connect` command). */
   public async connect(): Promise<void> {
+    const customVidPidPairs = this.ctx.settings.getCustomVidPidPairs();
+    const manualComDevice =
+      this.ctx.settings.getString(SettingsKey.manualComDevice) ?? "";
+
     if (this.setupAutoConnect()) {
+      // the poller keeps waiting silently, so tell the user if it can't find
+      // anything to connect to
+      if (
+        manualComDevice.length === 0 &&
+        (await this.deps.listSupportedPorts(customVidPidPairs)).length === 0
+      ) {
+        await this.warnNoBoardFound();
+      }
+
       return;
     }
 
     // auto-connect is off and no manual COM device is set
-    const customVidPidPairs = this.ctx.settings.getCustomVidPidPairs();
-    const manualComDevice =
-      this.ctx.settings.getString(SettingsKey.manualComDevice) ?? "";
 
     if (manualComDevice.length > 0) {
       try {
@@ -277,12 +288,25 @@ export class ConnectionManager {
       this.comDevice = boards[0];
       await this.ctx.com.openSerialPort(boards[0]);
     } else {
-      void vscode.window.showWarningMessage(
-        l10n.t(
-          "No board running MicroPython has been found. Check your connection and VID/PID settings.",
-        ),
-      );
       await this.checkForUsbMsd();
+      await this.warnNoBoardFound();
+    }
+  }
+
+  /**
+   * Boards with unknown USB IDs are not detected, so point the user to
+   * picking the port by hand.
+   */
+  private async warnNoBoardFound(): Promise<void> {
+    const selectPort = l10n.t("Select Port");
+    const choice = await vscode.window.showWarningMessage(
+      l10n.t(
+        "No board running MicroPython has been found. If your board is connected, select its port.",
+      ),
+      selectPort,
+    );
+    if (choice === selectPort) {
+      await this.switchPico();
     }
   }
 
@@ -311,30 +335,80 @@ export class ConnectionManager {
     }
   }
 
-  /** Switch to another connected Pico (the `switchPico` command). */
+  /**
+   * Let the user pick the port to connect to (the `switchPico` command).
+   * Detected boards come first, but any serial port can be picked. A port that
+   * isn't detected is saved as `manualComDevice` so reconnects find it again.
+   */
   public async switchPico(): Promise<void> {
     const customVidPidPairs = this.ctx.settings.getCustomVidPidPairs();
-    const ports = await this.deps.listSupportedPorts(customVidPidPairs);
-    if (ports.length === 0) {
-      void vscode.window.showErrorMessage(l10n.t("No connected board found!"));
+    const manualComDevice =
+      this.ctx.settings.getString(SettingsKey.manualComDevice) ?? "";
+    const [boards, allPorts] = await Promise.all([
+      this.deps.listSupportedPorts(customVidPidPairs),
+      this.deps.listAllPorts(),
+    ]);
+    const otherPorts = allPorts.filter(port => !boards.includes(port));
+    if (boards.length === 0 && otherPorts.length === 0) {
+      void vscode.window.showErrorMessage(l10n.t("No serial port found."));
 
       // Without this return the empty list would fall through to an empty
       // quick pick (the flagged missing-return bug).
       return;
     }
 
-    const port = await vscode.window.showQuickPick(ports, {
+    const items: Array<vscode.QuickPickItem & { port?: string }> = [
+      ...boards.map(port => ({
+        label: port,
+        description: l10n.t("MicroPython board"),
+        port,
+      })),
+      ...otherPorts.map(port => ({
+        label: port,
+        description: l10n.t("Other serial port"),
+        port,
+      })),
+    ];
+    if (manualComDevice.length > 0) {
+      items.push({
+        label: l10n.t("Detect boards automatically"),
+        description: l10n.t("Stop always using {0}", manualComDevice),
+      });
+    }
+
+    const choice = await vscode.window.showQuickPick(items, {
       canPickMany: false,
-      placeHolder: l10n.t(
-        "Select the COM port of the board you want to connect to",
-      ),
+      placeHolder: l10n.t("Select the port your board is connected to"),
       ignoreFocusOut: false,
     });
-
-    if (port !== undefined) {
-      this.comDevice = port;
-      await this.ctx.com.openSerialPort(this.comDevice);
+    if (choice === undefined) {
+      return;
     }
+
+    if (choice.port === undefined) {
+      await this.ctx.settings.update(SettingsKey.manualComDevice, "");
+      void vscode.window.showInformationMessage(
+        l10n.t("MicroPico detects boards automatically again."),
+      );
+
+      return;
+    }
+
+    // a saved port wins over detection, so keep it in sync with the choice
+    if (manualComDevice.length > 0 || !boards.includes(choice.port)) {
+      await this.ctx.settings.update(SettingsKey.manualComDevice, choice.port);
+      if (manualComDevice !== choice.port) {
+        void vscode.window.showInformationMessage(
+          l10n.t(
+            "MicroPico will always connect to {0}. Run Switch Board to change this.",
+            choice.port,
+          ),
+        );
+      }
+    }
+
+    this.comDevice = choice.port;
+    await this.ctx.com.openSerialPort(this.comDevice);
   }
 
   /** Clear the poller and detach all board listeners (on deactivate). */

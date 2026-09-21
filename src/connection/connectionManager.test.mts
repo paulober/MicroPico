@@ -4,7 +4,13 @@ import { EventEmitter } from "node:events";
 import { PicoSerialEvents } from "@paulober/pico-mpy-com";
 import { SettingsKey } from "../settings.mjs";
 import { SessionContext } from "../commands/sessionContext.mjs";
-import { commands, __resetPrompts, __resetCommands, __getQuickPickCalls } from "../test-support/vscodeStub.mjs";
+import {
+  commands,
+  __resetPrompts,
+  __resetCommands,
+  __getQuickPickCalls,
+  __queueQuickPick,
+} from "../test-support/vscodeStub.mjs";
 import { ConnectionManager, type ConnectionDeps } from "./connectionManager.mjs";
 
 // --- Fakes -----------------------------------------------------------------
@@ -54,6 +60,7 @@ function makeSettings(state: SettingsState): {
   getBoolean(key: SettingsKey): boolean;
   getCustomVidPidPairs(): undefined;
   reload(): void;
+  update(key: SettingsKey, value: unknown): Promise<void>;
 } {
   return {
     reloadCount: 0,
@@ -77,6 +84,13 @@ function makeSettings(state: SettingsState): {
     },
     reload(): void {
       this.reloadCount++;
+    },
+    update(key: SettingsKey, value: unknown): Promise<void> {
+      if (key === SettingsKey.manualComDevice) {
+        state.manualComDevice = value as string;
+      }
+
+      return Promise.resolve();
     },
   };
 }
@@ -340,6 +354,21 @@ describe("ConnectionManager.setupAutoConnect", () => {
     assert.equal(absent.com.openCalls.length, 0);
   });
 
+  test("8b: a manual device wins over auto-connect", async t => {
+    enableTimers(t);
+    const { cm, com, deps } = makeHarness({
+      autoConnect: true,
+      manualComDevice: "/dev/m",
+    });
+    deps.supportedQueue = [["/dev/detected"]];
+    deps.allPorts = ["/dev/detected", "/dev/m"];
+
+    cm.setupAutoConnect();
+    await flush();
+
+    assert.deepEqual(com.openCalls, ["/dev/m"]);
+  });
+
   test("9: already connected stops polling immediately", async t => {
     enableTimers(t);
     const { cm, com, deps } = makeHarness({ autoConnect: true });
@@ -433,6 +462,44 @@ describe("ConnectionManager.switchPico", () => {
 
     assert.equal(__getQuickPickCalls(), 0);
     assert.equal(com.openCalls.length, 0);
+  });
+
+  test("picking a port that isn't detected saves it", async () => {
+    const state: SettingsState = { autoConnect: true };
+    const { cm, com, deps } = makeHarness(state);
+    deps.supportedQueue = [["/dev/pico"]];
+    deps.allPorts = ["/dev/pico", "/dev/sparkfun"];
+    __queueQuickPick({ label: "/dev/sparkfun", port: "/dev/sparkfun" });
+
+    await cm.switchPico();
+
+    assert.deepEqual(com.openCalls, ["/dev/sparkfun"]);
+    assert.equal(state.manualComDevice, "/dev/sparkfun");
+  });
+
+  test("picking a detected board keeps auto detection", async () => {
+    const state: SettingsState = { autoConnect: true };
+    const { cm, com, deps } = makeHarness(state);
+    deps.supportedQueue = [["/dev/pico"]];
+    deps.allPorts = ["/dev/pico"];
+    __queueQuickPick({ label: "/dev/pico", port: "/dev/pico" });
+
+    await cm.switchPico();
+
+    assert.deepEqual(com.openCalls, ["/dev/pico"]);
+    assert.equal(state.manualComDevice, undefined);
+  });
+
+  test("'Detect boards automatically' clears the saved port", async () => {
+    const state: SettingsState = { manualComDevice: "/dev/sparkfun" };
+    const { cm, com, deps } = makeHarness(state);
+    deps.allPorts = ["/dev/sparkfun"];
+    __queueQuickPick({ label: "Detect boards automatically" });
+
+    await cm.switchPico();
+
+    assert.equal(com.openCalls.length, 0);
+    assert.equal(state.manualComDevice, "");
   });
 });
 

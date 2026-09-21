@@ -1,12 +1,7 @@
 import * as vscode from "vscode";
 import { l10n } from "vscode";
 import UI from "./ui.mjs";
-import {
-  TERMINAL_NAME,
-  commandPrefix,
-  focusTerminal,
-  openSettings,
-} from "./api.mjs";
+import { TERMINAL_NAME, commandPrefix, focusTerminal } from "./api.mjs";
 import Stubs, {
   installStubsByPipVersion,
   stubsInstalled,
@@ -149,17 +144,17 @@ export default class Activator {
     ) {
       connection.comDevice = undefined;
 
-      const openSettingsLabel = l10n.t("Open Settings");
+      const selectPortLabel = l10n.t("Select Port");
       void vscode.window
-        .showErrorMessage(
+        .showWarningMessage(
           l10n.t(
-            "No COM device found. Please check your connection or ports and try again. Alternatively you can set the manualComDevice setting to the path of your COM device in the settings but make sure to deactivate autoConnect. For Linux users: check you have sufficient permission to access the device file of the board.",
+            "No board has been found. Connect your board, or select its port if it isn't detected automatically. On Linux, also check that you have permission to access the port.",
           ),
-          openSettingsLabel,
+          selectPortLabel,
         )
         .then(choice => {
-          if (choice === openSettingsLabel) {
-            openSettings();
+          if (choice === selectPortLabel) {
+            void connection.switchPico();
           }
         });
     }
