@@ -36,6 +36,7 @@ export class HardResetListenCommand extends Command {
           return;
         }
 
+        this.ctx.setBackgroundProgram(false);
         this.ctx.commandExecuting = true;
         this.ctx.terminal?.cleanAndStore();
         this.ctx.ui?.userOperationStarted();
