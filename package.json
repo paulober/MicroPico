@@ -339,7 +339,7 @@
         },
         {
           "command": "micropico.reset.soft.listen",
-          "when": "micropico.isActivated && resourceScheme == pico && resourceFilename == main.py",
+          "when": "micropico.isActivated && resourceScheme == pico && resourceFilename =~ /^(main|boot)\\.py$/",
           "group": "1_run@2"
         },
         {

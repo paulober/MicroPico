@@ -27,7 +27,7 @@
   "command.listCommands.title": "Mostrar todos los comandos",
   "command.toggleFileSystem.title": "Montar/desmontar el sistema de archivos de la placa (recarga la ventana)",
   "command.switchPico.title": "Cambiar de placa",
-  "command.reset.soft.listen.title": "Reiniciar la placa y ejecutar main.py",
+  "command.reset.soft.listen.title": "Reiniciar la placa y mostrar la salida",
   "command.rtc.sync.title": "Sincronizar RTC",
   "command.device-wifi.itemClicked.title": "Wi-Fi > Conectar",
   "command.device-wifi.refresh.title": "Buscar",

@@ -27,7 +27,7 @@
   "command.listCommands.title": "Alle Befehle anzeigen",
   "command.toggleFileSystem.title": "Board-Dateisystem ein-/aushängen (lädt das Fenster neu)",
   "command.switchPico.title": "Board wechseln",
-  "command.reset.soft.listen.title": "Board neu starten und main.py ausführen",
+  "command.reset.soft.listen.title": "Board neu starten und Ausgabe anzeigen",
   "command.rtc.sync.title": "RTC synchronisieren",
   "command.device-wifi.itemClicked.title": "WLAN > Verbinden",
   "command.device-wifi.refresh.title": "Suchen",

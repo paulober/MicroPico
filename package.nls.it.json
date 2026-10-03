@@ -27,7 +27,7 @@
   "command.listCommands.title": "Mostra tutti i comandi",
   "command.toggleFileSystem.title": "Monta/smonta il file system della scheda (ricarica la finestra)",
   "command.switchPico.title": "Cambia scheda",
-  "command.reset.soft.listen.title": "Riavvia la scheda ed esegui main.py",
+  "command.reset.soft.listen.title": "Riavvia la scheda e mostra l'output",
   "command.rtc.sync.title": "Sincronizza RTC",
   "command.device-wifi.itemClicked.title": "Wi-Fi > Connetti",
   "command.device-wifi.refresh.title": "Cerca",
