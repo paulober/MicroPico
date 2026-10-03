@@ -22,6 +22,7 @@ Works with:
 - Auto-completion with docs
 - Pseudo terminal integration for communication with MicroPython REPL on a Pico board (with support for tab-completion)
 - Running / Transferring files to / from your board
+- Run `main.py` like after plugging the board in, with its output in the vREPL (`Upload and Restart Board` / `Restart Board and Show Output`)
 - Built-in virtual-workspace provider for Raspberry Pi Pico boards (does disable Pylance auto-completion)
 - Switch between auto-completion and IntelliSense for MicroPython ports `RPi Pico`, `RPi Pico (W)` and `ESP32` (requires pip installed an in PATH)
 - Device Manager UI for managing wifi connection and installing mip packages (only on `Pico W`; experimental)
