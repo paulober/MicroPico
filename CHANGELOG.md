@@ -10,6 +10,22 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.6.0] - 2026-10-03
+
+### Added
+
+- "Upload and Restart Board" in the context menu of `main.py` and `boot.py`: uploads the file and restarts the board, so it runs like after plugging the board in, with its output in the vREPL
+
+### Changed
+
+- "Reset > Soft (interactive)" is now "Restart Board and Show Output", and is also offered in the context menu of `main.py` and `boot.py` on the board filesystem
+- Updated dependencies, including `@paulober/pico-mpy-com` `1.0.31`
+
+### Fixed
+
+- On Windows, ESP32 boards with a USB-to-serial chip booted into download mode when their reset button was pressed while connected (#360, found and diagnosed by @kai-morich)
+- "Reset > Hard (interactive)" showed no output and never finished on boards with a USB-to-serial chip such as most ESP32 boards. It now ends cleanly with Stop on all boards and the connection stays usable. On boards with native USB like the Pico, output from about the first second after the reset can't be shown, because the board restarts its USB connection
+
 ## [4.5.0] - 2026-09-22
 
 ### Added
