@@ -196,6 +196,7 @@
   "Uploaded": "Caricato",
   "Uploading file": "Caricamento del file",
   "Uploading project": "Caricamento del progetto",
+  "Uploading project from {0}": "Caricamento del progetto da {0}",
   "Waiting for board to connect...": "In attesa della connessione della scheda...",
   "Waiting for data. Print comma-separated numbers, for example {0}. An optional first line like {1} names the series.": "In attesa di dati. Stampa numeri separati da virgole, ad esempio {0}. Una prima riga opzionale come {1} dà il nome alle serie.",
   "Yes": "Sì",

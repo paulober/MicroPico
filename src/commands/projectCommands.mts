@@ -2,7 +2,11 @@ import * as vscode from "vscode";
 import { l10n } from "vscode";
 import { existsSync } from "fs";
 import { join } from "path";
-import { commandPrefix, openSettings } from "../api.mjs";
+import {
+  commandPrefix,
+  getProjectWorkspaceFolder,
+  openSettings,
+} from "../api.mjs";
 import { isValidFolderName } from "../utils/folderName.mjs";
 import { unknownErrorToString } from "../errorHelper.mjs";
 import type { PythonExtension } from "@vscode/python-extension";
@@ -20,7 +24,6 @@ export interface ProjectCommandDeps {
   ui?: UI;
   stubs?: Stubs;
   pythonApi: PythonExtension;
-  workspaceFolder?: readonly vscode.WorkspaceFolder[];
 }
 
 /**
@@ -46,18 +49,9 @@ export function registerProjectCommands(
         );
       }
 
-      let isCurrentWorkspace = false;
-      if (
-        location &&
+      const isCurrentWorkspace =
         location instanceof vscode.Uri &&
-        deps.workspaceFolder &&
-        deps.workspaceFolder.length > 0
-      ) {
-        const folder = deps.workspaceFolder[0];
-        if (folder.uri.fsPath === location.fsPath) {
-          isCurrentWorkspace = true;
-        }
-      }
+        getProjectWorkspaceFolder()?.uri.fsPath === location.fsPath;
       const path =
         location instanceof vscode.Uri ? location.fsPath : location;
 

@@ -1,7 +1,12 @@
 import * as vscode from "vscode";
 import { l10n } from "vscode";
 import UI from "./ui.mjs";
-import { TERMINAL_NAME, commandPrefix, focusTerminal } from "./api.mjs";
+import {
+  TERMINAL_NAME,
+  commandPrefix,
+  focusTerminal,
+  getProjectWorkspaceFolder,
+} from "./api.mjs";
 import Stubs, {
   installStubsByPipVersion,
   stubsInstalled,
@@ -122,9 +127,8 @@ export default class Activator {
     this.stubs = new Stubs(context.extensionUri);
     await this.stubs.update(this.settings);
 
-    const workspaceFolder = vscode.workspace.workspaceFolders;
-    if (workspaceFolder !== undefined && workspaceFolder.length > 0) {
-      const folder = workspaceFolder[0];
+    const folder = getProjectWorkspaceFolder();
+    if (folder !== undefined) {
       // check if folder contains .micropico
       const micropico = vscode.Uri.joinPath(folder.uri, ".micropico");
       this.activationFilePresentAtLaunch = await vscode.workspace.fs
@@ -413,7 +417,6 @@ export default class Activator {
       ui: this.ui,
       stubs: this.stubs,
       pythonApi,
-      workspaceFolder,
     });
 
     // [Command] Connect

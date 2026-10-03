@@ -17,6 +17,35 @@ export function __resetConfig(): void {
   for (const key of Object.keys(store)) {
     delete store[key];
   }
+  configScopes.length = 0;
+  workspaceFolders = undefined;
+}
+
+interface StubWorkspaceFolder {
+  uri: { scheme: string; fsPath: string };
+  name: string;
+  index: number;
+}
+
+let workspaceFolders: StubWorkspaceFolder[] | undefined;
+
+/** Set the open workspace folders, as `{ scheme, fsPath }` pairs in order. */
+export function __setWorkspaceFolders(
+  folders: Array<{ scheme: string; fsPath: string }>,
+): void {
+  workspaceFolders = folders.map((uri, index) => ({
+    uri,
+    name: uri.fsPath,
+    index,
+  }));
+}
+
+// The scope (resource) each getConfiguration call asked for, in order.
+const configScopes: unknown[] = [];
+
+/** The scopes passed to `getConfiguration` since the last reset. */
+export function __getConfigScopes(): unknown[] {
+  return configScopes;
 }
 
 // Queued return values for interactive window prompts, so command logic that
@@ -99,6 +128,9 @@ export function __changeConfig(section: string, values: ConfigValues): void {
 }
 
 export const workspace = {
+  get workspaceFolders(): StubWorkspaceFolder[] | undefined {
+    return workspaceFolders;
+  },
   onDidChangeConfiguration(listener: ConfigChangeListener) {
     configListeners.push(listener);
 
@@ -110,7 +142,8 @@ export const workspace = {
   },
   // Like VS Code, a configuration object is a snapshot: updates only show up
   // in configurations fetched afterwards.
-  getConfiguration(section: string) {
+  getConfiguration(section: string, scope?: unknown) {
+    configScopes.push(scope);
     const snapshot = { ...store[section] };
 
     return {
@@ -124,7 +157,6 @@ export const workspace = {
       },
     };
   },
-  workspaceFolders: undefined,
 };
 
 // How often code looked up the open terminals (focusTerminal does).

@@ -1,11 +1,17 @@
 import { describe, test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   __changeConfig,
+  __getConfigScopes,
   __setConfig,
+  __setWorkspaceFolders,
   __resetConfig,
 } from "./test-support/vscodeStub.mjs";
 import Settings from "./settings.mjs";
+import { getProjectWorkspaceFolder } from "./api.mjs";
 
 function makeSettings(): Settings {
   // Settings only stores the Memento; getCustomVidPidPairs never touches it.
@@ -89,5 +95,65 @@ describe("Settings.getCustomVidPidPairs", () => {
       { vid: 1027, pid: 24592 },
       { vid: 2, pid: 3 },
     ]);
+  });
+});
+
+// With the board filesystem mounted the window is a multi-root workspace, and
+// settings read without a folder ignore the project's .vscode/settings.json.
+describe("project folder (#361)", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    __resetConfig();
+    dir = mkdtempSync(join(tmpdir(), "micropico-"));
+  });
+
+  function folder(name: string, micropico = false): string {
+    const path = join(dir, name);
+    mkdirSync(path);
+    if (micropico) {
+      writeFileSync(join(path, ".micropico"), "");
+    }
+
+    return path;
+  }
+
+  test("is never the mounted board filesystem", () => {
+    const project = folder("project");
+    __setWorkspaceFolders([
+      { scheme: "pico", fsPath: "/" },
+      { scheme: "file", fsPath: project },
+    ]);
+
+    assert.equal(getProjectWorkspaceFolder()?.uri.fsPath, project);
+    rmSync(dir, { recursive: true });
+  });
+
+  test("prefers the folder with a .micropico file", () => {
+    const docs = folder("docs");
+    const project = folder("project", true);
+    __setWorkspaceFolders([
+      { scheme: "file", fsPath: docs },
+      { scheme: "file", fsPath: project },
+    ]);
+
+    assert.equal(getProjectWorkspaceFolder()?.uri.fsPath, project);
+    rmSync(dir, { recursive: true });
+  });
+
+  test("settings are read for the project folder", () => {
+    const project = folder("project", true);
+    __setWorkspaceFolders([
+      { scheme: "file", fsPath: project },
+      { scheme: "pico", fsPath: "/" },
+    ]);
+
+    const settings = makeSettings();
+    settings.reload();
+
+    const scopes = __getConfigScopes() as Array<{ fsPath: string } | undefined>;
+    assert.ok(scopes.length > 0);
+    assert.ok(scopes.every(scope => scope?.fsPath === project));
+    rmSync(dir, { recursive: true });
   });
 });

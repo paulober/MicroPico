@@ -196,6 +196,7 @@
   "Uploaded": "Uploaded",
   "Uploading file": "Uploading file",
   "Uploading project": "Uploading project",
+  "Uploading project from {0}": "Uploading project from {0}",
   "Waiting for board to connect...": "Waiting for board to connect...",
   "Waiting for data. Print comma-separated numbers, for example {0}. An optional first line like {1} names the series.": "Waiting for data. Print comma-separated numbers, for example {0}. An optional first line like {1} names the series.",
   "Yes": "Yes",

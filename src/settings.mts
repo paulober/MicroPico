@@ -5,7 +5,12 @@ import type {
   WorkspaceConfiguration,
 } from "vscode";
 import { l10n, window, workspace as vsWorkspace } from "vscode";
-import { extName, getProjectPath, settingsStubsBasePath } from "./api.mjs";
+import {
+  extName,
+  getProjectPath,
+  getProjectWorkspaceFolder,
+  settingsStubsBasePath,
+} from "./api.mjs";
 import { dirname, join, relative } from "path";
 import { PicoMpyCom, type VidPidPair } from "@paulober/pico-mpy-com";
 import { searchFile } from "./osHelper.mjs";
@@ -35,20 +40,33 @@ export enum SettingsKey {
 
 export type Setting = string | boolean | string[] | null | undefined;
 
+/**
+ * Settings as they apply to the project folder. Without a folder, VS Code only
+ * returns user and workspace values in a multi-root window (e.g. with the board
+ * filesystem mounted), so the project's `.vscode/settings.json` was ignored
+ * (#361).
+ */
+function projectConfiguration(section: string): WorkspaceConfiguration {
+  return vsWorkspace.getConfiguration(
+    section,
+    getProjectWorkspaceFolder()?.uri,
+  );
+}
+
 export default class Settings {
   private config: WorkspaceConfiguration;
   private pythonConfig: WorkspaceConfiguration;
   public context: Memento;
 
   constructor(context: Memento) {
-    this.config = vsWorkspace.getConfiguration(extName);
-    this.pythonConfig = vsWorkspace.getConfiguration("python.analysis");
+    this.config = projectConfiguration(extName);
+    this.pythonConfig = projectConfiguration("python.analysis");
 
     this.context = context;
   }
 
   public reload(): void {
-    this.config = vsWorkspace.getConfiguration(extName);
+    this.config = projectConfiguration(extName);
   }
 
   /**
@@ -67,7 +85,7 @@ export default class Settings {
   }
 
   public reloadPython(): void {
-    this.pythonConfig = vsWorkspace.getConfiguration("python.analysis");
+    this.pythonConfig = projectConfiguration("python.analysis");
   }
 
   public get(key: SettingsKey | string): Setting {

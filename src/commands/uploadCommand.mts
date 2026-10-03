@@ -49,10 +49,16 @@ export class UploadCommand extends Command {
       );
     }
 
+    // say where the files come from, a wrong sync folder is easy to miss
+    this.logger.info(`Uploading project from ${syncDir[1]}`);
+
     void vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: l10n.t("Uploading project"),
+        title:
+          syncDir[0].length > 0
+            ? l10n.t("Uploading project from {0}", syncDir[0])
+            : l10n.t("Uploading project"),
         cancellable: true,
       },
       async (progress, token) => {

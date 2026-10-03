@@ -1,17 +1,14 @@
 import { workspace, Uri } from "vscode";
+import { getProjectWorkspaceFolder } from "./api.mjs";
 
 /**
  * Renames .picowgo activation file to .micropico
  */
 export async function renameActivationFile(): Promise<void> {
-  if (
-    workspace.workspaceFolders === undefined ||
-    workspace.workspaceFolders.length === 0
-  ) {
+  const folder = getProjectWorkspaceFolder();
+  if (folder === undefined) {
     return;
   }
-
-  const folder = workspace.workspaceFolders[0];
 
   try {
     await workspace.fs.rename(

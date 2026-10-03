@@ -1,3 +1,4 @@
+import { existsSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 import { join as joinPosix } from "path/posix";
@@ -11,7 +12,7 @@ import {
   env as vscodeEnv,
   Uri,
 } from "vscode";
-import type { ExtensionTerminalOptions } from "vscode";
+import type { ExtensionTerminalOptions, WorkspaceFolder } from "vscode";
 
 export const extName = "micropico";
 export const commandPrefix = `${extName}.`;
@@ -106,17 +107,29 @@ export function settingsStubsPathForVersion(version: string): string {
 }
 
 /**
- * Returns the path to the currently opened project (aka first workspace folder)
+ * The workspace folder of the MicroPico project: the one with a `.micropico`
+ * file, otherwise the first one. The mounted board filesystem (`pico://`)
+ * turns the window into a multi-root workspace but is never the project.
+ */
+export function getProjectWorkspaceFolder(): WorkspaceFolder | undefined {
+  const folders = (workspace.workspaceFolders ?? []).filter(
+    folder => folder.uri.scheme !== "pico",
+  );
+
+  return (
+    folders.find(folder =>
+      existsSync(join(folder.uri.fsPath, ".micropico")),
+    ) ?? folders[0]
+  );
+}
+
+/**
+ * Returns the path to the currently opened project
  *
  * @returns the path to the currently opened project
  */
 export function getProjectPath(): string | undefined {
-  const workspaceFolders = workspace.workspaceFolders;
-  if (workspaceFolders && workspaceFolders.length > 0) {
-    return workspaceFolders[0].uri.fsPath;
-  }
-
-  return;
+  return getProjectWorkspaceFolder()?.uri.fsPath;
 }
 
 /**
@@ -183,9 +196,10 @@ export function writeIntoClipboard(text: string): void {
 export async function getTypeshedPicoWStubPath(): Promise<
   [string, string] | null
 > {
-  const workspaceFolderUri = workspace.workspaceFolders?.[0].uri;
+  const projectFolder = getProjectWorkspaceFolder();
+  const workspaceFolderUri = projectFolder?.uri;
 
-  if (!workspaceFolderUri) {
+  if (!projectFolder || !workspaceFolderUri) {
     return null;
   }
 
@@ -204,17 +218,10 @@ export async function getTypeshedPicoWStubPath(): Promise<
     // Check if the typeshedPaths property includes "Pico-W-Stub"
     const typeshedPaths: string[] =
       settingsObject["python.analysis.typeshedPaths"];
-    if (
-      typeshedPaths &&
-      workspace.workspaceFolders &&
-      workspace.workspaceFolders.length > 0
-    ) {
+    if (typeshedPaths) {
       const stubPath = typeshedPaths.find(path => path.includes("Pico-W-Stub"));
       if (stubPath !== undefined) {
-        return [
-          stubPath.replaceAll("\\", "/"),
-          workspace.workspaceFolders[0].name,
-        ];
+        return [stubPath.replaceAll("\\", "/"), projectFolder.name];
       }
     }
 

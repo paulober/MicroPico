@@ -196,6 +196,7 @@
   "Uploaded": "Hochgeladen",
   "Uploading file": "Datei wird hochgeladen",
   "Uploading project": "Projekt wird hochgeladen",
+  "Uploading project from {0}": "Projekt wird aus {0} hochgeladen",
   "Waiting for board to connect...": "Warte auf die Verbindung zum Board...",
   "Waiting for data. Print comma-separated numbers, for example {0}. An optional first line like {1} names the series.": "Warte auf Daten. Gib kommagetrennte Zahlen aus, zum Beispiel {0}. Eine optionale erste Zeile wie {1} benennt die Reihen.",
   "Yes": "Ja",
