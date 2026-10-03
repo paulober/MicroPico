@@ -12,6 +12,8 @@ export class UploadFileCommand extends Command {
 
   public async execute(...args: unknown[]): Promise<void> {
     const resourceURI = args[0] as vscode.Uri | undefined;
+    // set by "Upload and Restart Board"
+    const restartAfterUpload = args[1] === true;
 
     if (this.ctx.com.isPortDisconnected()) {
       void vscode.window.showWarningMessage(
@@ -85,6 +87,7 @@ export class UploadFileCommand extends Command {
               l10n.t("{0} was uploaded successfully.", file),
             );
             if (
+              restartAfterUpload ||
               this.ctx.settings.getBoolean(SettingsKey.softResetAfterUpload)
             ) {
               void vscode.commands.executeCommand(

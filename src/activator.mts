@@ -440,6 +440,15 @@ export default class Activator {
 
     new UploadFileCommand(ctx).register(context);
 
+    // [Command] Upload and Restart Board: the file runs like after plugging
+    // the board in, with its output in the vREPL
+    disposable = vscode.commands.registerCommand(
+      commandPrefix + "uploadAndRestart",
+      (uri?: vscode.Uri) =>
+        vscode.commands.executeCommand(commandPrefix + "uploadFile", uri, true),
+    );
+    context.subscriptions.push(disposable);
+
     new DownloadFileCommand(ctx).register(context);
 
     new DownloadCommand(ctx).register(context);

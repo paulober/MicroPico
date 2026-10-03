@@ -110,6 +110,12 @@
         "category": "MicroPico"
       },
       {
+        "command": "micropico.uploadAndRestart",
+        "title": "%command.uploadAndRestart.title%",
+        "enablement": "micropico.isConnected && resourceScheme != pico && isFileSystemResource",
+        "category": "MicroPico"
+      },
+      {
         "command": "micropico.downloadFile",
         "title": "%command.downloadFile.title%",
         "enablement": "micropico.isConnected && resourceScheme == pico && isFileSystemResource",
@@ -261,6 +267,12 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "micropico.uploadAndRestart",
+          "when": "micropico.isActivated && resourceScheme != pico && resourceFilename =~ /^(main|boot)\\.py$/"
+        }
+      ],
       "explorer/context": [
         {
           "submenu": "micropico.explorerContext",
@@ -321,6 +333,16 @@
           "when": "micropico.isActivated && resourceScheme != pico"
         },
         {
+          "command": "micropico.uploadAndRestart",
+          "when": "micropico.isActivated && resourceScheme != pico && resourceFilename =~ /^(main|boot)\\.py$/",
+          "group": "1_run@2"
+        },
+        {
+          "command": "micropico.reset.soft.listen",
+          "when": "micropico.isActivated && resourceScheme == pico && resourceFilename == main.py",
+          "group": "1_run@2"
+        },
+        {
           "command": "micropico.downloadFile",
           "group": "2_transfer@2",
           "when": "micropico.isActivated && resourceScheme == pico"
@@ -361,6 +383,11 @@
           "command": "micropico.runselection",
           "group": "1_run@2",
           "when": "micropico.isActivated"
+        },
+        {
+          "command": "micropico.uploadAndRestart",
+          "when": "micropico.isActivated && resourceScheme != pico && isFileSystemResource && resourceFilename =~ /^(main|boot)\\.py$/",
+          "group": "1_run@3"
         },
         {
           "command": "micropico.uploadFile",
