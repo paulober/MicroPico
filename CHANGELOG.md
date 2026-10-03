@@ -10,6 +10,16 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.6.1] - 2026-10-04
+
+### Changed
+
+- Upload Project names the folder it uploads from
+
+### Fixed
+
+- With the board filesystem mounted, settings from the project's `.vscode/settings.json` were ignored, so Upload Project used the whole project instead of `micropico.syncFolder` (#361, analysed by @1021683053)
+
 ## [4.6.0] - 2026-10-03
 
 ### Added
