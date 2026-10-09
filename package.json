@@ -723,9 +723,9 @@
     "@paulober/pico-mpy-com": "^1.0.31",
     "@vscode/python-extension": "^1.0.6",
     "axios": "^1.13.6",
-    "fs-extra": "^11.4.0",
+    "fs-extra": "^11.4.1",
     "lodash": "^4.17.23",
-    "undici": "^8.10.2",
+    "undici": "^8.11.2",
     "uuid": "^13.0.0",
     "which": "^5.0.0"
   },
