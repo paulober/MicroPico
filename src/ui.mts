@@ -77,6 +77,12 @@ const statusBarButtons = (): StatusBarButton[] => [
     tooltip: l10n.t("Clears the state of the MicroPython virtual machine"),
   },
   {
+    key: "hardreset",
+    name: "$(debug-restart) " + l10n.t("Hard Reset"),
+    command: "micropico.reset.hard",
+    tooltip: l10n.t("Reboots the board, like pressing its reset button"),
+  },
+  {
     key: "settings",
     name: "$(gear) " + l10n.t("Settings"),
     command: "micropico.globalSettings",
