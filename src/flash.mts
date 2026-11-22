@@ -11,11 +11,9 @@ import {
 } from "vscode";
 import { exec } from "child_process";
 import { promisify } from "util";
-import {
-  downloadFirmware,
-  SupportedFirmwareTypes,
-} from "./downloadFirmware.mjs";
+import { downloadFirmware } from "./downloadFirmware.mjs";
 import Logger from "./logger.mjs";
+import { boardChoices } from "./utils/boardFirmware.mjs";
 
 const execAsync = promisify(exec);
 const logger = new Logger("Flash");
@@ -227,35 +225,8 @@ export async function flashPicoInteractively(
       device = devices;
     }
 
-    let wirelessFirmware = false;
-
-    const flashWireless = await window.showInformationMessage(
-      l10n.t("Do you want to flash the Wireless firmware?"),
-      yes,
-      l10n.t("No")
-    );
-
-    if (flashWireless === yes) {
-      wirelessFirmware = true;
-    }
-
-    let firmwareType: SupportedFirmwareTypes | undefined;
-
-    switch (device.type) {
-      case "RP2040":
-        firmwareType = wirelessFirmware
-          ? SupportedFirmwareTypes.picow
-          : SupportedFirmwareTypes.pico;
-        break;
-
-      case "RP2350":
-        firmwareType = wirelessFirmware
-          ? SupportedFirmwareTypes.pico2w
-          : SupportedFirmwareTypes.pico2;
-        break;
-    }
-
-    if (firmwareType === undefined) {
+    const choices = boardChoices(device.type);
+    if (choices.length === 0) {
       // TODO: disable auto connect check for MSDs and show button for download link
       void window.showErrorMessage(
         l10n.t("Unsupported board type. Please flash the firmware manually.")
@@ -263,6 +234,18 @@ export async function flashPicoInteractively(
 
       return false;
     }
+
+    const board = await window.showQuickPick(choices, {
+      title: l10n.t("Which board is connected?"),
+      placeHolder: l10n.t(
+        "A W after the name printed on the board means it has Wi-Fi"
+      ),
+      ignoreFocusOut: true,
+    });
+    if (board === undefined) {
+      return false;
+    }
+    const firmwareType = board.firmware;
 
     let firmwarePath: string | undefined;
 
