@@ -10,6 +10,23 @@ All notable changes to the "MicroPico" extension will be documented in this file
 
 ---
 
+## [4.6.2] - 2026-11-23
+
+### Added
+
+- A "Hard Reset" status bar button, enable it in `micropico.statusbarButtons` (#368 by @GUELORD-MWENDERWA)
+
+### Changed
+
+- Easy Flash asks which board is connected (e.g. "Raspberry Pi Pico 2 W, with Wi-Fi") instead of whether to flash the wireless firmware
+- Updated dependencies, including `@paulober/pico-mpy-com` `1.0.32` and security fixes in `undici` and `follow-redirects`
+
+### Fixed
+
+- On Windows, ESP32 boards with a USB-to-serial chip still booted into download mode when their reset button was pressed (#366, thanks @kai-morich for retesting)
+- "Restart Board and Show Output" sometimes left the board in the raw REPL without running `main.py` (#367)
+- A running program could keep running when MicroPico connected or started a command, because the Ctrl-C to stop it was sometimes not sent
+
 ## [4.6.1] - 2026-10-04
 
 ### Changed
