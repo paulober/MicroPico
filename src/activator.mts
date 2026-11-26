@@ -600,10 +600,13 @@ export default class Activator {
    * file); the rest of the open handler lives in the manager.
    */
   private onBoardConnected(): void {
+    const shouldOpenTerminal =
+      this.settings?.getBoolean(SettingsKey.openOnStart) &&
+      this.connection?.comDevice !== undefined;
+
     if (
       !this.activationFilePresentAtLaunch &&
-      this.settings?.getBoolean(SettingsKey.openOnStart) &&
-      this.connection?.comDevice !== undefined
+      shouldOpenTerminal
     ) {
       void focusTerminal(this.terminalOptions);
       // only keep for first connection on a launch without activation file
@@ -612,9 +615,11 @@ export default class Activator {
 
     if (this.terminal?.getIsOpen()) {
       this.terminal.cls();
-      void focusTerminal(this.terminalOptions);
+      if (shouldOpenTerminal) {
+        void focusTerminal(this.terminalOptions);
+      }
       this.terminal.callOpeningCb();
-    } else {
+    } else if (shouldOpenTerminal) {
       void focusTerminal(this.terminalOptions);
     }
   }
